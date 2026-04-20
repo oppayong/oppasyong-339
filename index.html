@@ -8,16 +8,23 @@
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
   <style>
+    [v-cloak] { display: none !important; }
     body { background-color: #f4f4f5; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; -webkit-tap-highlight-color: transparent; }
     ::-webkit-scrollbar { display: none; }
-    .glass-nav { background: rgba(255, 255, 255, 0.92); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); }
+    .glass-nav { background: rgba(255, 255, 255, 0.92); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); border-top: 1px solid rgba(255,255,255,0.5); }
     .glass-card { background: rgba(255, 255, 255, 0.95); box-shadow: 0 10px 40px rgba(0,0,0,0.03); border: 1px solid rgba(255,255,255,0.8); }
     @keyframes slideUp { from { transform: translateY(100%); opacity: 0;} to { transform: translateY(0); opacity: 1;} }
     .animate-slide-up { animation: slideUp 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
     @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
     .animate-fade-in { animation: fadeIn 0.4s ease-out; }
+    
+    /* 隱藏原生日期選擇器的 icon，讓介面更乾淨 */
+    input[type="date"]::-webkit-calendar-picker-indicator {
+      position: absolute; top: 0; left: 0; right: 0; bottom: 0; width: auto; height: auto; color: transparent; background: transparent; cursor: pointer;
+    }
   </style>
 </head>
 <body class="text-gray-800 pb-24 select-none antialiased">
@@ -30,16 +37,16 @@
           <svg class="w-8 h-8 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path></svg>
         </div>
         <h1 class="text-2xl font-black text-white tracking-widest mb-1">鎔安組戰情室</h1>
-        <p class="text-xs text-blue-200/70 mb-8">AES-256 軍規加密防護</p>
+        <p class="text-xs text-blue-200/70 mb-2">AES-256 端到端加密同步</p>
+        <p class="text-[10px] text-emerald-400 mb-6 font-bold" v-if="cloudStatus">{{ cloudStatus }}</p>
         
-        <input v-model="passcode" type="password" placeholder="請輸入專屬密碼解鎖" 
+        <input v-model="passcode" type="password" placeholder="請輸入專屬解鎖密碼" 
                class="w-full bg-black/30 border border-white/10 rounded-xl px-4 py-3.5 text-center text-white tracking-widest focus:outline-none focus:border-blue-400/50 transition-colors mb-4">
         
-        <button @click="unlockApp" class="w-full bg-blue-600 hover:bg-blue-500 text-white font-bold py-3.5 rounded-xl shadow-lg transition-colors">
-          解鎖系統
+        <button @click="unlockApp" :disabled="isSyncing" class="w-full bg-blue-600 hover:bg-blue-500 text-white font-bold py-3.5 rounded-xl shadow-lg transition-colors disabled:opacity-50">
+          {{ isSyncing ? '雲端同步解密中...' : '解鎖系統' }}
         </button>
         <p v-if="loginError" class="text-red-400 text-xs mt-3 font-bold">{{ loginError }}</p>
-        <p class="text-[10px] text-gray-500 mt-6 leading-relaxed">初次使用請直接輸入新密碼，系統將以此密碼綁定加密您的所有客戶資料。若遺失密碼將無法恢復資料。</p>
       </div>
     </div>
 
@@ -48,58 +55,65 @@
       <div v-show="currentTab === '339'" class="p-5 animate-fade-in">
         
         <div class="flex justify-between items-center mb-4 px-2">
-          <button @click="changeDate(-1)" class="p-2 text-gray-400 hover:text-blue-600 transition-colors">
-            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15 19l-7-7 7-7"></path></svg>
+          <button @click="changeDate(-1)" class="p-2 text-gray-400 hover:text-blue-600 transition-colors active:scale-90">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15 19l-7-7 7-7"></path></svg>
           </button>
-          <div class="text-center relative">
-            <input type="date" v-model="currentDate" class="absolute inset-0 opacity-0 w-full h-full cursor-pointer z-10">
-            <p class="text-[10px] font-bold text-blue-500 uppercase tracking-widest mb-0.5">檢視日期 ▾</p>
-            <p class="text-lg font-black text-gray-800">{{ formattedDate }}</p>
+          
+          <div class="text-center relative flex flex-col items-center justify-center">
+            <input type="date" v-model="currentDate" class="absolute inset-0 opacity-0 w-full h-full z-10 cursor-pointer">
+            <div class="flex items-center gap-1 text-blue-500 mb-0.5">
+              <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
+              <p class="text-[10px] font-bold uppercase tracking-widest">點擊選日期</p>
+            </div>
+            <p class="text-xl font-black text-gray-800 tracking-tight">{{ formattedDate }}</p>
           </div>
-          <button @click="changeDate(1)" class="p-2 text-gray-400 hover:text-blue-600 transition-colors" :class="{ 'opacity-30 pointer-events-none': isToday }">
-            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7"></path></svg>
+
+          <button @click="changeDate(1)" class="p-2 text-gray-400 hover:text-blue-600 transition-colors active:scale-90" :class="{ 'opacity-30 pointer-events-none': isToday }">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7"></path></svg>
           </button>
         </div>
 
-        <header class="glass-card rounded-[2rem] p-6 mb-6 relative overflow-hidden">
+        <header class="glass-card rounded-[2rem] p-5 mb-4 relative overflow-hidden">
           <div class="absolute top-0 left-0 w-1.5 h-full bg-blue-600"></div>
           <div class="flex justify-between items-start mb-4">
             <div>
               <h1 class="text-2xl font-black text-gray-900 tracking-tight">鎔安組</h1>
-              <p class="text-[10px] font-bold text-gray-400 mt-1 uppercase tracking-widest">339 活動量</p>
+              <p class="text-[10px] font-bold text-gray-400 mt-1 uppercase tracking-widest">今日戰力</p>
             </div>
             <div class="flex gap-4 text-right">
-              <div>
-                <p class="text-[10px] text-gray-400 font-bold mb-1">銷售分</p>
-                <p class="text-3xl font-black text-blue-600 leading-none">{{ totalSalesScore }}</p>
-              </div>
-              <div>
-                <p class="text-[10px] text-gray-400 font-bold mb-1">增員分</p>
-                <p class="text-3xl font-black text-emerald-500 leading-none">{{ totalRecruitScore }}</p>
-              </div>
+              <div><p class="text-[10px] text-gray-400 font-bold mb-1">銷售分</p><p class="text-3xl font-black text-blue-600 leading-none">{{ dailySales }}</p></div>
+              <div><p class="text-[10px] text-gray-400 font-bold mb-1">增員分</p><p class="text-3xl font-black text-emerald-500 leading-none">{{ dailyRecruit }}</p></div>
             </div>
-          </div>
-          <div class="pt-3 border-t border-gray-100">
-            <p class="text-[11px] text-gray-500 font-medium leading-relaxed">
-              <span class="text-blue-500 font-bold">教練建議：</span>{{ aiSuggestion }}
-            </p>
           </div>
         </header>
 
+        <div class="grid grid-cols-2 gap-3 mb-6">
+          <div class="bg-gradient-to-br from-slate-800 to-gray-900 rounded-2xl p-4 shadow-lg border border-gray-700 text-white relative overflow-hidden">
+            <div class="absolute -right-2 -top-2 opacity-10"><svg class="w-16 h-16" fill="currentColor" viewBox="0 0 24 24"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"></path></svg></div>
+            <p class="text-[10px] text-gray-400 font-bold mb-2 tracking-widest">本週累積</p>
+            <div class="flex justify-between items-end">
+              <div><span class="text-[10px] text-gray-400 mr-1">銷</span><span class="text-lg font-black text-blue-400">{{ weeklyStats.sales }}</span></div>
+              <div><span class="text-[10px] text-gray-400 mr-1">增</span><span class="text-lg font-black text-emerald-400">{{ weeklyStats.recruit }}</span></div>
+            </div>
+          </div>
+          <div class="bg-white rounded-2xl p-4 shadow-sm border border-gray-100 relative overflow-hidden">
+            <p class="text-[10px] text-gray-400 font-bold mb-2 tracking-widest">本月累積</p>
+            <div class="flex justify-between items-end">
+              <div><span class="text-[10px] text-gray-400 mr-1">銷</span><span class="text-lg font-black text-blue-600">{{ monthlyStats.sales }}</span></div>
+              <div><span class="text-[10px] text-gray-400 mr-1">增</span><span class="text-lg font-black text-emerald-500">{{ monthlyStats.recruit }}</span></div>
+            </div>
+          </div>
+        </div>
+
         <div class="space-y-3 relative pb-8">
           <div class="absolute left-[3.25rem] top-4 bottom-4 w-[2px] bg-gray-200/50 -z-10 rounded-full"></div>
-          
           <div v-for="time in timeSlots" :key="time" @click="openActivityModal(time)"
                class="flex bg-white rounded-2xl shadow-sm border border-gray-100 active:scale-[0.98] transition-all cursor-pointer overflow-hidden">
-            <div class="w-20 flex justify-center py-4">
-              <span class="text-[13px] font-bold text-gray-400">{{ time }}</span>
-            </div>
+            <div class="w-20 flex justify-center py-4"><span class="text-[13px] font-bold text-gray-400">{{ time }}</span></div>
             <div class="flex-1 p-4 border-l border-gray-50 flex flex-col justify-center min-h-[4.5rem]">
               <template v-if="getActivity(time)">
                 <div>
-                  <span class="inline-block px-2 py-0.5 text-[10px] font-black rounded text-white mb-1.5 shadow-sm" :class="getTypeStyle(getActivity(time).type)">
-                    {{ getActivity(time).type }}
-                  </span>
+                  <span class="inline-block px-2 py-0.5 text-[10px] font-black rounded text-white mb-1.5 shadow-sm" :class="getTypeStyle(getActivity(time).type)">{{ getActivity(time).type }}</span>
                   <p class="text-sm font-bold text-gray-900">{{ getActivity(time).clientName }}</p>
                   <p v-if="getActivity(time).notes" class="text-xs text-gray-400 mt-1 truncate">{{ getActivity(time).notes }}</p>
                 </div>
@@ -122,24 +136,22 @@
         </header>
 
         <div class="flex flex-col items-center">
-          <div class="bg-gradient-to-br from-blue-900 via-slate-800 to-indigo-900 text-white w-full max-w-[16rem] p-5 rounded-[1.5rem] shadow-xl text-center relative z-10 border border-amber-500/30">
-            <div class="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/stardust.png')] opacity-20 mix-blend-overlay"></div>
+          <div class="bg-gradient-to-br from-blue-900 via-slate-800 to-indigo-900 text-white w-full max-w-[16rem] p-5 rounded-[1.5rem] shadow-xl text-center relative z-10 border border-amber-500/40">
             <p class="text-[10px] text-amber-400/90 font-bold mb-1 tracking-widest">業務主任 (未來區經理)</p>
             <p class="text-xl font-black tracking-widest">鎔安</p>
           </div>
           
           <div class="w-0.5 h-6 bg-gray-300"></div>
           <div v-if="teamMembers.length > 0" class="w-[85%] h-0.5 bg-gray-300 relative">
-            <div class="absolute w-0.5 h-4 bg-gray-300 left-0 top-0"></div>
-            <div class="absolute w-0.5 h-4 bg-gray-300 right-0 top-0"></div>
+            <div class="absolute w-0.5 h-4 bg-gray-300 left-0 top-0"></div><div class="absolute w-0.5 h-4 bg-gray-300 right-0 top-0"></div>
           </div>
 
           <div class="grid grid-cols-2 gap-4 w-full mt-4">
             <div v-for="(member, index) in teamMembers" :key="index" @click="openMemberModal(index)" 
                  class="bg-white p-4 rounded-2xl border border-gray-100 shadow-sm relative active:scale-95 transition-transform cursor-pointer overflow-hidden flex flex-col justify-between h-full">
-              <div class="absolute top-0 left-0 w-full h-1 rounded-t-2xl" :class="getMemberColor(member.status).topBar"></div>
+              <div class="absolute top-0 left-0 w-full h-1.5 rounded-t-2xl" :class="getMemberColor(member.status).topBar"></div>
               <div>
-                <p class="text-[9px] font-bold mb-1 line-clamp-1" :class="getMemberColor(member.status).text">{{ member.status }}</p>
+                <p class="text-[9px] font-bold mb-1 line-clamp-1 mt-1" :class="getMemberColor(member.status).text">{{ member.status }}</p>
                 <p class="text-sm font-black text-gray-900">{{ member.name }}</p>
               </div>
               <div v-if="member.notes" class="mt-3 inline-block px-2 py-1.5 rounded-lg text-[10px] font-bold leading-relaxed line-clamp-2" :class="getMemberColor(member.status).bg">
@@ -147,20 +159,21 @@
               </div>
             </div>
           </div>
-          
-          <div v-if="teamMembers.length === 0" class="mt-12 text-xs font-bold text-gray-400 text-center bg-white p-6 rounded-3xl border border-dashed border-gray-200">
-            目前尚無成員<br><span class="text-[10px] mt-2 block">點擊右上角「+ 新增成員」建立組織架構</span>
-          </div>
         </div>
       </div>
 
-      <nav class="fixed bottom-0 left-0 right-0 glass-nav border-t border-gray-200/50 pb-safe pt-2 px-6 z-40">
+      <nav class="fixed bottom-0 left-0 right-0 glass-nav pb-safe pt-2 px-6 z-40 shadow-[0_-5px_20px_rgba(0,0,0,0.03)]">
         <div class="max-w-md mx-auto flex justify-around items-center h-16">
-          <div @click="currentTab = '339'" class="flex flex-col items-center justify-center w-20 h-full cursor-pointer transition-colors" :class="currentTab === '339' ? 'text-blue-600' : 'text-gray-400'">
+          <div @click="currentTab = '339'" class="flex flex-col items-center justify-center w-20 h-full cursor-pointer" :class="currentTab === '339' ? 'text-blue-600' : 'text-gray-400'">
             <svg class="w-6 h-6 mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
             <span class="text-[10px] font-bold">339 戰情</span>
           </div>
-          <div @click="currentTab = 'org'" class="flex flex-col items-center justify-center w-20 h-full cursor-pointer transition-colors" :class="currentTab === 'org' ? 'text-blue-600' : 'text-gray-400'">
+          <div class="relative group">
+            <div class="w-10 h-10 bg-gray-50 rounded-full flex items-center justify-center shadow-inner cursor-pointer" @click="syncToCloud">
+              <div class="w-3 h-3 rounded-full" :class="cloudActive ? 'bg-emerald-400 shadow-[0_0_8px_rgba(52,211,153,0.8)]' : 'bg-gray-300'"></div>
+            </div>
+          </div>
+          <div @click="currentTab = 'org'" class="flex flex-col items-center justify-center w-20 h-full cursor-pointer" :class="currentTab === 'org' ? 'text-blue-600' : 'text-gray-400'">
             <svg class="w-6 h-6 mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path></svg>
             <span class="text-[10px] font-bold">組織發展</span>
           </div>
@@ -181,8 +194,8 @@
 
           <div class="space-y-4">
             <div>
-              <label class="block text-[11px] font-bold text-gray-500 mb-2">對象 (自動加密)</label>
-              <input v-model="formData.clientName" type="text" placeholder="輸入客戶或準增員..." class="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all">
+              <label class="block text-[11px] font-bold text-gray-500 mb-2">對象 (AES 加密保護)</label>
+              <input v-model="formData.clientName" type="text" placeholder="輸入客戶或準增員..." class="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-blue-500">
             </div>
             <div>
               <label class="block text-[11px] font-bold text-gray-500 mb-2">活動類型</label>
@@ -195,11 +208,11 @@
               </div>
             </div>
             <div>
-              <label class="block text-[11px] font-bold text-gray-500 mb-2">備註事項 (自動加密)</label>
-              <textarea v-model="formData.notes" rows="2" placeholder="重點記錄..." class="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all"></textarea>
+              <label class="block text-[11px] font-bold text-gray-500 mb-2">備註事項 (AES 加密保護)</label>
+              <textarea v-model="formData.notes" rows="2" placeholder="重點記錄..." class="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-blue-500"></textarea>
             </div>
             <button @click="saveActivity" class="w-full mt-2 bg-blue-600 text-white font-bold py-3.5 rounded-xl shadow-lg shadow-blue-200 active:scale-95 transition-transform">
-              加密並儲存
+              加密並儲存至雲端
             </button>
           </div>
         </div>
@@ -213,7 +226,6 @@
             <h2 class="text-xl font-black text-gray-900">{{ editingMemberIndex === -1 ? '新增團隊成員' : '編輯成員資料' }}</h2>
             <button v-if="editingMemberIndex !== -1" @click="deleteMember" class="text-[10px] font-bold text-red-500 bg-red-50 px-3 py-2 rounded-xl">移除成員</button>
           </div>
-
           <div class="space-y-4">
             <div>
               <label class="block text-[11px] font-bold text-gray-500 mb-2">姓名</label>
@@ -240,61 +252,108 @@
   </div>
 
   <script>
+    // =========================================================================
+    // ⚠️ 鎔安請注意：請把你在 Supabase 拿到的網址和亂碼金鑰貼在下面兩個單引號裡面！
+    // ⚠️ 如果你沒貼，或是貼錯了，系統會自動變成「單機模式」保護你，絕對不會報錯。
+    // =========================================================================
+    const SUPABASE_URL = 'https://mezculqrqxwlmfxgrcru.supabase.co'; 
+    const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1lemN1bHFycXh3bG1meGdyY3J1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY2NjU0NjUsImV4cCI6MjA5MjI0MTQ2NX0.U8aAJs5wi2_wPNWeNRrucQH7gPH4rEJx9KfTgHljVZI
+
+
+
+https://mezculqrqxwlmfxgrcru.supabase.co';
+
     const { createApp, ref, reactive, computed, onMounted, watch } = Vue;
 
     createApp({
       setup() {
-        // --- 資安與解鎖邏輯 ---
         const isUnlocked = ref(false);
         const passcode = ref('');
         const loginError = ref('');
         const ENCRYPTION_KEY = ref('');
+        const cloudActive = ref(false);
+        const isSyncing = ref(false);
+        const cloudStatus = ref('');
 
-        // 初始化檢查是否已設定密碼
-        onMounted(() => {
-          if (!localStorage.getItem('rongan_vault_check')) {
-            // 第一次使用
-          }
-        });
+        let supabase = null;
+        if (SUPABASE_URL.startsWith('http') && SUPABASE_KEY.length > 20) {
+          supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+          cloudActive.value = true;
+          cloudStatus.value = "✓ 雲端資料庫連線已就緒";
+        } else {
+          cloudStatus.value = "⚠ 金鑰未設定，將使用設備單機安全模式";
+        }
 
-        const unlockApp = () => {
+        // --- 資料庫 (加密儲存) ---
+        const allActivities = ref({}); 
+        const teamMembers = ref([]);
+
+        const unlockApp = async () => {
           if (!passcode.value) { loginError.value = '密碼不能為空'; return; }
-          
-          const storedCheck = localStorage.getItem('rongan_vault_check');
-          if (storedCheck) {
-            // 驗證密碼
-            try {
-              const bytes = CryptoJS.AES.decrypt(storedCheck, passcode.value);
-              const decrypted = bytes.toString(CryptoJS.enc.Utf8);
-              if (decrypted === 'VALID') {
-                ENCRYPTION_KEY.value = passcode.value;
-                isUnlocked.value = true;
-                loadData();
-              } else {
-                loginError.value = '密碼錯誤，無法解密資料';
-              }
-            } catch (e) {
-              loginError.value = '密碼錯誤，無法解密資料';
-            }
-          } else {
-            // 首次設定密碼
-            const checkStr = CryptoJS.AES.encrypt('VALID', passcode.value).toString();
-            localStorage.setItem('rongan_vault_check', checkStr);
-            ENCRYPTION_KEY.value = passcode.value;
+          isSyncing.value = true;
+          ENCRYPTION_KEY.value = passcode.value;
+
+          try {
+            await loadDataFromCloudOrLocal();
             isUnlocked.value = true;
-            saveData(); // 初始化空資料庫
+          } catch (e) {
+            loginError.value = '密碼錯誤或網路異常，無法解密資料';
+          }
+          isSyncing.value = false;
+        };
+
+        const loadDataFromCloudOrLocal = async () => {
+          let encryptedStr = null;
+
+          // 嘗試從 Supabase 雲端抓取我們特製的 "VAULT" (把整個金庫塞在 client_name = APP_VAULT_V1 的資料裡)
+          if (cloudActive.value) {
+            const { data, error } = await supabase.from('activities').select('notes').eq('client_name', 'APP_VAULT_V1').limit(1);
+            if (data && data.length > 0) encryptedStr = data[0].notes;
+          }
+
+          // 如果雲端沒有，找本機
+          if (!encryptedStr) encryptedStr = localStorage.getItem('rongan_vault_data');
+
+          if (encryptedStr) {
+            // 嘗試解密
+            const bytes = CryptoJS.AES.decrypt(encryptedStr, ENCRYPTION_KEY.value);
+            const decryptedStr = bytes.toString(CryptoJS.enc.Utf8);
+            if (!decryptedStr) throw new Error("解密失敗"); // 密碼錯誤
+            
+            const decrypted = JSON.parse(decryptedStr);
+            allActivities.value = decrypted.activities || {};
+            teamMembers.value = decrypted.members || [];
+          } else {
+            // 全新開始
+            allActivities.value = {}; teamMembers.value = [];
           }
         };
 
-        // --- 核心資料狀態 ---
-        const currentTab = ref('339');
-        // 日期邏輯
-        const getTodayString = () => {
-          const tzOffset = (new Date()).getTimezoneOffset() * 60000;
-          return (new Date(Date.now() - tzOffset)).toISOString().split('T')[0];
+        const syncToCloud = async () => {
+          if (!ENCRYPTION_KEY.value) return;
+          const dataToSave = { activities: allActivities.value, members: teamMembers.value, test_check: 'OK' };
+          const encryptedStr = CryptoJS.AES.encrypt(JSON.stringify(dataToSave), ENCRYPTION_KEY.value).toString();
+          
+          localStorage.setItem('rongan_vault_data', encryptedStr); // 永遠先存本機備份
+
+          if (cloudActive.value) {
+            // 利用活動資料表，偽裝成一筆特殊的日期紀錄來存放整個 App 的加密字串
+            await supabase.from('activities').upsert({
+              id: '00000000-0000-0000-0000-000000000001', // 固定 ID
+              activity_date: '2099-12-31',
+              start_time: '00:00', end_time: '23:59',
+              activity_type: 'VAULT',
+              client_name: 'APP_VAULT_V1',
+              notes: encryptedStr, // 加密大禮包塞這裡
+              sales_score: 0, recruit_score: 0
+            });
+          }
         };
-        const currentDate = ref(getTodayString());
-        const isToday = computed(() => currentDate.value === getTodayString());
+
+        // --- 日期與分析邏輯 ---
+        const currentTab = ref('339');
+        const currentDate = ref((new Date(Date.now() - (new Date()).getTimezoneOffset() * 60000)).toISOString().split('T')[0]);
+        const isToday = computed(() => currentDate.value === (new Date(Date.now() - (new Date()).getTimezoneOffset() * 60000)).toISOString().split('T')[0]);
         
         const formattedDate = computed(() => {
           const d = new Date(currentDate.value);
@@ -304,59 +363,54 @@
         const changeDate = (days) => {
           const d = new Date(currentDate.value);
           d.setDate(d.getDate() + days);
-          if (d > new Date(getTodayString())) return; // 不允許看未來
+          const today = new Date((new Date(Date.now() - (new Date()).getTimezoneOffset() * 60000)).toISOString().split('T')[0]);
+          if (d > today) return; 
           currentDate.value = d.toISOString().split('T')[0];
         };
 
-        // 資料庫 (加密儲存)
-        const allActivities = ref({}); // 格式: { '2026-04-20': [...] }
-        const teamMembers = ref([]);
-
-        // 加解密與儲存函數
-        const saveData = () => {
-          if (!ENCRYPTION_KEY.value) return;
-          const dataToSave = { activities: allActivities.value, members: teamMembers.value };
-          const encryptedStr = CryptoJS.AES.encrypt(JSON.stringify(dataToSave), ENCRYPTION_KEY.value).toString();
-          localStorage.setItem('rongan_vault_data', encryptedStr);
-        };
-
-        const loadData = () => {
-          const encryptedStr = localStorage.getItem('rongan_vault_data');
-          if (encryptedStr) {
-            try {
-              const bytes = CryptoJS.AES.decrypt(encryptedStr, ENCRYPTION_KEY.value);
-              const decrypted = JSON.parse(bytes.toString(CryptoJS.enc.Utf8));
-              allActivities.value = decrypted.activities || {};
-              teamMembers.value = decrypted.members || [];
-            } catch (e) {
-              console.error("解密失敗");
-            }
-          }
-        };
-
-        // --- 339 戰情室邏輯 ---
-        const timeSlots = Array.from({ length: 16 }, (_, i) => `${(i + 8).toString().padStart(2, '0')}:00`);
-        
         const currentDayActivities = computed(() => allActivities.value[currentDate.value] || []);
-        
-        const totalSalesScore = computed(() => currentDayActivities.value.reduce((sum, act) => sum + act.sales, 0));
-        const totalRecruitScore = computed(() => currentDayActivities.value.reduce((sum, act) => sum + act.recruit, 0));
-        
-        const aiSuggestion = computed(() => {
-          if (totalSalesScore.value === 0 && totalRecruitScore.value === 0) return '尚未有活動紀錄，立刻展開行動！';
-          if (totalSalesScore.value > totalRecruitScore.value * 2) return '銷售動能強勁！建議搭配增員約訪平衡組織發展。';
-          if (totalRecruitScore.value > 0) return '增員能量注入中！趁熱打鐵推進準增員進度。';
-          return '持續累積活動量，量大是致勝的關鍵！';
+        const dailySales = computed(() => currentDayActivities.value.reduce((sum, act) => sum + act.sales, 0));
+        const dailyRecruit = computed(() => currentDayActivities.value.reduce((sum, act) => sum + act.recruit, 0));
+
+        // 本週與本月計算
+        const getStatsForRange = (filterFn) => {
+          let s = 0; let r = 0;
+          Object.keys(allActivities.value).forEach(dateStr => {
+            if (filterFn(new Date(dateStr))) {
+              allActivities.value[dateStr].forEach(act => { s += act.sales; r += act.recruit; });
+            }
+          });
+          return { sales: s, recruit: r };
+        };
+
+        const weeklyStats = computed(() => {
+          const curr = new Date(currentDate.value);
+          const first = curr.getDate() - curr.getDay() + (curr.getDay() === 0 ? -6 : 1); // 週一為一週開始
+          const last = first + 6;
+          const firstDay = new Date(curr.setDate(first));
+          const lastDay = new Date(curr.setDate(last));
+          return getStatsForRange(d => d >= firstDay && d <= lastDay);
         });
 
-        const getActivity = (time) => currentDayActivities.value.find(a => a.time === time);
+        const monthlyStats = computed(() => {
+          const curr = new Date(currentDate.value);
+          return getStatsForRange(d => d.getFullYear() === curr.getFullYear() && d.getMonth() === curr.getMonth());
+        });
 
+        // --- 組織圖狀態 (新增區經理) ---
+        const memberStatuses = ['臨時帳號申請中', '準備公會考試', '等待登錄中', '業務代表', '業務主任', '業務襄理', '區經理'];
+        const getMemberColor = (status) => {
+          if (status.includes('區經理')) return { topBar: 'bg-gradient-to-r from-yellow-400 to-amber-600', text: 'text-amber-600 font-black', bg: 'bg-amber-50 text-amber-700 border border-amber-200' };
+          if (status.includes('襄理') || status.includes('主任')) return { topBar: 'bg-indigo-500', text: 'text-indigo-600', bg: 'bg-indigo-50 text-indigo-700' };
+          if (status.includes('代表')) return { topBar: 'bg-blue-500', text: 'text-blue-500', bg: 'bg-blue-50 text-blue-600' };
+          if (status.includes('登錄')) return { topBar: 'bg-emerald-400', text: 'text-emerald-500', bg: 'bg-emerald-50 text-emerald-600' };
+          return { topBar: 'bg-gray-400', text: 'text-gray-500', bg: 'bg-gray-100 text-gray-600' };
+        };
+
+        // --- UI 輔助邏輯 (同前) ---
+        const timeSlots = Array.from({ length: 16 }, (_, i) => `${(i + 8).toString().padStart(2, '0')}:00`);
         const getTypeStyle = (type) => {
-          const styles = {
-            '約訪': 'bg-blue-400', '面談': 'bg-blue-600', '簽約': 'bg-purple-600',
-            '客戶服務': 'bg-gray-400', '增員活動': 'bg-emerald-400',
-            '增員約訪': 'bg-emerald-500', '增員面談': 'bg-emerald-600', '其他': 'bg-orange-400'
-          };
+          const styles = { '約訪': 'bg-blue-400', '面談': 'bg-blue-600', '簽約': 'bg-purple-600', '客戶服務': 'bg-gray-400', '增員活動': 'bg-emerald-400', '增員約訪': 'bg-emerald-500', '增員面談': 'bg-emerald-600', '其他': 'bg-orange-400' };
           return styles[type] || 'bg-gray-400';
         };
 
@@ -365,15 +419,13 @@
         const selectedTime = ref('');
         const activityTypes = ['約訪', '面談', '簽約', '客戶服務', '增員活動', '增員約訪', '增員面談', '其他'];
         const formData = reactive({ clientName: '', type: '約訪', notes: '' });
+        const getActivity = (time) => currentDayActivities.value.find(a => a.time === time);
 
         const openActivityModal = (time) => {
           selectedTime.value = time;
           const existing = getActivity(time);
-          if (existing) {
-            formData.clientName = existing.clientName; formData.type = existing.type; formData.notes = existing.notes;
-          } else {
-            formData.clientName = ''; formData.type = '約訪'; formData.notes = '';
-          }
+          if (existing) { formData.clientName = existing.clientName; formData.type = existing.type; formData.notes = existing.notes; } 
+          else { formData.clientName = ''; formData.type = '約訪'; formData.notes = ''; }
           isActivityModalOpen.value = true;
         };
 
@@ -384,70 +436,52 @@
           if (formData.type === '增員活動') rScore = 1; if (formData.type === '增員約訪') rScore = 2; if (formData.type === '增員面談') rScore = 5;
 
           if (!allActivities.value[currentDate.value]) allActivities.value[currentDate.value] = [];
-          
           allActivities.value[currentDate.value] = allActivities.value[currentDate.value].filter(a => a.time !== selectedTime.value);
           allActivities.value[currentDate.value].push({ time: selectedTime.value, type: formData.type, clientName: formData.clientName, notes: formData.notes, sales: sScore, recruit: rScore });
           
-          saveData(); // 觸發加密儲存
+          syncToCloud(); 
           isActivityModalOpen.value = false;
         };
 
         const deleteActivity = () => {
-          if (!allActivities.value[currentDate.value]) return;
           allActivities.value[currentDate.value] = allActivities.value[currentDate.value].filter(a => a.time !== selectedTime.value);
-          saveData();
+          syncToCloud();
           isActivityModalOpen.value = false;
         };
 
-        // --- 組織圖邏輯 ---
-        const memberStatuses = ['臨時帳號申請中', '準備公會考試', '等待登錄中', '業務代表', '業務主任', '業務襄理'];
-        const getMemberColor = (status) => {
-          if (status.includes('考試') || status.includes('臨時')) return { topBar: 'bg-gray-400', text: 'text-gray-500', bg: 'bg-gray-100 text-gray-600' };
-          if (status.includes('登錄')) return { topBar: 'bg-amber-400', text: 'text-amber-500', bg: 'bg-amber-50 text-amber-600' };
-          if (status.includes('代表')) return { topBar: 'bg-blue-500', text: 'text-blue-500', bg: 'bg-blue-50 text-blue-600' };
-          return { topBar: 'bg-indigo-500', text: 'text-indigo-500', bg: 'bg-indigo-50 text-indigo-600' };
-        };
-
+        // 成員表單
         const isMemberModalOpen = ref(false);
         const editingMemberIndex = ref(-1);
         const memberForm = reactive({ name: '', status: '準備公會考試', notes: '' });
 
         const openMemberModal = (index = -1) => {
           editingMemberIndex.value = index;
-          if (index !== -1) {
-            const m = teamMembers.value[index];
-            memberForm.name = m.name; memberForm.status = m.status; memberForm.notes = m.notes;
-          } else {
-            memberForm.name = ''; memberForm.status = '準備公會考試'; memberForm.notes = '';
-          }
+          if (index !== -1) { const m = teamMembers.value[index]; memberForm.name = m.name; memberForm.status = m.status; memberForm.notes = m.notes; } 
+          else { memberForm.name = ''; memberForm.status = '準備公會考試'; memberForm.notes = ''; }
           isMemberModalOpen.value = true;
         };
 
         const saveMember = () => {
           if (!memberForm.name) { alert('請填寫姓名'); return; }
           const newMember = { name: memberForm.name, status: memberForm.status, notes: memberForm.notes };
-          
-          if (editingMemberIndex.value === -1) {
-            teamMembers.value.push(newMember);
-          } else {
-            teamMembers.value[editingMemberIndex.value] = newMember;
-          }
-          saveData();
+          if (editingMemberIndex.value === -1) teamMembers.value.push(newMember);
+          else teamMembers.value[editingMemberIndex.value] = newMember;
+          syncToCloud();
           isMemberModalOpen.value = false;
         };
 
         const deleteMember = () => {
           if (confirm('確定要移除此成員嗎？')) {
             teamMembers.value.splice(editingMemberIndex.value, 1);
-            saveData();
+            syncToCloud();
             isMemberModalOpen.value = false;
           }
         };
 
         return { 
-          isUnlocked, passcode, loginError, unlockApp,
+          isUnlocked, passcode, loginError, unlockApp, cloudStatus, cloudActive, isSyncing, syncToCloud,
           currentTab, currentDate, formattedDate, isToday, changeDate,
-          timeSlots, totalSalesScore, totalRecruitScore, aiSuggestion, getActivity, getTypeStyle, 
+          timeSlots, dailySales, dailyRecruit, weeklyStats, monthlyStats, getActivity, getTypeStyle, 
           isActivityModalOpen, selectedTime, activityTypes, formData, openActivityModal, saveActivity, deleteActivity,
           teamMembers, memberStatuses, getMemberColor, isMemberModalOpen, editingMemberIndex, memberForm, openMemberModal, saveMember, deleteMember
         };
