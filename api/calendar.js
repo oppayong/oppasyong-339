@@ -4,8 +4,8 @@ export default async function handler(req, res) {
   const empId = req.query.key;
   if (!empId) return res.status(401).send('請在網址後方加上 ?key=您的員編');
 
-  const SUPABASE_URL = 'https://mezculqrqxwlmfxgrcru.supabase.co';
-  const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1lemN1bHFycXh3bG1meGdyY3J1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY2NjU0NjUsImV4cCI6MjA5MjI0MTQ2NX0.U8aAJs5wi2_wPNWeNRrucQH7gPH4rEJx9KfTgHljVZI';
+  const SUPABASE_URL = process.env.SUPABASE_URL;
+  const SUPABASE_KEY = process.env.SUPABASE_KEY;
   const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
 
   try {
@@ -26,7 +26,6 @@ export default async function handler(req, res) {
       let hour = parseInt(act.start_time.split(':')[0]) + 1; 
       const endStr = `${hour.toString().padStart(2, '0')}0000`;
       
-      // 視覺化分類標籤
       let eventPrefix = '';
       if (['約訪', '面談', '談建議書', '簽約', '客戶服務'].includes(act.activity_type)) {
         eventPrefix = '🔵 [銷售]';
@@ -43,13 +42,11 @@ export default async function handler(req, res) {
       icsString += `DESCRIPTION:${act.notes || '無備註'}\r\n`;
       icsString += `END:VEVENT\r\n`;
     });
-
     icsString += `END:VCALENDAR`;
 
     res.setHeader('Content-Type', 'text/calendar; charset=utf-8');
     res.setHeader('Content-Disposition', `attachment; filename="rongan_339_${empId}.ics"`);
     res.status(200).send(icsString);
-
   } catch (error) {
     console.error(error);
     res.status(500).send('Server Error');
