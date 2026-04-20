@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-  <title>鎔安組 | 企業級戰情系統 2.5</title>
+  <title>鎔安組 | 企業級戰情系統 3.0</title>
   
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
@@ -50,17 +50,13 @@
           <svg class="w-8 h-8 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path></svg>
         </div>
         <h1 class="text-2xl font-black text-white tracking-widest mb-1">鎔安組戰情室</h1>
-        <p class="text-[11px] text-blue-200/70 mb-6 tracking-widest">企業級 CRM 登入系統</p>
+        <p class="text-[11px] text-blue-200/70 mb-6 tracking-widest">上帝視角 3.0</p>
         
-        <input v-model="loginForm.empId" type="text" placeholder="請輸入您的員編" 
-               class="w-full bg-black/30 border border-white/10 rounded-xl px-4 py-3.5 text-base text-center text-white tracking-widest focus:outline-none focus:border-blue-400/50 transition-colors mb-3">
-        
-        <input v-model="loginForm.password" type="password" placeholder="請輸入密碼" 
-               class="w-full bg-black/30 border border-white/10 rounded-xl px-4 py-3.5 text-base text-center text-white tracking-widest focus:outline-none focus:border-blue-400/50 transition-colors mb-6"
-               @keyup.enter="doLogin">
+        <input v-model="loginForm.empId" type="text" placeholder="請輸入您的員編" class="w-full bg-black/30 border border-white/10 rounded-xl px-4 py-3.5 text-base text-center text-white tracking-widest focus:outline-none focus:border-blue-400/50 transition-colors mb-3">
+        <input v-model="loginForm.password" type="password" placeholder="請輸入密碼" class="w-full bg-black/30 border border-white/10 rounded-xl px-4 py-3.5 text-base text-center text-white tracking-widest focus:outline-none focus:border-blue-400/50 transition-colors mb-6" @keyup.enter="doLogin">
         
         <button @click="doLogin" :disabled="isLoading" class="w-full bg-blue-600 hover:bg-blue-500 text-white font-bold py-3.5 rounded-xl shadow-lg transition-colors disabled:opacity-50">
-          {{ isLoading ? '登入驗證中...' : '進入系統' }}
+          {{ isLoading ? '資料同步中...' : '登入系統' }}
         </button>
         <p v-if="loginError" class="text-red-400 text-xs mt-3 font-bold">{{ loginError }}</p>
       </div>
@@ -80,55 +76,84 @@
         
         <div v-if="currentUser.role === 'admin'" class="mb-4 flex items-center justify-between bg-gray-900 text-white p-3 rounded-xl shadow-md">
           <span class="text-xs font-bold tracking-widest text-amber-400">🛡️ 主管透視模式</span>
-          <select v-model="viewingEmpId" @change="loadDayActivities" class="bg-gray-800 border border-gray-700 text-white text-sm rounded-lg px-2 py-1 outline-none">
+          <select v-model="viewingEmpId" class="bg-gray-800 border border-gray-700 text-white text-sm rounded-lg px-2 py-1 outline-none">
+            <option value="ALL">🌍 全組戰績總覽</option>
             <option v-for="user in teamMembers" :key="user.emp_id" :value="user.emp_id">{{ user.name }} ({{ user.emp_id }})</option>
           </select>
         </div>
 
         <div class="flex justify-between items-center mb-6 px-1">
-          <button @click="changeDate(-1)" class="p-2 text-gray-400 hover:text-blue-600 transition-colors active:scale-90">
-            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15 19l-7-7 7-7"></path></svg>
-          </button>
-          
+          <button @click="changeDate(-1)" class="p-2 text-gray-400 hover:text-blue-600 transition-colors active:scale-90"><svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15 19l-7-7 7-7"></path></svg></button>
           <div class="text-center relative flex flex-col items-center justify-center">
-            <input type="date" v-model="currentDate" @change="loadDayActivities" class="absolute inset-0 opacity-0 w-full h-full z-10 cursor-pointer text-base">
+            <input type="date" v-model="currentDate" class="absolute inset-0 opacity-0 w-full h-full z-10 cursor-pointer text-base">
             <p class="text-xl font-black text-gray-900 tracking-tight">{{ formattedDate }}</p>
             <div class="flex items-center gap-1 text-blue-500 mt-0.5">
               <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
               <p class="text-[9px] font-bold uppercase tracking-widest">點擊直選日期</p>
             </div>
           </div>
-
-          <button @click="changeDate(1)" class="p-2 text-gray-400 hover:text-blue-600 transition-colors active:scale-90">
-            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7"></path></svg>
-          </button>
+          <button @click="changeDate(1)" class="p-2 text-gray-400 hover:text-blue-600 transition-colors active:scale-90"><svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7"></path></svg></button>
         </div>
 
-        <div class="flex justify-between items-end mb-6 px-1">
-          <div>
-            <h1 class="text-2xl font-black text-gray-900 tracking-tight">{{ getViewingName() }}的戰情室</h1>
-            <p class="text-[10px] font-bold text-gray-400 mt-1 uppercase tracking-widest">339 活動量紀錄</p>
+        <div v-if="viewingEmpId === 'ALL'" class="animate-fade-in space-y-4">
+          <div class="bg-gradient-to-br from-blue-600 to-indigo-700 rounded-[2rem] p-6 shadow-xl text-white">
+            <p class="text-[11px] font-bold text-blue-200 uppercase tracking-widest mb-4">全組今日綜合戰力</p>
+            <div class="flex justify-between items-end">
+              <div><span class="text-xs text-blue-200 mr-2">總銷售分</span><span class="text-4xl font-black">{{ allGroupStats.sales }}</span></div>
+              <div><span class="text-xs text-blue-200 mr-2">總增員分</span><span class="text-4xl font-black text-emerald-300">{{ allGroupStats.recruit }}</span></div>
+            </div>
           </div>
-          <button @click="isStatsModalOpen = true" class="flex items-center gap-1.5 bg-blue-50 text-blue-600 px-3.5 py-2 rounded-xl active:scale-95 transition-transform shadow-sm">
-            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path></svg>
-            <span class="text-xs font-bold tracking-wide">戰績分析</span>
-          </button>
+          
+          <div class="bg-white rounded-[2rem] p-6 shadow-sm border border-gray-100">
+             <p class="text-[10px] font-bold text-amber-500 mb-2 tracking-widest uppercase">💡 AI 總管洞察報告</p>
+             <p class="text-sm text-gray-700 font-bold leading-relaxed whitespace-pre-line">{{ groupAiSuggestion }}</p>
+          </div>
+
+          <div class="bg-white rounded-2xl border border-gray-100 overflow-hidden shadow-sm">
+             <div class="bg-gray-50 px-4 py-3 border-b border-gray-100 flex justify-between items-center">
+                <span class="text-xs font-black text-gray-600 tracking-widest">👑 今日戰力排行榜</span>
+             </div>
+             <div class="divide-y divide-gray-50">
+                <div v-for="(stat, index) in memberStatsList" :key="stat.emp_id" class="px-4 py-3 flex justify-between items-center hover:bg-gray-50 transition-colors">
+                   <div class="flex items-center gap-3">
+                      <span class="text-sm font-black w-4 text-center" :class="index===0 ? 'text-amber-500' : (index===1 ? 'text-gray-400' : 'text-orange-400')">{{ index + 1 }}</span>
+                      <span class="text-sm font-bold text-gray-800">{{ stat.name }}</span>
+                   </div>
+                   <div class="text-xs font-bold text-gray-500 flex gap-3">
+                      <span>銷售 <span class="text-blue-600 font-black text-sm">{{ stat.sales }}</span></span>
+                      <span>增員 <span class="text-emerald-500 font-black text-sm">{{ stat.recruit }}</span></span>
+                   </div>
+                </div>
+             </div>
+          </div>
         </div>
 
-        <div class="space-y-3 relative pb-8">
-          <div class="absolute left-[3.25rem] top-4 bottom-4 w-[2px] bg-gray-200/50 -z-10 rounded-full"></div>
-          
-          <div v-for="time in timeSlots" :key="time" @click="openActivityModal(time)" class="flex bg-white rounded-2xl shadow-sm border border-gray-100 active:scale-[0.98] transition-all cursor-pointer overflow-hidden group hover:border-blue-200">
-            <div class="w-20 flex justify-center py-4"><span class="text-[13px] font-bold text-gray-400 group-hover:text-blue-500 transition-colors">{{ time }}</span></div>
-            <div class="flex-1 p-4 border-l border-gray-50 flex flex-col justify-center min-h-[4.5rem]">
-              <template v-if="getActivity(time)">
-                <div>
-                  <span class="inline-block px-2 py-0.5 text-[10px] font-black rounded text-white mb-1.5 shadow-sm" :class="getTypeStyle(getActivity(time).activity_type)">{{ getActivity(time).activity_type }}</span>
-                  <p class="text-sm font-bold text-gray-900 break-words">{{ getActivity(time).client_name }}</p>
-                  <p v-if="getActivity(time).notes" class="text-xs text-gray-400 mt-1 break-words line-clamp-2">{{ getActivity(time).notes }}</p>
-                </div>
-              </template>
-              <template v-else><span class="text-[11px] text-gray-300 font-bold tracking-wider">+ 點擊新增行程</span></template>
+        <div v-else class="animate-fade-in">
+          <div class="flex justify-between items-end mb-6 px-1">
+            <div>
+              <h1 class="text-2xl font-black text-gray-900 tracking-tight">{{ getViewingName() }}的戰情室</h1>
+              <p class="text-[10px] font-bold text-gray-400 mt-1 uppercase tracking-widest">339 活動量紀錄</p>
+            </div>
+            <button @click="isStatsModalOpen = true" class="flex items-center gap-1.5 bg-blue-50 text-blue-600 px-3.5 py-2 rounded-xl active:scale-95 transition-transform shadow-sm">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path></svg>
+              <span class="text-xs font-bold tracking-wide">個人分析</span>
+            </button>
+          </div>
+
+          <div class="space-y-3 relative pb-8">
+            <div class="absolute left-[3.25rem] top-4 bottom-4 w-[2px] bg-gray-200/50 -z-10 rounded-full"></div>
+            <div v-for="time in timeSlots" :key="time" @click="openActivityModal(time)" class="flex bg-white rounded-2xl shadow-sm border border-gray-100 active:scale-[0.98] transition-all cursor-pointer overflow-hidden group hover:border-blue-200">
+              <div class="w-20 flex justify-center py-4"><span class="text-[13px] font-bold text-gray-400 group-hover:text-blue-500 transition-colors">{{ time }}</span></div>
+              <div class="flex-1 p-4 border-l border-gray-50 flex flex-col justify-center min-h-[4.5rem]">
+                <template v-if="getActivity(time)">
+                  <div>
+                    <span class="inline-block px-2 py-0.5 text-[10px] font-black rounded text-white mb-1.5 shadow-sm" :class="getTypeStyle(getActivity(time).activity_type)">{{ getActivity(time).activity_type }}</span>
+                    <p class="text-sm font-bold text-gray-900 break-words">{{ getActivity(time).client_name }}</p>
+                    <p v-if="getActivity(time).notes" class="text-xs text-gray-400 mt-1 break-words line-clamp-2">{{ getActivity(time).notes }}</p>
+                  </div>
+                </template>
+                <template v-else><span class="text-[11px] text-gray-300 font-bold tracking-wider">+ 點擊新增行程</span></template>
+              </div>
             </div>
           </div>
         </div>
@@ -138,16 +163,12 @@
         <header class="mb-4 mt-2 flex justify-between items-end">
           <div>
             <h1 class="text-2xl font-black text-gray-900 tracking-tight">組織發展</h1>
-            <p class="text-[10px] font-bold text-gray-400 mt-1 uppercase tracking-widest">團隊架構圖</p>
+            <p class="text-[10px] font-bold text-gray-400 mt-1 uppercase tracking-widest">團隊架構與帳號樞紐</p>
           </div>
-          <div class="flex gap-2">
-            <button v-if="currentUser.role === 'admin'" @click="isAccountManagerOpen = true" class="flex items-center gap-1.5 bg-emerald-500 text-white px-3 py-2 rounded-xl active:scale-95 shadow-md">
-              <span class="text-[10px] font-bold tracking-wide">👥 帳號管理</span>
-            </button>
-            <button @click="exportOrgChart" class="flex items-center gap-1.5 bg-gray-900 text-white px-3 py-2 rounded-xl active:scale-95 transition-transform shadow-md">
-              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
-            </button>
-          </div>
+          <button @click="exportOrgChart" class="flex items-center gap-1.5 bg-gray-900 text-white px-3.5 py-2 rounded-xl active:scale-95 transition-transform shadow-md">
+            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
+            <span class="text-[10px] font-bold tracking-wide">匯出架構</span>
+          </button>
         </header>
 
         <div class="flex justify-center items-center gap-3 mb-6 bg-white py-2 px-4 rounded-full shadow-sm border border-gray-100 w-fit mx-auto">
@@ -173,7 +194,7 @@
           <svg class="w-6 h-6 mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
           <span class="text-[10px] font-bold tracking-widest">339 戰情</span>
         </div>
-        <div @click="loadDayActivities" class="relative group cursor-pointer">
+        <div @click="refreshData" class="relative group cursor-pointer">
           <div class="w-10 h-10 bg-white border border-gray-100 rounded-full flex items-center justify-center shadow-sm active:scale-90 transition-transform">
             <div class="w-2.5 h-2.5 rounded-full transition-colors bg-blue-500 shadow-[0_0_8px_rgba(59,130,246,0.6)]"></div>
           </div>
@@ -188,57 +209,47 @@
     <div v-if="isSettingsModalOpen" class="fixed inset-0 z-50 flex items-center justify-center p-4">
       <div class="absolute inset-0 bg-gray-900/60 backdrop-blur-sm" @click="isSettingsModalOpen = false"></div>
       <div class="relative w-full max-w-sm glass-card bg-white/95 rounded-[2rem] p-8 shadow-2xl animate-fade-in">
-        <button @click="isSettingsModalOpen = false" class="absolute top-5 right-5 text-gray-400 hover:text-gray-600">
-          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
-        </button>
+        <button @click="isSettingsModalOpen = false" class="absolute top-5 right-5 text-gray-400 hover:text-gray-600"><svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg></button>
         <h2 class="text-2xl font-black text-gray-900 mb-1">個人設定</h2>
         <p class="text-[11px] font-bold text-gray-400 uppercase tracking-widest mb-6">修改登入密碼</p>
-        
         <div class="space-y-4">
-          <div>
-            <label class="block text-[11px] font-bold text-gray-500 mb-2">輸入新密碼</label>
-            <input v-model="newPassword" type="password" placeholder="請設定您的新密碼" class="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-base focus:outline-none focus:border-blue-500">
-          </div>
+          <div><label class="block text-[11px] font-bold text-gray-500 mb-2">輸入新密碼</label><input v-model="newPassword" type="password" placeholder="請設定您的新密碼" class="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-base focus:outline-none focus:border-blue-500"></div>
           <button @click="changeMyPassword" class="w-full bg-blue-600 text-white font-bold py-3.5 rounded-xl shadow-lg active:scale-95 transition-transform">確認修改密碼</button>
         </div>
       </div>
     </div>
 
-    <div v-if="isAccountManagerOpen" class="fixed inset-0 z-50 flex items-end justify-center">
-      <div class="absolute inset-0 bg-gray-900/60 backdrop-blur-sm" @click="isAccountManagerOpen = false"></div>
-      <div class="relative w-full max-w-lg bg-[#f8fafc] rounded-t-[2rem] shadow-2xl animate-slide-up h-[85vh] flex flex-col">
-        <div class="w-12 h-1.5 bg-gray-300 rounded-full mx-auto mt-4 mb-4"></div>
-        <div class="px-6 pb-4 flex justify-between items-end border-b border-gray-200">
-          <div><h2 class="text-xl font-black text-gray-900 mb-1">帳號管理中心</h2><p class="text-xs font-bold text-emerald-600">總管權限：開通、鎖定、重設密碼</p></div>
-        </div>
-        
-        <div class="p-6 bg-white border-b border-gray-200">
-          <p class="text-[11px] font-bold text-gray-500 mb-3">+ 開通新夥伴帳號</p>
-          <div class="grid grid-cols-2 gap-2 mb-2">
-            <input v-model="newUserForm.empId" type="text" placeholder="登入員編" class="bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-emerald-500">
-            <input v-model="newUserForm.name" type="text" placeholder="真實姓名" class="bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-emerald-500">
-          </div>
-          <div class="flex gap-2">
-            <input v-model="newUserForm.password" type="text" placeholder="預設密碼" class="flex-1 bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-emerald-500">
-            <button @click="createUserAccount" class="bg-emerald-600 text-white font-bold px-4 py-2 rounded-lg text-sm active:scale-95 transition-transform whitespace-nowrap">建立帳號</button>
+    <div v-if="isStatsModalOpen" class="fixed inset-0 z-50 flex items-center justify-center p-4">
+      <div class="absolute inset-0 bg-gray-900/40 backdrop-blur-sm" @click="isStatsModalOpen = false"></div>
+      <div class="relative w-full max-w-sm glass-card bg-white/95 rounded-[2rem] p-8 shadow-2xl animate-fade-in">
+        <button @click="isStatsModalOpen = false" class="absolute top-5 right-5 text-gray-400 hover:text-gray-600"><svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg></button>
+        <h2 class="text-2xl font-black text-gray-900 mb-1">{{ getViewingName() }} 的分析</h2>
+        <p class="text-[11px] font-bold text-gray-400 uppercase tracking-widest mb-8">AI 數據評分系統</p>
+
+        <div class="mb-6 p-5 bg-blue-50/50 rounded-2xl border border-blue-100/50">
+          <p class="text-xs font-bold text-blue-800 mb-3">{{ formattedDate }} 當日戰力</p>
+          <div class="flex justify-between items-end">
+            <div><span class="text-[10px] text-gray-500 mr-2">銷售總分</span><span class="text-3xl font-black text-blue-600">{{ dailySales }}</span></div>
+            <div><span class="text-[10px] text-gray-500 mr-2">增員總分</span><span class="text-3xl font-black text-emerald-500">{{ dailyRecruit }}</span></div>
           </div>
         </div>
 
-        <div class="flex-1 overflow-y-auto p-4 space-y-2">
-          <div v-for="user in teamMembers" :key="user.emp_id" class="bg-white p-4 rounded-xl border border-gray-100 shadow-sm flex justify-between items-center">
-            <div>
-              <p class="text-sm font-black text-gray-900">{{ user.name }} <span v-if="user.role==='admin'" class="text-[10px] bg-amber-100 text-amber-700 px-1.5 py-0.5 rounded ml-1">Admin</span></p>
-              <p class="text-xs font-bold text-gray-400">{{ user.emp_id }}</p>
-            </div>
-            <div v-if="user.role !== 'admin'" class="flex gap-2">
-              <button @click="toggleUserLock(user)" class="px-3 py-1.5 rounded-lg text-[10px] font-bold transition-colors" :class="user.is_active ? 'bg-gray-100 text-gray-600 hover:bg-red-50 hover:text-red-500' : 'bg-red-500 text-white'">
-                {{ user.is_active ? '鎖定帳號' : '已停權(點擊解鎖)' }}
-              </button>
-              <button @click="resetUserPassword(user)" class="px-3 py-1.5 bg-blue-50 text-blue-600 hover:bg-blue-100 rounded-lg text-[10px] font-bold transition-colors">
-                重設密碼
-              </button>
-            </div>
+        <div class="grid grid-cols-2 gap-4 mb-6">
+          <div class="p-4 bg-white rounded-2xl border border-gray-100 shadow-sm">
+            <p class="text-[10px] text-gray-400 font-bold tracking-widest mb-2">本週累積</p>
+            <div class="flex justify-between items-end mb-1"><span class="text-xs text-gray-500">銷售</span><span class="text-lg font-black text-blue-500">{{ weeklyStats.sales }}</span></div>
+            <div class="flex justify-between items-end"><span class="text-xs text-gray-500">增員</span><span class="text-lg font-black text-emerald-500">{{ weeklyStats.recruit }}</span></div>
           </div>
+          <div class="p-4 bg-white rounded-2xl border border-gray-100 shadow-sm">
+            <p class="text-[10px] text-gray-400 font-bold tracking-widest mb-2">本月累積</p>
+            <div class="flex justify-between items-end mb-1"><span class="text-xs text-gray-500">銷售</span><span class="text-lg font-black text-blue-600">{{ monthlyStats.sales }}</span></div>
+            <div class="flex justify-between items-end"><span class="text-xs text-gray-500">增員</span><span class="text-lg font-black text-emerald-600">{{ monthlyStats.recruit }}</span></div>
+          </div>
+        </div>
+
+        <div class="pt-4 border-t border-gray-100">
+          <p class="text-[10px] font-bold text-amber-500 mb-1 tracking-widest uppercase">系統教練建議</p>
+          <p class="text-xs text-gray-600 leading-relaxed font-medium">{{ personalAiSuggestion }}</p>
         </div>
       </div>
     </div>
@@ -252,20 +263,13 @@
           <button v-if="formData.id" @click="deleteActivity" class="text-[10px] font-bold text-red-500 bg-red-50 px-3 py-2 rounded-xl">刪除</button>
         </div>
         <div class="space-y-4">
-          <div>
-            <label class="block text-[11px] font-bold text-gray-500 mb-2">對象姓名</label>
-            <input v-model="formData.clientName" type="text" placeholder="輸入客戶或準增員..." class="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-base focus:outline-none focus:border-blue-500">
-          </div>
-          <div>
-            <label class="block text-[11px] font-bold text-gray-500 mb-2">活動類型 (自動雲端計分)</label>
+          <div><label class="block text-[11px] font-bold text-gray-500 mb-2">對象姓名</label><input v-model="formData.clientName" type="text" placeholder="輸入客戶或準增員..." class="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-base focus:outline-none focus:border-blue-500"></div>
+          <div><label class="block text-[11px] font-bold text-gray-500 mb-2">活動類型 (自動雲端計分)</label>
             <div class="flex flex-wrap gap-2">
               <button v-for="type in activityTypes" :key="type" @click="formData.type = type" class="px-3 py-1.5 rounded-lg text-xs font-bold transition-all border" :class="formData.type === type ? 'bg-gray-900 text-white border-gray-900 shadow-md' : 'bg-white border-gray-200 text-gray-600'">{{ type }}</button>
             </div>
           </div>
-          <div>
-            <label class="block text-[11px] font-bold text-gray-500 mb-2">備註事項</label>
-            <textarea v-model="formData.notes" rows="2" placeholder="重點記錄..." class="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-base focus:outline-none focus:border-blue-500"></textarea>
-          </div>
+          <div><label class="block text-[11px] font-bold text-gray-500 mb-2">備註事項</label><textarea v-model="formData.notes" rows="2" placeholder="重點記錄..." class="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-base focus:outline-none focus:border-blue-500"></textarea></div>
           <button @click="saveActivity" class="w-full mt-2 bg-blue-600 text-white font-bold py-3.5 rounded-xl shadow-lg shadow-blue-200 active:scale-95 transition-transform">儲存至雲端系統</button>
         </div>
       </div>
@@ -275,14 +279,12 @@
       <div class="absolute inset-0 bg-gray-900/60 backdrop-blur-sm" @click="isMemberModalOpen = false"></div>
       <div class="relative w-full max-w-md bg-white rounded-t-[2rem] p-6 shadow-2xl animate-slide-up pb-10">
         <div class="w-12 h-1.5 bg-gray-200 rounded-full mx-auto mb-6"></div>
-        <div class="flex justify-between items-start mb-6">
-          <h2 class="text-xl font-black text-gray-900">{{ memberForm.mode === 'add' ? '新增轄下夥伴' : '編輯資料' }}</h2>
+        <div class="flex justify-between items-start mb-4">
+          <h2 class="text-xl font-black text-gray-900">{{ memberForm.mode === 'add' ? '新增轄下夥伴' : '編輯組織資料' }}</h2>
           <button v-if="memberForm.mode === 'edit' && memberForm.nodeId !== 'root' && currentUser.role === 'admin'" @click="deleteMember" class="text-[10px] font-bold text-red-500 bg-red-50 px-3 py-2 rounded-xl">移除成員</button>
         </div>
+        
         <div class="space-y-4">
-          <div v-if="memberForm.nodeId === 'root'">
-            <p class="text-xs text-amber-600 font-bold bg-amber-50 p-3 rounded-lg mb-2">💡 頂層主管僅能修改職稱與姓名。</p>
-          </div>
           <div>
             <label class="block text-[11px] font-bold text-gray-500 mb-2">姓名</label>
             <input v-model="memberForm.name" type="text" class="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-base focus:outline-none focus:border-blue-500" :disabled="currentUser.role !== 'admin' && memberForm.mode === 'edit'">
@@ -297,7 +299,60 @@
             <label class="block text-[11px] font-bold text-gray-500 mb-2">重要活動/備註提醒</label>
             <textarea v-model="memberForm.notes" rows="2" placeholder="例如：下週二公會考..." class="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-base focus:outline-none focus:border-blue-500"></textarea>
           </div>
-          <button @click="saveMember" class="w-full mt-2 bg-gray-900 text-white font-bold py-3.5 rounded-xl shadow-lg active:scale-95 transition-transform">儲存組織變更</button>
+          <button @click="saveMember" class="w-full bg-gray-900 text-white font-bold py-3.5 rounded-xl shadow-md active:scale-95 transition-transform">儲存組織變更</button>
+        </div>
+
+        <div v-if="currentUser.role === 'admin' && memberForm.mode === 'edit' && memberForm.nodeId !== 'root'" class="mt-6 pt-6 border-t border-gray-200">
+          <p class="text-[11px] font-black text-gray-400 tracking-widest uppercase mb-3">系統帳號綁定狀態</p>
+          
+          <template v-if="memberForm.empId">
+            <div class="bg-blue-50 rounded-xl p-4 border border-blue-100 flex flex-col gap-3">
+              <div class="flex justify-between items-center">
+                <div><p class="text-xs font-bold text-blue-700">已綁定登入員編</p><p class="text-xl font-black text-blue-600">{{ memberForm.empId }}</p></div>
+                <div class="px-2 py-1 rounded text-[10px] font-bold" :class="getUserStatus(memberForm.empId) ? 'bg-emerald-100 text-emerald-600' : 'bg-red-100 text-red-600'">{{ getUserStatus(memberForm.empId) ? '✅ 正常使用中' : '❌ 已停權' }}</div>
+              </div>
+              <div class="flex gap-2 mt-1">
+                <button @click="openSingleUserManage(memberForm.empId)" class="flex-1 bg-white text-blue-600 border border-blue-200 py-2 rounded-lg text-xs font-bold shadow-sm active:scale-95">編輯帳號狀態 (停權/密碼)</button>
+              </div>
+            </div>
+          </template>
+          
+          <template v-else>
+            <div class="bg-gray-50 rounded-xl p-4 border border-dashed border-gray-300 text-center">
+              <p class="text-xs font-bold text-gray-500 mb-3">此夥伴尚未擁有 339 系統登入權限</p>
+              <button @click="openBindUserModal" class="w-full bg-emerald-500 text-white font-bold py-3 rounded-xl shadow-md active:scale-95 transition-transform">🔗 開通並綁定系統帳號</button>
+            </div>
+          </template>
+        </div>
+      </div>
+    </div>
+
+    <div v-if="isAddUserModalOpen" class="fixed inset-0 z-50 flex items-end justify-center">
+      <div class="absolute inset-0 bg-gray-900/60 backdrop-blur-sm" @click="isAddUserModalOpen = false"></div>
+      <div class="relative w-full max-w-md bg-white rounded-t-[2rem] p-6 shadow-2xl animate-slide-up pb-10">
+        <div class="w-12 h-1.5 bg-gray-200 rounded-full mx-auto mb-6"></div>
+        <div class="flex justify-between items-start mb-6">
+          <div><h2 class="text-xl font-black text-gray-900 mb-1">開通並綁定帳號</h2><p class="text-xs font-bold text-emerald-600">為 {{ newUserForm.name }} 建立專屬登入權限</p></div>
+        </div>
+        <div class="space-y-4">
+          <div><label class="block text-[11px] font-bold text-gray-500 mb-2">登入員編 (帳號)</label><input v-model="newUserForm.empId" type="text" placeholder="例如：200101234" class="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-base focus:outline-none focus:border-emerald-500"></div>
+          <div><label class="block text-[11px] font-bold text-gray-500 mb-2">預設密碼 (夥伴登入後可改)</label><input v-model="newUserForm.password" type="text" placeholder="例如：000000" class="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-base focus:outline-none focus:border-emerald-500"></div>
+          <button @click="createUserAccountAndBind" class="w-full mt-2 bg-emerald-600 text-white font-bold py-3.5 rounded-xl shadow-lg active:scale-95 transition-transform">確認開通與綁定</button>
+        </div>
+      </div>
+    </div>
+
+    <div v-if="isSingleAccountManageOpen" class="fixed inset-0 z-[60] flex items-center justify-center p-4">
+      <div class="absolute inset-0 bg-gray-900/60 backdrop-blur-sm" @click="isSingleAccountManageOpen = false"></div>
+      <div class="relative w-full max-w-xs bg-white rounded-[2rem] p-6 shadow-2xl animate-fade-in text-center">
+        <button @click="isSingleAccountManageOpen = false" class="absolute top-4 right-4 text-gray-400 hover:text-gray-600"><svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg></button>
+        <div class="w-12 h-12 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center mx-auto mb-3"><svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path></svg></div>
+        <h2 class="text-lg font-black text-gray-900 mb-1">{{ managingUser.name }}</h2>
+        <p class="text-xs font-bold text-gray-400 mb-6">{{ managingUser.emp_id }}</p>
+        
+        <div class="space-y-3">
+          <button @click="toggleUserLock(managingUser)" class="w-full font-bold py-3 rounded-xl transition-colors" :class="managingUser.is_active ? 'bg-red-50 text-red-600 hover:bg-red-100' : 'bg-emerald-500 text-white shadow-md'">{{ managingUser.is_active ? '🚫 鎖定並停權此帳號' : '✅ 解除鎖定，恢復權限' }}</button>
+          <button @click="resetUserPassword(managingUser)" class="w-full bg-gray-100 text-gray-700 font-bold py-3 rounded-xl hover:bg-gray-200 transition-colors">🔄 強制重設密碼為 000000</button>
         </div>
       </div>
     </div>
@@ -312,11 +367,8 @@
             <p class="text-base font-black tracking-wide" :class="getColor(node.status).name">{{ node.name }}</p>
             <div v-if="node.notes" class="org-notes mt-2 inline-block px-1.5 py-1 rounded-lg text-[10px] font-bold w-full break-words line-clamp-3" :class="getColor(node.status).bg">{{ node.notes }}</div>
           </div>
-          <button @click.stop="$emit('add', node)" class="absolute bottom-1 right-1 w-6 h-6 bg-white/80 backdrop-blur rounded-full flex items-center justify-center text-gray-500 hover:text-blue-600 shadow border border-gray-200 z-20">
-            <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M12 4v16m8-8H4"></path></svg>
-          </button>
+          <div v-if="isAdmin && node.emp_id" class="absolute top-2 right-2 w-2 h-2 rounded-full bg-blue-500 shadow-[0_0_4px_rgba(59,130,246,0.8)]" title="已綁定帳號"></div>
         </div>
-        
         <div v-if="node.children && node.children.length > 0" class="org-children">
           <org-node v-for="child in node.children" :key="child.id" :node="child" @edit="$emit('edit', $event)" @add="$emit('add', $event)" :is-admin="isAdmin"></org-node>
         </div>
@@ -350,7 +402,6 @@
       setup() {
         const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
         
-        // 狀態管理
         const currentUser = ref(null);
         const viewingEmpId = ref('');
         const teamMembers = ref([]);
@@ -358,129 +409,145 @@
         const loginError = ref('');
         const isLoading = ref(false);
 
-        // 設定與帳號管理
         const isSettingsModalOpen = ref(false);
         const newPassword = ref('');
-        const isAccountManagerOpen = ref(false);
 
-        // 資料
+        const allActivitiesData = ref([]); 
         const currentDayActivities = ref([]); 
         const orgTree = ref({ id: 'root', name: '鎔安', status: '區經理', notes: '', children: [] });
         const orgZoom = ref(1.0);
 
-        // 登入邏輯
         const doLogin = async () => {
           if (!loginForm.empId || !loginForm.password) { loginError.value = '請輸入帳號與密碼'; return; }
           isLoading.value = true; loginError.value = '';
-          
           try {
-            const { data, error } = await supabase.from('team_users').select('*').eq('emp_id', loginForm.empId).eq('password', loginForm.password).single();
+            const { data } = await supabase.from('team_users').select('*').eq('emp_id', loginForm.empId).eq('password', loginForm.password).single();
             if (data) {
-              if (data.is_active === false) {
-                loginError.value = '帳號已被停權，請聯繫區經理。';
-                isLoading.value = false;
-                return;
-              }
-
-              currentUser.value = data;
-              viewingEmpId.value = data.emp_id; 
-              
+              if (data.is_active === false) { loginError.value = '帳號已被停權，請聯繫區經理。'; isLoading.value = false; return; }
+              currentUser.value = data; viewingEmpId.value = data.emp_id; 
               if (data.role === 'admin') {
                 const res = await supabase.from('team_users').select('emp_id, name, is_active, role');
                 teamMembers.value = res.data || [];
               }
-              
-              await loadDayActivities();
-              await loadOrgTree();
-            } else {
-              loginError.value = '帳號或密碼錯誤';
-            }
-          } catch (e) {
-            loginError.value = '伺服器連線錯誤';
-          }
+              await loadActivitiesData(); await loadOrgTree();
+            } else { loginError.value = '帳號或密碼錯誤'; }
+          } catch (e) { loginError.value = '伺服器連線錯誤'; }
           isLoading.value = false;
         };
 
         const getViewingName = () => {
+          if (viewingEmpId.value === 'ALL') return '全組';
           if (currentUser.value?.role !== 'admin') return currentUser.value?.name;
           const target = teamMembers.value.find(m => m.emp_id === viewingEmpId.value);
           return target ? target.name : '';
         };
 
-        // 密碼管理
+        const getUserStatus = (empId) => {
+          const u = teamMembers.value.find(m => m.emp_id === empId);
+          return u ? u.is_active : false;
+        };
+
         const changeMyPassword = async () => {
-          if (newPassword.value.length < 4) return alert('密碼太短，請重新輸入');
+          if (newPassword.value.length < 4) return alert('密碼太短');
           await supabase.from('team_users').update({ password: newPassword.value }).eq('emp_id', currentUser.value.emp_id);
-          alert('密碼修改成功！下次登入請使用新密碼。');
-          newPassword.value = '';
-          isSettingsModalOpen.value = false;
+          alert('密碼修改成功！下次登入請使用新密碼。'); newPassword.value = ''; isSettingsModalOpen.value = false;
         };
 
-        const resetUserPassword = async (user) => {
-          const defaultPass = '000000';
-          const confirmReset = confirm(`確定要將 ${user.name} 的密碼重設為 ${defaultPass} 嗎？`);
-          if(confirmReset) {
-            await supabase.from('team_users').update({ password: defaultPass }).eq('emp_id', user.emp_id);
-            alert(`${user.name} 密碼已重設為 ${defaultPass}`);
-          }
+        // 讀取所有資料以支援綜合分析
+        const loadActivitiesData = async () => {
+          let query = supabase.from('team_activities').select('*');
+          if (viewingEmpId.value !== 'ALL') query = query.eq('emp_id', viewingEmpId.value);
+          const { data } = await query;
+          allActivitiesData.value = data || [];
+          currentDayActivities.value = allActivitiesData.value.filter(a => a.activity_date === currentDate.value);
         };
 
-        const toggleUserLock = async (user) => {
-          const newStatus = !user.is_active;
-          await supabase.from('team_users').update({ is_active: newStatus }).eq('emp_id', user.emp_id);
-          user.is_active = newStatus;
-        };
+        const refreshData = async () => { await loadActivitiesData(); await loadOrgTree(); };
 
-        // 讀取當天行程 (CRM 正規化架構)
-        const loadDayActivities = async () => {
-          const { data } = await supabase.from('team_activities')
-                                 .select('*')
-                                 .eq('emp_id', viewingEmpId.value)
-                                 .eq('activity_date', currentDate.value);
-          currentDayActivities.value = data || [];
-        };
-
-        // 讀取與儲存組織圖
         const loadOrgTree = async () => {
           const { data } = await supabase.from('activities').select('notes').eq('client_name', 'APP_VAULT_V1').limit(1);
           if (data && data.length > 0) {
             try {
                const bytes = CryptoJS.AES.decrypt(data[0].notes, '123456');
-               const decryptedStr = bytes.toString(CryptoJS.enc.Utf8);
-               const vault = JSON.parse(decryptedStr);
+               const vault = JSON.parse(bytes.toString(CryptoJS.enc.Utf8));
                if (vault.orgTree) orgTree.value = vault.orgTree;
-            } catch(e) { console.log('解密組織圖失敗，使用預設值'); }
+            } catch(e) {}
           }
         };
 
         const saveOrgTree = async () => {
            const vaultData = { orgTree: orgTree.value };
            const encryptedStr = CryptoJS.AES.encrypt(JSON.stringify(vaultData), '123456').toString();
-           await supabase.from('activities').upsert({
-              id: '00000000-0000-0000-0000-000000000001', activity_date: '2099-12-31', start_time: '00:00', end_time: '23:59',
-              activity_type: 'VAULT', client_name: 'APP_VAULT_V1', notes: encryptedStr, sales_score: 0, recruit_score: 0
-           });
+           await supabase.from('activities').upsert({ id: '00000000-0000-0000-0000-000000000001', activity_date: '2099-12-31', start_time: '00:00', activity_type: 'VAULT', client_name: 'APP_VAULT_V1', notes: encryptedStr });
         };
 
-        // 日期與 339 邏輯
         const currentTab = ref('339');
         const isStatsModalOpen = ref(false); 
         const getLocalToday = () => { const d = new Date(); return new Date(d.getTime() - (d.getTimezoneOffset() * 60000)).toISOString().split('T')[0]; };
         const currentDate = ref(getLocalToday());
         const formattedDate = computed(() => { const d = new Date(currentDate.value); return `${d.getFullYear()}/${(d.getMonth()+1).toString().padStart(2,'0')}/${d.getDate().toString().padStart(2,'0')}`; });
         
-        const changeDate = (days) => { 
-          const d = new Date(currentDate.value); d.setDate(d.getDate() + days); currentDate.value = d.toISOString().split('T')[0]; loadDayActivities();
-        };
+        const changeDate = (days) => { const d = new Date(currentDate.value); d.setDate(d.getDate() + days); currentDate.value = d.toISOString().split('T')[0]; loadActivitiesData(); };
         
         const dailySales = computed(() => currentDayActivities.value.reduce((sum, act) => sum + act.sales_score, 0));
         const dailyRecruit = computed(() => currentDayActivities.value.reduce((sum, act) => sum + act.recruit_score, 0));
 
-        const aiSuggestion = computed(() => {
+        // 計算週/月範圍過濾器
+        const getStatsForRange = (filterFn) => {
+          let s = 0; let r = 0;
+          allActivitiesData.value.forEach(act => { if (filterFn(new Date(act.activity_date))) { s += act.sales_score; r += act.recruit_score; } });
+          return { sales: s, recruit: r };
+        };
+
+        const weeklyStats = computed(() => {
+          const curr = new Date(currentDate.value); const first = curr.getDate() - curr.getDay() + (curr.getDay() === 0 ? -6 : 1); 
+          const firstDay = new Date(new Date(curr).setDate(first)).toISOString().split('T')[0];
+          const lastDay = new Date(new Date(curr).setDate(first + 6)).toISOString().split('T')[0];
+          return getStatsForRange(d => { const ds = d.toISOString().split('T')[0]; return ds >= firstDay && ds <= lastDay; });
+        });
+
+        const monthlyStats = computed(() => {
+          const curr = new Date(currentDate.value); const y = curr.getFullYear(); const m = curr.getMonth();
+          return getStatsForRange(d => d.getFullYear() === y && d.getMonth() === m);
+        });
+
+        const personalAiSuggestion = computed(() => {
           if (dailySales.value === 0 && dailyRecruit.value === 0) return '今日尚未有活動紀錄，立刻展開行動！';
-          if (dailySales.value > dailyRecruit.value * 2) return '銷售動能強勁！建議搭配增員約訪平衡組織發展。';
+          if (dailySales.value > dailyRecruit.value * 2) return '銷售動能強勁！建議搭配增員約訪平衡發展。';
           if (dailyRecruit.value > 0) return '增員能量注入中！趁熱打鐵推進準增員進度。';
           return '持續累積活動量，量大是致勝的關鍵！';
+        });
+
+        // 🌍 上帝視角：全組分析邏輯
+        const allGroupStats = computed(() => {
+           let s = 0; let r = 0;
+           currentDayActivities.value.forEach(act => { s += act.sales_score; r += act.recruit_score; });
+           return { sales: s, recruit: r };
+        });
+
+        const memberStatsList = computed(() => {
+           if(viewingEmpId.value !== 'ALL') return [];
+           const map = {};
+           teamMembers.value.forEach(m => map[m.emp_id] = { emp_id: m.emp_id, name: m.name, sales: 0, recruit: 0, total: 0 });
+           currentDayActivities.value.forEach(act => {
+              if(map[act.emp_id]) {
+                 map[act.emp_id].sales += act.sales_score;
+                 map[act.emp_id].recruit += act.recruit_score;
+                 map[act.emp_id].total += (act.sales_score + act.recruit_score);
+              }
+           });
+           return Object.values(map).sort((a,b) => b.total - a.total);
+        });
+
+        const groupAiSuggestion = computed(() => {
+           if(viewingEmpId.value !== 'ALL') return '';
+           const list = memberStatsList.value;
+           const zeros = list.filter(u => u.total === 0).map(u => u.name);
+           let msg = `今日全組總推銷動能為 ${allGroupStats.value.sales} 分，增員動能 ${allGroupStats.value.recruit} 分。\n\n`;
+           if(list.length > 0 && list[0].total > 0) msg += `🔥 今日 MVP：${list[0].name} (表現優異！)\n`;
+           if(zeros.length > 0) msg += `🚨 注意：${zeros.join('、')} 今日尚無任何推銷或增員活動，建議總管主動關心進度與約訪狀況。`;
+           else msg += `✨ 恭喜！全組今日皆有活動量產出，請繼續保持強勁動能！`;
+           return msg;
         });
 
         const timeSlots = Array.from({ length: 16 }, (_, i) => `${(i + 8).toString().padStart(2, '0')}:00`);
@@ -493,8 +560,8 @@
         const getActivity = (time) => currentDayActivities.value.find(a => a.start_time === time);
 
         const openActivityModal = (time) => {
-          selectedTime.value = time;
-          const existing = getActivity(time);
+          if(viewingEmpId.value === 'ALL') return; // 上帝視角不能新增單一行程
+          selectedTime.value = time; const existing = getActivity(time);
           if (existing) { formData.id = existing.id; formData.clientName = existing.client_name; formData.type = existing.activity_type; formData.notes = existing.notes; } 
           else { formData.id = null; formData.clientName = ''; formData.type = '約訪'; formData.notes = ''; }
           isActivityModalOpen.value = true;
@@ -509,113 +576,120 @@
           const payload = { emp_id: viewingEmpId.value, activity_date: currentDate.value, start_time: selectedTime.value, activity_type: formData.type, client_name: formData.clientName, notes: formData.notes, sales_score: sScore, recruit_score: rScore };
           if (formData.id) payload.id = formData.id;
           
-          await supabase.from('team_activities').upsert(payload); await loadDayActivities(); isActivityModalOpen.value = false;
+          await supabase.from('team_activities').upsert(payload); await loadActivitiesData(); isActivityModalOpen.value = false;
         };
+        const deleteActivity = async () => { if(formData.id) { await supabase.from('team_activities').delete().eq('id', formData.id); await loadActivitiesData(); } isActivityModalOpen.value = false; };
 
-        const deleteActivity = async () => { if(formData.id) { await supabase.from('team_activities').delete().eq('id', formData.id); await loadDayActivities(); } isActivityModalOpen.value = false; };
-
-        // 組織圖權限與邏輯
+        // 組織圖邏輯與帳號綁定樞紐
         const zoomInOrg = () => { orgZoom.value = Math.min(1.5, orgZoom.value + 0.1); };
         const zoomOutOrg = () => { orgZoom.value = Math.max(0.4, orgZoom.value - 0.1); };
         const memberStatuses = ['臨時帳號申請中', '準備公會考試', '等待登錄中', '業務代表', '業務主任', '業務襄理', '區經理'];
+        
         const isMemberModalOpen = ref(false);
-        const memberForm = reactive({ mode: 'add', nodeId: null, targetNode: null, name: '', status: '準備公會考試', notes: '' });
+        const memberForm = reactive({ mode: 'add', nodeId: null, targetNode: null, name: '', status: '準備公會考試', notes: '', empId: '' });
 
-        // 尋找節點
-        const findNodeByName = (node, name) => {
-          if (node.name === name) return node;
-          if (node.children) { for (let child of node.children) { const res = findNodeByName(child, name); if (res) return res; } }
-          return null;
-        };
-
-        // 檢查是否為轄下 (包含自己)
-        const checkIsDescendant = (parentNode, targetId) => {
-          if (parentNode.id === targetId) return true;
-          if (parentNode.children) { for (let child of parentNode.children) { if (checkIsDescendant(child, targetId)) return true; } }
-          return false;
-        };
-
-        // 判斷權限核心
+        const findNodeByName = (node, name) => { if (node.name === name) return node; if (node.children) { for (let child of node.children) { const res = findNodeByName(child, name); if (res) return res; } } return null; };
+        const checkIsDescendant = (parentNode, targetId) => { if (parentNode.id === targetId) return true; if (parentNode.children) { for (let child of parentNode.children) { if (checkIsDescendant(child, targetId)) return true; } } return false; };
         const hasEditPermission = (targetNode) => {
-          if (currentUser.value.role === 'admin') return true; // 總管全開
+          if (currentUser.value.role === 'admin') return true;
           const myNode = findNodeByName(orgTree.value, currentUser.value.name);
-          if (!myNode) return false; // 如果沒在樹上就沒權限
-          return checkIsDescendant(myNode, targetNode.id); // 只能是自己或自己的下線
+          if (!myNode) return false; return checkIsDescendant(myNode, targetNode.id);
         };
 
         const openMemberModal = (node) => {
           if (!hasEditPermission(node)) return alert(`權限限制：您僅能修改自己轄下的直屬夥伴資料。`);
           memberForm.mode = 'edit'; memberForm.nodeId = node.id; memberForm.targetNode = node;
-          memberForm.name = node.name; memberForm.status = node.status; memberForm.notes = node.notes || '';
+          memberForm.name = node.name; memberForm.status = node.status; memberForm.notes = node.notes || ''; memberForm.empId = node.emp_id || '';
           isMemberModalOpen.value = true;
         };
 
         const openAddSubordinateModal = (parentNode) => {
           if (!hasEditPermission(parentNode)) return alert(`權限限制：您只能在自己的組織分支下新增成員。`);
           memberForm.mode = 'add'; memberForm.targetNode = parentNode;
-          memberForm.name = ''; memberForm.status = '準備公會考試'; memberForm.notes = '';
+          memberForm.name = ''; memberForm.status = '準備公會考試'; memberForm.notes = ''; memberForm.empId = '';
           isMemberModalOpen.value = true;
         };
 
-        const findNodeAndParent = (node, id, parent = null) => {
-          if (node.id === id) return { node, parent };
-          if (node.children) { for (let child of node.children) { const result = findNodeAndParent(child, id, node); if (result) return result; } }
-          return null;
-        };
+        const findNodeAndParent = (node, id, parent = null) => { if (node.id === id) return { node, parent }; if (node.children) { for (let child of node.children) { const result = findNodeAndParent(child, id, node); if (result) return result; } } return null; };
 
         const saveMember = async () => {
           if (!memberForm.name) { alert('請填寫姓名'); return; }
           if (memberForm.mode === 'add') {
             const newNode = { id: 'node_' + Date.now(), name: memberForm.name, status: memberForm.status, notes: memberForm.notes, children: [] };
-            if (!memberForm.targetNode.children) memberForm.targetNode.children = [];
-            memberForm.targetNode.children.push(newNode);
+            if (!memberForm.targetNode.children) memberForm.targetNode.children = []; memberForm.targetNode.children.push(newNode);
           } else {
             memberForm.targetNode.notes = memberForm.notes;
-            if(currentUser.value.role === 'admin'){ // 只有 admin 編輯時可以改名字職級
-               memberForm.targetNode.name = memberForm.name; memberForm.targetNode.status = memberForm.status;
-            }
+            if(currentUser.value.role === 'admin'){ memberForm.targetNode.name = memberForm.name; memberForm.targetNode.status = memberForm.status; }
           }
           await saveOrgTree(); isMemberModalOpen.value = false;
         };
 
         const deleteMember = async () => {
-          if (memberForm.nodeId === 'root' || currentUser.value.role !== 'admin') return; // 二次阻擋
+          if (memberForm.nodeId === 'root' || currentUser.value.role !== 'admin') return;
           if (confirm('確定要移除此成員與其所有下屬嗎？')) {
             const result = findNodeAndParent(orgTree.value, memberForm.nodeId);
             if (result && result.parent) { result.parent.children = result.parent.children.filter(c => c.id !== memberForm.nodeId); await saveOrgTree(); isMemberModalOpen.value = false; }
           }
         };
 
-        // 開通帳號邏輯
+        // 🔗 總管開通綁定樞紐
         const isAddUserModalOpen = ref(false);
-        const newUserForm = reactive({ empId: '', name: '', password: ''});
-        const createUserAccount = async () => {
+        const newUserForm = reactive({ empId: '', name: '', password: '', targetNode: null });
+        
+        const openBindUserModal = () => {
+           newUserForm.empId = ''; newUserForm.name = memberForm.name; newUserForm.password = '000000'; newUserForm.targetNode = memberForm.targetNode;
+           isMemberModalOpen.value = false; isAddUserModalOpen.value = true;
+        };
+
+        const createUserAccountAndBind = async () => {
           if(!newUserForm.empId || !newUserForm.name || !newUserForm.password) return alert('請填寫完整');
+          // 1. 建帳號
           await supabase.from('team_users').insert({ emp_id: newUserForm.empId, password: newUserForm.password, name: newUserForm.name, role: 'agent' });
-          const res = await supabase.from('team_users').select('emp_id, name, is_active, role');
-          teamMembers.value = res.data; newUserForm.empId = ''; newUserForm.name = ''; newUserForm.password = ''; alert('夥伴帳號開通成功！');
+          // 2. 綁定組織樹
+          newUserForm.targetNode.emp_id = newUserForm.empId;
+          await saveOrgTree();
+          
+          const res = await supabase.from('team_users').select('emp_id, name, is_active, role'); teamMembers.value = res.data;
+          isAddUserModalOpen.value = false; alert('綁定成功！夥伴已可使用此員編登入。');
+        };
+
+        // 單一帳號控制面板
+        const isSingleAccountManageOpen = ref(false);
+        const managingUser = ref(null);
+
+        const openSingleUserManage = (empId) => {
+           const u = teamMembers.value.find(m => m.emp_id === empId);
+           if(u) { managingUser.value = u; isSingleAccountManageOpen.value = true; }
+        };
+
+        const toggleUserLock = async (user) => {
+          const newStatus = !user.is_active; await supabase.from('team_users').update({ is_active: newStatus }).eq('emp_id', user.emp_id);
+          user.is_active = newStatus;
+          const res = await supabase.from('team_users').select('emp_id, name, is_active, role'); teamMembers.value = res.data;
+        };
+
+        const resetUserPassword = async (user) => {
+          if(confirm(`確定要重設 ${user.name} 的密碼為 000000 嗎？`)) {
+            await supabase.from('team_users').update({ password: '000000' }).eq('emp_id', user.emp_id); alert(`密碼已重設`);
+          }
         };
 
         const exportOrgChart = () => {
           const content = document.getElementById('org-chart-content'); const originalZoom = orgZoom.value; orgZoom.value = 1; 
-          setTimeout(() => {
-            html2canvas(content, { backgroundColor: '#f8fafc', scale: 2, windowWidth: Math.max(1400, content.scrollWidth),
-              onclone: (doc) => {
-                 const el = doc.getElementById('org-chart-content'); el.style.transform = 'none'; el.style.width = 'max-content';
-                 const notes = el.querySelectorAll('.org-notes'); notes.forEach(n => { n.classList.remove('line-clamp-3', 'truncate'); n.style.whiteSpace = 'normal'; });
-              }
-            }).then(canvas => {
-              orgZoom.value = originalZoom; const link = document.createElement('a'); link.download = `鎔安組_組織架構圖.png`; link.href = canvas.toDataURL('image/png'); link.click();
-            });
+          setTimeout(() => { html2canvas(content, { backgroundColor: '#f8fafc', scale: 2, windowWidth: Math.max(1400, content.scrollWidth),
+              onclone: (doc) => { const el = doc.getElementById('org-chart-content'); el.style.transform = 'none'; el.style.width = 'max-content';
+                 const notes = el.querySelectorAll('.org-notes'); notes.forEach(n => { n.classList.remove('line-clamp-3', 'truncate'); n.style.whiteSpace = 'normal'; }); }
+            }).then(canvas => { orgZoom.value = originalZoom; const link = document.createElement('a'); link.download = `鎔安組_組織架構圖.png`; link.href = canvas.toDataURL('image/png'); link.click(); });
           }, 300); 
         };
 
         return { 
-          currentUser, viewingEmpId, teamMembers, loginForm, loginError, isLoading, doLogin, getViewingName, loadDayActivities,
+          currentUser, viewingEmpId, teamMembers, loginForm, loginError, isLoading, doLogin, getViewingName, getUserStatus, loadActivitiesData, refreshData,
           isSettingsModalOpen, newPassword, changeMyPassword,
-          isAccountManagerOpen, toggleUserLock, resetUserPassword, isAddUserModalOpen, newUserForm, createUserAccount,
+          isSingleAccountManageOpen, managingUser, openSingleUserManage, toggleUserLock, resetUserPassword,
+          isAddUserModalOpen, newUserForm, openBindUserModal, createUserAccountAndBind,
           currentTab, currentDate, formattedDate, changeDate, isStatsModalOpen,
-          timeSlots, dailySales, dailyRecruit, aiSuggestion, getActivity, getTypeStyle, 
+          timeSlots, dailySales, dailyRecruit, personalAiSuggestion, allGroupStats, memberStatsList, groupAiSuggestion, getActivity, getTypeStyle, 
           isActivityModalOpen, selectedTime, activityTypes, formData, openActivityModal, saveActivity, deleteActivity,
           orgTree, orgZoom, zoomInOrg, zoomOutOrg, memberStatuses, isMemberModalOpen, memberForm, openMemberModal, openAddSubordinateModal, saveMember, deleteMember, exportOrgChart
         };
