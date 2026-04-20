@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-  <title>鎔安組 | 企業級戰情系統 3.1</title>
+  <title>鎔安組 | 企業級戰情系統 4.0</title>
   
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
@@ -23,7 +23,6 @@
     .animate-fade-in { animation: fadeIn 0.4s ease-out; }
     input[type="date"]::-webkit-calendar-picker-indicator { position: absolute; top: 0; left: 0; right: 0; bottom: 0; width: auto; height: auto; color: transparent; background: transparent; cursor: pointer; }
     
-    /* 組織樹完美原生引擎 */
     .org-tree-container { display: flex; justify-content: center; }
     .org-node { display: flex; flex-direction: column; align-items: center; position: relative; padding: 24px 6px 0 6px; }
     .org-node::before, .org-node::after { content: ""; position: absolute; top: 0; width: 50%; height: 2px; background: #cbd5e1; }
@@ -50,7 +49,7 @@
           <svg class="w-8 h-8 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path></svg>
         </div>
         <h1 class="text-2xl font-black text-white tracking-widest mb-1">鎔安組戰情室</h1>
-        <p class="text-[11px] text-blue-200/70 mb-6 tracking-widest">上帝視角 3.1</p>
+        <p class="text-[11px] text-blue-200/70 mb-6 tracking-widest">企業級 4.0</p>
         
         <input v-model="loginForm.empId" type="text" placeholder="請輸入您的員編" class="w-full bg-black/30 border border-white/10 rounded-xl px-4 py-3.5 text-base text-center text-white tracking-widest focus:outline-none focus:border-blue-400/50 transition-colors mb-3">
         <input v-model="loginForm.password" type="password" placeholder="請輸入密碼" class="w-full bg-black/30 border border-white/10 rounded-xl px-4 py-3.5 text-base text-center text-white tracking-widest focus:outline-none focus:border-blue-400/50 transition-colors mb-6" @keyup.enter="doLogin">
@@ -96,8 +95,14 @@
         </div>
 
         <div v-if="viewingEmpId === 'ALL'" class="animate-fade-in space-y-4">
+          
+          <div class="flex justify-center gap-2 mb-4">
+            <button @click="groupViewMode = 'day'" class="px-6 py-2 rounded-full text-sm font-bold transition-all shadow-sm" :class="groupViewMode === 'day' ? 'bg-blue-600 text-white' : 'bg-white text-gray-500 border border-gray-200'">今日戰績</button>
+            <button @click="groupViewMode = 'month'" class="px-6 py-2 rounded-full text-sm font-bold transition-all shadow-sm" :class="groupViewMode === 'month' ? 'bg-blue-600 text-white' : 'bg-white text-gray-500 border border-gray-200'">本月累積</button>
+          </div>
+
           <div class="bg-gradient-to-br from-blue-600 to-indigo-700 rounded-[2rem] p-6 shadow-xl text-white">
-            <p class="text-[11px] font-bold text-blue-200 uppercase tracking-widest mb-4">全組今日綜合戰力</p>
+            <p class="text-[11px] font-bold text-blue-200 uppercase tracking-widest mb-4">全組{{ groupViewMode === 'day' ? '今日' : '本月' }}綜合戰力</p>
             <div class="flex justify-between items-end">
               <div><span class="text-xs text-blue-200 mr-2">總銷售分</span><span class="text-4xl font-black">{{ allGroupStats.sales }}</span></div>
               <div><span class="text-xs text-blue-200 mr-2">總增員分</span><span class="text-4xl font-black text-emerald-300">{{ allGroupStats.recruit }}</span></div>
@@ -111,12 +116,12 @@
 
           <div class="bg-white rounded-2xl border border-gray-100 overflow-hidden shadow-sm">
              <div class="bg-gray-50 px-4 py-3 border-b border-gray-100 flex justify-between items-center">
-                <span class="text-xs font-black text-gray-600 tracking-widest">👑 今日戰力排行榜</span>
+                <span class="text-xs font-black text-gray-600 tracking-widest">👑 {{ groupViewMode === 'day' ? '今日' : '本月' }}戰力排行榜</span>
              </div>
              <div class="divide-y divide-gray-50">
                 <div v-for="(stat, index) in memberStatsList" :key="stat.emp_id" class="px-4 py-3 flex justify-between items-center hover:bg-gray-50 transition-colors">
                    <div class="flex items-center gap-3">
-                      <span class="text-sm font-black w-4 text-center" :class="index===0 ? 'text-amber-500' : (index===1 ? 'text-gray-400' : 'text-orange-400')">{{ index + 1 }}</span>
+                      <span class="text-sm font-black w-4 text-center" :class="index===0 ? 'text-amber-500' : (index===1 ? 'text-gray-400' : (index===2 ? 'text-orange-400' : 'text-gray-300'))">{{ index + 1 }}</span>
                       <span class="text-sm font-bold text-gray-800">{{ stat.name }}</span>
                    </div>
                    <div class="text-xs font-bold text-gray-500 flex gap-3">
@@ -167,7 +172,7 @@
           </div>
           <div class="flex gap-2">
             <button v-if="currentUser.role === 'admin'" @click="isAccountManagerOpen = true" class="flex items-center gap-1.5 bg-emerald-500 text-white px-3 py-2 rounded-xl active:scale-95 shadow-md">
-              <span class="text-[10px] font-bold tracking-wide">👥 帳號管理</span>
+              <span class="text-[10px] font-bold tracking-wide">👥 帳號大廳</span>
             </button>
             <button @click="exportOrgChart" class="flex items-center gap-1.5 bg-gray-900 text-white px-3 py-2 rounded-xl active:scale-95 transition-transform shadow-md">
               <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
@@ -260,36 +265,65 @@
 
     <div v-if="isAccountManagerOpen" class="fixed inset-0 z-[60] flex items-end justify-center">
       <div class="absolute inset-0 bg-gray-900/60 backdrop-blur-sm" @click="isAccountManagerOpen = false"></div>
-      <div class="relative w-full max-w-lg bg-[#f8fafc] rounded-t-[2rem] shadow-2xl animate-slide-up h-[85vh] flex flex-col">
+      <div class="relative w-full max-w-lg bg-[#f8fafc] rounded-t-[2rem] shadow-2xl animate-slide-up h-[90vh] flex flex-col">
         <div class="w-12 h-1.5 bg-gray-300 rounded-full mx-auto mt-4 mb-4"></div>
         <div class="px-6 pb-4 flex justify-between items-end border-b border-gray-200">
-          <div><h2 class="text-xl font-black text-gray-900 mb-1">帳號管理中心</h2><p class="text-xs font-bold text-emerald-600">總管權限：開通、鎖定、重設密碼</p></div>
+          <div><h2 class="text-xl font-black text-gray-900 mb-1">帳號管理中心</h2><p class="text-xs font-bold text-emerald-600">總管權限：開通、刪除、雙向綁定</p></div>
           <button @click="isAccountManagerOpen = false" class="text-gray-400"><svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg></button>
         </div>
         
         <div class="p-6 bg-white border-b border-gray-200">
-          <p class="text-[11px] font-bold text-gray-500 mb-3">+ 開通獨立夥伴帳號 (不綁定組織)</p>
+          <p class="text-[11px] font-bold text-gray-500 mb-3">+ 建立全新夥伴帳號</p>
           <div class="grid grid-cols-2 gap-2 mb-2">
             <input v-model="newUserForm.empId" type="text" placeholder="登入員編" class="bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-emerald-500">
             <input v-model="newUserForm.name" type="text" placeholder="真實姓名" class="bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-emerald-500">
           </div>
-          <div class="flex gap-2">
-            <input v-model="newUserForm.password" type="text" placeholder="預設密碼" class="flex-1 bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-emerald-500">
-            <button @click="createUserAccountOnly" class="bg-emerald-600 text-white font-bold px-4 py-2 rounded-lg text-sm active:scale-95 transition-transform whitespace-nowrap">建立帳號</button>
+          <div class="mb-3">
+            <input v-model="newUserForm.password" type="text" placeholder="預設密碼" class="w-full bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-emerald-500">
           </div>
+          
+          <div class="mb-3 p-3 bg-emerald-50 rounded-lg border border-emerald-100">
+             <label class="block text-[10px] font-bold text-emerald-700 mb-2">組織圖連動設定</label>
+             <select v-model="newUserForm.bindMode" class="w-full bg-white border border-emerald-200 rounded px-2 py-1.5 text-xs focus:outline-none">
+                <option value="none">僅開通帳號 (不連動)</option>
+                <option value="existing">綁定給組織圖上已存在的無帳號成員</option>
+                <option value="new">同時在組織圖上幫他建立一個位置</option>
+             </select>
+             
+             <div v-if="newUserForm.bindMode === 'existing'" class="mt-2">
+                <select v-model="newUserForm.targetNodeId" class="w-full bg-white border border-emerald-200 rounded px-2 py-1.5 text-xs">
+                   <option disabled value="">請選擇要綁定的對象</option>
+                   <option v-for="node in unboundNodes" :key="node.id" :value="node.id">{{ node.name }} ({{ node.status }})</option>
+                </select>
+             </div>
+             
+             <div v-if="newUserForm.bindMode === 'new'" class="mt-2 space-y-2">
+                <select v-model="newUserForm.parentNodeId" class="w-full bg-white border border-emerald-200 rounded px-2 py-1.5 text-xs">
+                   <option disabled value="">請選擇他的直屬主管</option>
+                   <option v-for="node in allNodes" :key="node.id" :value="node.id">{{ node.name }} ({{ node.status }})</option>
+                </select>
+                <select v-model="newUserForm.newStatus" class="w-full bg-white border border-emerald-200 rounded px-2 py-1.5 text-xs">
+                   <option v-for="status in memberStatuses" :key="status" :value="status">{{ status }}</option>
+                </select>
+             </div>
+          </div>
+          
+          <button @click="createUserAccountPro" class="w-full bg-emerald-600 text-white font-bold py-3 rounded-lg text-sm active:scale-95 transition-transform">建立帳號並執行連動</button>
         </div>
 
         <div class="flex-1 overflow-y-auto p-4 space-y-2">
-          <div v-for="user in teamMembers" :key="user.emp_id" class="bg-white p-4 rounded-xl border border-gray-100 shadow-sm flex justify-between items-center">
-            <div>
-              <p class="text-sm font-black text-gray-900">{{ user.name }} <span v-if="user.role==='admin'" class="text-[10px] bg-amber-100 text-amber-700 px-1.5 py-0.5 rounded ml-1">Admin</span></p>
-              <p class="text-xs font-bold text-gray-400">{{ user.emp_id }}</p>
+          <div v-for="user in teamMembers" :key="user.emp_id" class="bg-white p-4 rounded-xl border border-gray-100 shadow-sm flex flex-col gap-2">
+            <div class="flex justify-between items-start">
+               <div>
+                 <p class="text-sm font-black text-gray-900">{{ user.name }} <span v-if="user.role==='admin'" class="text-[10px] bg-amber-100 text-amber-700 px-1.5 py-0.5 rounded ml-1">Admin</span></p>
+                 <p class="text-xs font-bold text-gray-400">{{ user.emp_id }}</p>
+               </div>
+               <span class="text-[10px] px-2 py-0.5 rounded font-bold" :class="user.is_active ? 'bg-emerald-100 text-emerald-600' : 'bg-red-100 text-red-600'">{{ user.is_active ? '正常' : '已停權' }}</span>
             </div>
-            <div v-if="user.role !== 'admin'" class="flex gap-2">
-              <button @click="toggleUserLock(user)" class="px-3 py-1.5 rounded-lg text-[10px] font-bold transition-colors" :class="user.is_active ? 'bg-gray-100 text-gray-600 hover:bg-red-50 hover:text-red-500' : 'bg-red-500 text-white'">
-                {{ user.is_active ? '鎖定帳號' : '已停權(解鎖)' }}
-              </button>
-              <button @click="resetUserPassword(user)" class="px-3 py-1.5 bg-blue-50 text-blue-600 hover:bg-blue-100 rounded-lg text-[10px] font-bold transition-colors">重設密碼</button>
+            <div v-if="user.role !== 'admin'" class="flex gap-2 mt-2 pt-2 border-t border-gray-50">
+              <button @click="toggleUserLock(user)" class="flex-1 py-1.5 rounded text-[10px] font-bold transition-colors" :class="user.is_active ? 'bg-gray-100 text-gray-600 hover:bg-orange-50 hover:text-orange-500' : 'bg-orange-500 text-white'">{{ user.is_active ? '鎖定' : '解鎖' }}</button>
+              <button @click="resetUserPassword(user)" class="flex-1 bg-blue-50 text-blue-600 hover:bg-blue-100 rounded text-[10px] font-bold transition-colors">重設密碼</button>
+              <button @click="deleteUserAccount(user)" class="flex-1 bg-red-50 text-red-600 hover:bg-red-100 rounded text-[10px] font-bold transition-colors">🗑️ 徹底刪除</button>
             </div>
           </div>
         </div>
@@ -319,14 +353,14 @@
 
     <div v-if="isMemberModalOpen" class="fixed inset-0 z-50 flex items-end justify-center">
       <div class="absolute inset-0 bg-gray-900/60 backdrop-blur-sm" @click="isMemberModalOpen = false"></div>
-      <div class="relative w-full max-w-md bg-white rounded-t-[2rem] p-6 shadow-2xl animate-slide-up pb-10">
-        <div class="w-12 h-1.5 bg-gray-200 rounded-full mx-auto mb-6"></div>
-        <div class="flex justify-between items-start mb-4">
+      <div class="relative w-full max-w-md bg-white rounded-t-[2rem] p-6 shadow-2xl animate-slide-up pb-10 flex flex-col h-[85vh]">
+        <div class="w-12 h-1.5 bg-gray-200 rounded-full mx-auto mt-4 mb-4 shrink-0"></div>
+        <div class="flex justify-between items-start mb-4 shrink-0">
           <h2 class="text-xl font-black text-gray-900">{{ memberForm.mode === 'add' ? '新增轄下夥伴' : '編輯組織資料' }}</h2>
-          <button v-if="memberForm.mode === 'edit' && memberForm.nodeId !== 'root' && currentUser.role === 'admin'" @click="deleteMember" class="text-[10px] font-bold text-red-500 bg-red-50 px-3 py-2 rounded-xl">移除成員</button>
+          <button v-if="memberForm.mode === 'edit' && memberForm.nodeId !== 'root' && currentUser.role === 'admin'" @click="deleteMember" class="text-[10px] font-bold text-red-500 bg-red-50 px-3 py-2 rounded-xl">從組織圖移除</button>
         </div>
         
-        <div class="space-y-4">
+        <div class="overflow-y-auto flex-1 space-y-4 pb-4 pr-1">
           <div>
             <label class="block text-[11px] font-bold text-gray-500 mb-2">姓名</label>
             <input v-model="memberForm.name" type="text" class="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-base focus:outline-none focus:border-blue-500" :disabled="currentUser.role !== 'admin' && memberForm.mode === 'edit'">
@@ -339,47 +373,44 @@
           </div>
           <div v-if="memberForm.nodeId !== 'root'">
             <label class="block text-[11px] font-bold text-gray-500 mb-2">重要活動/備註提醒</label>
-            <textarea v-model="memberForm.notes" rows="2" placeholder="例如：下週二公會考..." class="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-base focus:outline-none focus:border-blue-500"></textarea>
+            <textarea v-model="memberForm.notes" rows="2" class="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-base focus:outline-none focus:border-blue-500"></textarea>
           </div>
-          <button @click="saveMember" class="w-full bg-gray-900 text-white font-bold py-3.5 rounded-xl shadow-md active:scale-95 transition-transform">儲存組織變更</button>
-        </div>
-
-        <div v-if="currentUser.role === 'admin' && memberForm.mode === 'edit' && memberForm.nodeId !== 'root'" class="mt-6 pt-6 border-t border-gray-200">
-          <p class="text-[11px] font-black text-gray-400 tracking-widest uppercase mb-3">系統帳號綁定狀態</p>
           
-          <template v-if="memberForm.empId">
-            <div class="bg-blue-50 rounded-xl p-4 border border-blue-100 flex flex-col gap-3">
-              <div class="flex justify-between items-center">
-                <div><p class="text-xs font-bold text-blue-700">已綁定登入員編</p><p class="text-xl font-black text-blue-600">{{ memberForm.empId }}</p></div>
-                <div class="px-2 py-1 rounded text-[10px] font-bold" :class="getUserStatus(memberForm.empId) ? 'bg-emerald-100 text-emerald-600' : 'bg-red-100 text-red-600'">{{ getUserStatus(memberForm.empId) ? '✅ 正常使用中' : '❌ 已停權' }}</div>
+          <div v-if="currentUser.role === 'admin' && memberForm.mode === 'edit' && memberForm.nodeId !== 'root'" class="mt-6 pt-6 border-t border-gray-200">
+            <p class="text-[11px] font-black text-gray-400 tracking-widest uppercase mb-3">系統帳號綁定狀態</p>
+            
+            <template v-if="memberForm.empId">
+              <div class="bg-blue-50 rounded-xl p-4 border border-blue-100 flex flex-col gap-3">
+                <div class="flex justify-between items-center">
+                  <div><p class="text-xs font-bold text-blue-700">已綁定登入員編</p><p class="text-xl font-black text-blue-600">{{ memberForm.empId }}</p></div>
+                  <div class="px-2 py-1 rounded text-[10px] font-bold" :class="getUserStatus(memberForm.empId) ? 'bg-emerald-100 text-emerald-600' : 'bg-red-100 text-red-600'">{{ getUserStatus(memberForm.empId) ? '✅ 正常使用中' : '❌ 已停權' }}</div>
+                </div>
+                <div class="flex gap-2 mt-1">
+                  <button @click="openSingleUserManage(memberForm.empId)" class="flex-1 bg-white text-blue-600 border border-blue-200 py-2 rounded-lg text-xs font-bold shadow-sm active:scale-95">管理此帳號 (停權/密碼)</button>
+                </div>
               </div>
-              <div class="flex gap-2 mt-1">
-                <button @click="openSingleUserManage(memberForm.empId)" class="flex-1 bg-white text-blue-600 border border-blue-200 py-2 rounded-lg text-xs font-bold shadow-sm active:scale-95">編輯帳號狀態 (停權/密碼)</button>
+            </template>
+            
+            <template v-else>
+              <div class="bg-gray-50 rounded-xl p-4 border border-dashed border-gray-300">
+                <p class="text-xs font-bold text-gray-500 mb-3 text-center">尚未綁定 339 系統登入權限</p>
+                <div class="space-y-2">
+                   <div v-if="unboundUsers.length > 0" class="flex gap-2">
+                      <select v-model="bindExistingEmpId" class="flex-1 bg-white border border-gray-200 rounded px-2 py-2 text-xs">
+                         <option disabled value="">選擇已開通之帳號</option>
+                         <option v-for="u in unboundUsers" :key="u.emp_id" :value="u.emp_id">{{ u.name }} ({{ u.emp_id }})</option>
+                      </select>
+                      <button @click="bindExistingAccountToNode" class="bg-gray-800 text-white px-3 py-2 rounded text-xs font-bold whitespace-nowrap">直接綁定</button>
+                   </div>
+                   <button @click="openBindUserModal" class="w-full bg-emerald-500 text-white font-bold py-2.5 rounded-lg shadow-sm active:scale-95 transition-transform text-sm">+ 建立新帳號並綁定</button>
+                </div>
               </div>
-            </div>
-          </template>
-          
-          <template v-else>
-            <div class="bg-gray-50 rounded-xl p-4 border border-dashed border-gray-300 text-center">
-              <p class="text-xs font-bold text-gray-500 mb-3">此夥伴尚未擁有 339 系統登入權限</p>
-              <button @click="openBindUserModal" class="w-full bg-emerald-500 text-white font-bold py-3 rounded-xl shadow-md active:scale-95 transition-transform">🔗 開通並綁定系統帳號</button>
-            </div>
-          </template>
+            </template>
+          </div>
         </div>
-      </div>
-    </div>
-
-    <div v-if="isAddUserModalOpen" class="fixed inset-0 z-[60] flex items-end justify-center">
-      <div class="absolute inset-0 bg-gray-900/60 backdrop-blur-sm" @click="isAddUserModalOpen = false"></div>
-      <div class="relative w-full max-w-md bg-white rounded-t-[2rem] p-6 shadow-2xl animate-slide-up pb-10">
-        <div class="w-12 h-1.5 bg-gray-200 rounded-full mx-auto mb-6"></div>
-        <div class="flex justify-between items-start mb-6">
-          <div><h2 class="text-xl font-black text-gray-900 mb-1">開通並綁定帳號</h2><p class="text-xs font-bold text-emerald-600">為 {{ newUserForm.name }} 建立專屬登入權限</p></div>
-        </div>
-        <div class="space-y-4">
-          <div><label class="block text-[11px] font-bold text-gray-500 mb-2">登入員編 (帳號)</label><input v-model="newUserForm.empId" type="text" placeholder="例如：200101234" class="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-base focus:outline-none focus:border-emerald-500"></div>
-          <div><label class="block text-[11px] font-bold text-gray-500 mb-2">預設密碼 (夥伴登入後可改)</label><input v-model="newUserForm.password" type="text" placeholder="例如：000000" class="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-base focus:outline-none focus:border-emerald-500"></div>
-          <button @click="createUserAccountAndBind" class="w-full mt-2 bg-emerald-600 text-white font-bold py-3.5 rounded-xl shadow-lg active:scale-95 transition-transform">確認開通與綁定</button>
+        
+        <div class="shrink-0 pt-4 mt-2 border-t border-gray-100 bg-white">
+           <button @click="saveMember" class="w-full bg-gray-900 text-white font-bold py-3.5 rounded-xl shadow-md active:scale-95 transition-transform">儲存組織變更</button>
         </div>
       </div>
     </div>
@@ -393,8 +424,9 @@
         <p class="text-xs font-bold text-gray-400 mb-6" v-if="managingUser">{{ managingUser.emp_id }}</p>
         
         <div class="space-y-3" v-if="managingUser">
-          <button @click="toggleUserLock(managingUser)" class="w-full font-bold py-3 rounded-xl transition-colors" :class="managingUser.is_active ? 'bg-red-50 text-red-600 hover:bg-red-100' : 'bg-emerald-500 text-white shadow-md'">{{ managingUser.is_active ? '🚫 鎖定並停權此帳號' : '✅ 解除鎖定，恢復權限' }}</button>
-          <button @click="resetUserPassword(managingUser)" class="w-full bg-gray-100 text-gray-700 font-bold py-3 rounded-xl hover:bg-gray-200 transition-colors">🔄 強制重設密碼為 000000</button>
+          <button @click="toggleUserLock(managingUser)" class="w-full font-bold py-3 rounded-xl transition-colors" :class="managingUser.is_active ? 'bg-orange-50 text-orange-600 hover:bg-orange-100' : 'bg-emerald-500 text-white shadow-md'">{{ managingUser.is_active ? '🚫 鎖定並停權此帳號' : '✅ 解除鎖定，恢復權限' }}</button>
+          <button @click="resetUserPassword(managingUser)" class="w-full bg-blue-50 text-blue-600 font-bold py-3 rounded-xl hover:bg-blue-100 transition-colors">🔄 強制重設密碼為 000000</button>
+          <button @click="deleteUserAccount(managingUser)" class="w-full bg-red-50 text-red-600 font-bold py-3 rounded-xl hover:bg-red-100 transition-colors">🗑️ 徹底刪除帳號</button>
         </div>
       </div>
     </div>
@@ -458,6 +490,8 @@
         const currentDayActivities = ref([]); 
         const orgTree = ref({ id: 'root', name: '鎔安', status: '區經理', notes: '', children: [] });
         const orgZoom = ref(1.0);
+        
+        const groupViewMode = ref('day'); // 'day' 或 'month'
 
         const doLogin = async () => {
           if (!loginForm.empId || !loginForm.password) { loginError.value = '請輸入帳號與密碼'; return; }
@@ -465,7 +499,7 @@
           try {
             const { data } = await supabase.from('team_users').select('*').eq('emp_id', loginForm.empId).eq('password', loginForm.password).single();
             if (data) {
-              if (data.is_active === false) { loginError.value = '帳號已被停權，請聯繫區經理。'; isLoading.value = false; return; }
+              if (data.is_active === false) { loginError.value = '帳號已被停權，登入失敗。'; isLoading.value = false; return; }
               currentUser.value = data; viewingEmpId.value = data.emp_id; 
               if (data.role === 'admin') {
                 const res = await supabase.from('team_users').select('emp_id, name, is_active, role');
@@ -485,8 +519,7 @@
         };
 
         const getUserStatus = (empId) => {
-          const u = teamMembers.value.find(m => m.emp_id === empId);
-          return u ? u.is_active : false;
+          const u = teamMembers.value.find(m => m.emp_id === empId); return u ? u.is_active : false;
         };
 
         const changeMyPassword = async () => {
@@ -521,6 +554,12 @@
            const encryptedStr = CryptoJS.AES.encrypt(JSON.stringify(vaultData), '123456').toString();
            await supabase.from('activities').upsert({ id: '00000000-0000-0000-0000-000000000001', activity_date: '2099-12-31', start_time: '00:00', activity_type: 'VAULT', client_name: 'APP_VAULT_V1', notes: encryptedStr });
         };
+
+        // 計算與輔助功能
+        const getFlatNodes = (node, arr = []) => { arr.push(node); if (node.children) { node.children.forEach(c => getFlatNodes(c, arr)); } return arr; };
+        const allNodes = computed(() => getFlatNodes(orgTree.value));
+        const unboundNodes = computed(() => allNodes.value.filter(n => !n.emp_id));
+        const unboundUsers = computed(() => teamMembers.value.filter(u => u.role !== 'admin' && !allNodes.value.some(n => n.emp_id === u.emp_id)));
 
         const currentTab = ref('339');
         const isStatsModalOpen = ref(false); 
@@ -558,21 +597,24 @@
           return '持續累積活動量，量大是致勝的關鍵！';
         });
 
+        // 🌍 全組分析 (支援日/月切換)
+        const filteredGroupActivities = computed(() => {
+           if (groupViewMode.value === 'day') return currentDayActivities.value;
+           const curr = new Date(currentDate.value); const y = curr.getFullYear(); const m = curr.getMonth();
+           return allActivitiesData.value.filter(a => { const d = new Date(a.activity_date); return d.getFullYear()===y && d.getMonth()===m; });
+        });
+
         const allGroupStats = computed(() => {
-           let s = 0; let r = 0;
-           currentDayActivities.value.forEach(act => { s += act.sales_score; r += act.recruit_score; });
-           return { sales: s, recruit: r };
+           let s = 0; let r = 0; filteredGroupActivities.value.forEach(act => { s += act.sales_score; r += act.recruit_score; }); return { sales: s, recruit: r };
         });
 
         const memberStatsList = computed(() => {
            if(viewingEmpId.value !== 'ALL') return [];
            const map = {};
            teamMembers.value.forEach(m => map[m.emp_id] = { emp_id: m.emp_id, name: m.name, sales: 0, recruit: 0, total: 0 });
-           currentDayActivities.value.forEach(act => {
+           filteredGroupActivities.value.forEach(act => {
               if(map[act.emp_id]) {
-                 map[act.emp_id].sales += act.sales_score;
-                 map[act.emp_id].recruit += act.recruit_score;
-                 map[act.emp_id].total += (act.sales_score + act.recruit_score);
+                 map[act.emp_id].sales += act.sales_score; map[act.emp_id].recruit += act.recruit_score; map[act.emp_id].total += (act.sales_score + act.recruit_score);
               }
            });
            return Object.values(map).sort((a,b) => b.total - a.total);
@@ -581,11 +623,12 @@
         const groupAiSuggestion = computed(() => {
            if(viewingEmpId.value !== 'ALL') return '';
            const list = memberStatsList.value;
-           const zeros = list.filter(u => u.total === 0).map(u => u.name);
-           let msg = `今日全組總推銷動能為 ${allGroupStats.value.sales} 分，增員動能 ${allGroupStats.value.recruit} 分。\n\n`;
-           if(list.length > 0 && list[0].total > 0) msg += `🔥 今日 MVP：${list[0].name} (表現優異！)\n`;
-           if(zeros.length > 0) msg += `🚨 注意：${zeros.join('、')} 今日尚無任何活動產出，建議主動關心約訪狀況。`;
-           else msg += `✨ 恭喜！全組今日皆有活動產出，請繼續保持！`;
+           const zeros = list.filter(u => u.total === 0 && u.emp_id !== currentUser.value.emp_id).map(u => u.name); // 排除總管自己
+           const period = groupViewMode.value === 'day' ? '今日' : '本月';
+           let msg = `${period}全組總推銷動能為 ${allGroupStats.value.sales} 分，增員動能 ${allGroupStats.value.recruit} 分。\n\n`;
+           if(list.length > 0 && list[0].total > 0) msg += `🔥 ${period} MVP：${list[0].name} (表現優異！)\n`;
+           if(zeros.length > 0) msg += `🚨 注意：${zeros.join('、')} ${period}尚無活動產出，建議主動關心約訪狀況。`;
+           else msg += `✨ 恭喜！全組${period}皆有活動產出，請繼續保持！`;
            return msg;
         });
 
@@ -625,12 +668,12 @@
         
         const isMemberModalOpen = ref(false);
         const memberForm = reactive({ mode: 'add', nodeId: null, targetNode: null, name: '', status: '準備公會考試', notes: '', empId: '' });
+        const bindExistingEmpId = ref('');
 
-        const findNodeByName = (node, name) => { if (node.name === name) return node; if (node.children) { for (let child of node.children) { const res = findNodeByName(child, name); if (res) return res; } } return null; };
         const checkIsDescendant = (parentNode, targetId) => { if (parentNode.id === targetId) return true; if (parentNode.children) { for (let child of parentNode.children) { if (checkIsDescendant(child, targetId)) return true; } } return false; };
         const hasEditPermission = (targetNode) => {
           if (currentUser.value.role === 'admin') return true;
-          const myNode = findNodeByName(orgTree.value, currentUser.value.name);
+          const myNode = allNodes.value.find(n => n.name === currentUser.value.name);
           if (!myNode) return false; return checkIsDescendant(myNode, targetNode.id);
         };
 
@@ -638,7 +681,7 @@
           if (!hasEditPermission(node)) return alert(`權限限制：您僅能修改自己轄下的直屬夥伴資料。`);
           memberForm.mode = 'edit'; memberForm.nodeId = node.id; memberForm.targetNode = node;
           memberForm.name = node.name; memberForm.status = node.status; memberForm.notes = node.notes || ''; memberForm.empId = node.emp_id || '';
-          isMemberModalOpen.value = true;
+          bindExistingEmpId.value = ''; isMemberModalOpen.value = true;
         };
 
         const openAddSubordinateModal = (parentNode) => {
@@ -664,36 +707,48 @@
 
         const deleteMember = async () => {
           if (memberForm.nodeId === 'root' || currentUser.value.role !== 'admin') return;
-          if (confirm('確定要移除此成員與其所有下屬嗎？')) {
+          if (confirm('確定要從組織圖移除此成員與其所有下屬嗎？（注意：此動作不會刪除對方的登入帳號，若要刪除帳號請至帳號大廳）')) {
             const result = findNodeAndParent(orgTree.value, memberForm.nodeId);
             if (result && result.parent) { result.parent.children = result.parent.children.filter(c => c.id !== memberForm.nodeId); await saveOrgTree(); isMemberModalOpen.value = false; }
           }
         };
 
+        const bindExistingAccountToNode = async () => {
+           if(!bindExistingEmpId.value) return;
+           memberForm.targetNode.emp_id = bindExistingEmpId.value; await saveOrgTree(); 
+           alert('已成功將帳號綁定至此節點！'); isMemberModalOpen.value = false;
+        };
+
         // 總管專屬功能：帳號管理中心
         const isAccountManagerOpen = ref(false);
         const isAddUserModalOpen = ref(false);
-        const newUserForm = reactive({ empId: '', name: '', password: '', targetNode: null });
+        const newUserForm = reactive({ empId: '', name: '', password: '', bindMode: 'none', targetNodeId: '', parentNodeId: '', newStatus: '業務代表' });
         
         const openBindUserModal = () => {
-           newUserForm.empId = ''; newUserForm.name = memberForm.name; newUserForm.password = '000000'; newUserForm.targetNode = memberForm.targetNode;
+           newUserForm.empId = ''; newUserForm.name = memberForm.name; newUserForm.password = '000000'; newUserForm.bindMode = 'existing'; newUserForm.targetNodeId = memberForm.nodeId;
            isMemberModalOpen.value = false; isAddUserModalOpen.value = true;
         };
 
-        const createUserAccountAndBind = async () => {
+        const createUserAccountPro = async () => {
           if(!newUserForm.empId || !newUserForm.name || !newUserForm.password) return alert('請填寫完整');
+          // 1. 建立帳號
           await supabase.from('team_users').insert({ emp_id: newUserForm.empId, password: newUserForm.password, name: newUserForm.name, role: 'agent' });
-          newUserForm.targetNode.emp_id = newUserForm.empId;
-          await saveOrgTree();
+          
+          // 2. 處理組織圖連動
+          if (newUserForm.bindMode === 'existing' && newUserForm.targetNodeId) {
+             const tNode = allNodes.value.find(n => n.id === newUserForm.targetNodeId);
+             if(tNode) { tNode.emp_id = newUserForm.empId; await saveOrgTree(); }
+          } else if (newUserForm.bindMode === 'new' && newUserForm.parentNodeId) {
+             const pNode = allNodes.value.find(n => n.id === newUserForm.parentNodeId);
+             if(pNode) {
+                const newNode = { id: 'node_' + Date.now(), name: newUserForm.name, status: newUserForm.newStatus, notes: '', emp_id: newUserForm.empId, children: [] };
+                if(!pNode.children) pNode.children = []; pNode.children.push(newNode); await saveOrgTree();
+             }
+          }
+          
           const res = await supabase.from('team_users').select('emp_id, name, is_active, role'); teamMembers.value = res.data;
-          isAddUserModalOpen.value = false; alert('綁定成功！夥伴已可使用此員編登入。');
-        };
-
-        const createUserAccountOnly = async () => {
-          if(!newUserForm.empId || !newUserForm.name || !newUserForm.password) return alert('請填寫完整');
-          await supabase.from('team_users').insert({ emp_id: newUserForm.empId, password: newUserForm.password, name: newUserForm.name, role: 'agent' });
-          const res = await supabase.from('team_users').select('emp_id, name, is_active, role'); teamMembers.value = res.data;
-          newUserForm.empId = ''; newUserForm.name = ''; newUserForm.password = ''; alert('獨立帳號開通成功！');
+          newUserForm.empId = ''; newUserForm.name = ''; newUserForm.password = ''; newUserForm.bindMode = 'none'; 
+          alert('帳號開通且設定完成！');
         };
 
         const isSingleAccountManageOpen = ref(false);
@@ -705,6 +760,7 @@
         };
 
         const toggleUserLock = async (user) => {
+          if (user.role === 'admin') return alert('無法停權總管帳號');
           const newStatus = !user.is_active; await supabase.from('team_users').update({ is_active: newStatus }).eq('emp_id', user.emp_id);
           user.is_active = newStatus;
           const res = await supabase.from('team_users').select('emp_id, name, is_active, role'); teamMembers.value = res.data;
@@ -713,6 +769,22 @@
         const resetUserPassword = async (user) => {
           if(confirm(`確定要重設 ${user.name} 的密碼為 000000 嗎？`)) {
             await supabase.from('team_users').update({ password: '000000' }).eq('emp_id', user.emp_id); alert(`密碼已重設`);
+          }
+        };
+
+        const deleteUserAccount = async (user) => {
+          if (user.role === 'admin') return alert('系統拒絕刪除總管帳號');
+          if (confirm(`【極度危險】\n確定要徹底刪除 ${user.name} 的帳號嗎？\n此動作會刪除該員編的所有行程紀錄，且完全無法復原！`)) {
+             await supabase.from('team_activities').delete().eq('emp_id', user.emp_id);
+             await supabase.from('team_users').delete().eq('emp_id', user.emp_id);
+             
+             // 從組織圖解除綁定
+             const linkedNode = allNodes.value.find(n => n.emp_id === user.emp_id);
+             if(linkedNode) { linkedNode.emp_id = ''; await saveOrgTree(); }
+             
+             const res = await supabase.from('team_users').select('emp_id, name, is_active, role'); teamMembers.value = res.data;
+             isSingleAccountManageOpen.value = false;
+             alert('帳號與行程皆已徹底刪除。');
           }
         };
 
@@ -728,8 +800,9 @@
         return { 
           currentUser, viewingEmpId, teamMembers, loginForm, loginError, isLoading, doLogin, getViewingName, getUserStatus, loadActivitiesData, refreshData,
           isSettingsModalOpen, newPassword, changeMyPassword,
-          isAccountManagerOpen, isSingleAccountManageOpen, managingUser, openSingleUserManage, toggleUserLock, resetUserPassword,
-          isAddUserModalOpen, newUserForm, openBindUserModal, createUserAccountAndBind, createUserAccountOnly,
+          isAccountManagerOpen, isSingleAccountManageOpen, managingUser, openSingleUserManage, toggleUserLock, resetUserPassword, deleteUserAccount,
+          isAddUserModalOpen, newUserForm, openBindUserModal, createUserAccountPro, bindExistingEmpId, bindExistingAccountToNode,
+          allNodes, unboundNodes, unboundUsers, groupViewMode,
           currentTab, currentDate, formattedDate, changeDate, isStatsModalOpen,
           timeSlots, dailySales, dailyRecruit, personalAiSuggestion, allGroupStats, memberStatsList, groupAiSuggestion, getActivity, getTypeStyle, 
           isActivityModalOpen, selectedTime, activityTypes, formData, openActivityModal, saveActivity, deleteActivity,
