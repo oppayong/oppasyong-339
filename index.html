@@ -11,8 +11,8 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
   <style>
-    [v-cloak] { display: none !important; }
-    body { background-color: #f4f4f5; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; -webkit-tap-highlight-color: transparent; }
+    /* 移除容易導致白畫面的 v-cloak，改用原生過渡 */
+    body { background-color: #f4f4f5; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; -webkit-tap-highlight-color: transparent; margin: 0; padding: 0; }
     ::-webkit-scrollbar { display: none; }
     .glass-nav { background: rgba(255, 255, 255, 0.92); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); border-top: 1px solid rgba(255,255,255,0.5); }
     .glass-card { background: rgba(255, 255, 255, 0.95); box-shadow: 0 10px 40px rgba(0,0,0,0.03); border: 1px solid rgba(255,255,255,0.8); }
@@ -21,7 +21,6 @@
     @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
     .animate-fade-in { animation: fadeIn 0.4s ease-out; }
     
-    /* 隱藏原生日期選擇器的 icon，讓介面更乾淨 */
     input[type="date"]::-webkit-calendar-picker-indicator {
       position: absolute; top: 0; left: 0; right: 0; bottom: 0; width: auto; height: auto; color: transparent; background: transparent; cursor: pointer;
     }
@@ -29,7 +28,11 @@
 </head>
 <body class="text-gray-800 pb-24 select-none antialiased">
 
-  <div id="app" class="max-w-md mx-auto min-h-screen relative overflow-hidden" v-cloak>
+  <div id="fallback-error" style="display: none; padding: 20px; text-align: center; color: #ef4444; font-weight: bold; margin-top: 50px;">
+    系統載入異常，請確認網路連線或重新整理頁面。
+  </div>
+
+  <div id="app" class="max-w-md mx-auto min-h-screen relative overflow-hidden">
 
     <div v-if="!isUnlocked" class="fixed inset-0 z-[100] bg-gray-900 flex flex-col justify-center items-center p-6 animate-fade-in">
       <div class="w-full max-w-sm bg-white/10 backdrop-blur-2xl rounded-[2rem] p-8 border border-white/20 shadow-2xl text-center">
@@ -50,9 +53,9 @@
       </div>
     </div>
 
-    <template v-else>
+    <div v-else class="w-full h-full animate-fade-in">
       
-      <div v-show="currentTab === '339'" class="p-5 animate-fade-in">
+      <div v-show="currentTab === '339'" class="p-5 pb-20">
         
         <div class="flex justify-between items-center mb-4 px-2">
           <button @click="changeDate(-1)" class="p-2 text-gray-400 hover:text-blue-600 transition-colors active:scale-90">
@@ -89,7 +92,6 @@
 
         <div class="grid grid-cols-2 gap-3 mb-6">
           <div class="bg-gradient-to-br from-slate-800 to-gray-900 rounded-2xl p-4 shadow-lg border border-gray-700 text-white relative overflow-hidden">
-            <div class="absolute -right-2 -top-2 opacity-10"><svg class="w-16 h-16" fill="currentColor" viewBox="0 0 24 24"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"></path></svg></div>
             <p class="text-[10px] text-gray-400 font-bold mb-2 tracking-widest">本週累積</p>
             <div class="flex justify-between items-end">
               <div><span class="text-[10px] text-gray-400 mr-1">銷</span><span class="text-lg font-black text-blue-400">{{ weeklyStats.sales }}</span></div>
@@ -107,8 +109,7 @@
 
         <div class="space-y-3 relative pb-8">
           <div class="absolute left-[3.25rem] top-4 bottom-4 w-[2px] bg-gray-200/50 -z-10 rounded-full"></div>
-          <div v-for="time in timeSlots" :key="time" @click="openActivityModal(time)"
-               class="flex bg-white rounded-2xl shadow-sm border border-gray-100 active:scale-[0.98] transition-all cursor-pointer overflow-hidden">
+          <div v-for="time in timeSlots" :key="time" @click="openActivityModal(time)" class="flex bg-white rounded-2xl shadow-sm border border-gray-100 active:scale-[0.98] transition-all cursor-pointer overflow-hidden">
             <div class="w-20 flex justify-center py-4"><span class="text-[13px] font-bold text-gray-400">{{ time }}</span></div>
             <div class="flex-1 p-4 border-l border-gray-50 flex flex-col justify-center min-h-[4.5rem]">
               <template v-if="getActivity(time)">
@@ -118,15 +119,13 @@
                   <p v-if="getActivity(time).notes" class="text-xs text-gray-400 mt-1 truncate">{{ getActivity(time).notes }}</p>
                 </div>
               </template>
-              <template v-else>
-                <span class="text-xs text-gray-300 font-bold tracking-wider">+ 新增行程</span>
-              </template>
+              <template v-else><span class="text-xs text-gray-300 font-bold tracking-wider">+ 新增行程</span></template>
             </div>
           </div>
         </div>
       </div>
 
-      <div v-show="currentTab === 'org'" class="p-5 animate-fade-in pb-12">
+      <div v-show="currentTab === 'org'" class="p-5 pb-24">
         <header class="mb-8 mt-2 flex justify-between items-end">
           <div>
             <h1 class="text-2xl font-black text-gray-900 tracking-tight">組織發展</h1>
@@ -147,123 +146,104 @@
           </div>
 
           <div class="grid grid-cols-2 gap-4 w-full mt-4">
-            <div v-for="(member, index) in teamMembers" :key="index" @click="openMemberModal(index)" 
-                 class="bg-white p-4 rounded-2xl border border-gray-100 shadow-sm relative active:scale-95 transition-transform cursor-pointer overflow-hidden flex flex-col justify-between h-full">
+            <div v-for="(member, index) in teamMembers" :key="index" @click="openMemberModal(index)" class="bg-white p-4 rounded-2xl border border-gray-100 shadow-sm relative active:scale-95 transition-transform cursor-pointer overflow-hidden flex flex-col justify-between h-full">
               <div class="absolute top-0 left-0 w-full h-1.5 rounded-t-2xl" :class="getMemberColor(member.status).topBar"></div>
               <div>
                 <p class="text-[9px] font-bold mb-1 line-clamp-1 mt-1" :class="getMemberColor(member.status).text">{{ member.status }}</p>
                 <p class="text-sm font-black text-gray-900">{{ member.name }}</p>
               </div>
-              <div v-if="member.notes" class="mt-3 inline-block px-2 py-1.5 rounded-lg text-[10px] font-bold leading-relaxed line-clamp-2" :class="getMemberColor(member.status).bg">
-                {{ member.notes }}
-              </div>
+              <div v-if="member.notes" class="mt-3 inline-block px-2 py-1.5 rounded-lg text-[10px] font-bold leading-relaxed line-clamp-2" :class="getMemberColor(member.status).bg">{{ member.notes }}</div>
             </div>
           </div>
         </div>
       </div>
 
-      <nav class="fixed bottom-0 left-0 right-0 glass-nav pb-safe pt-2 px-6 z-40 shadow-[0_-5px_20px_rgba(0,0,0,0.03)]">
-        <div class="max-w-md mx-auto flex justify-around items-center h-16">
-          <div @click="currentTab = '339'" class="flex flex-col items-center justify-center w-20 h-full cursor-pointer" :class="currentTab === '339' ? 'text-blue-600' : 'text-gray-400'">
-            <svg class="w-6 h-6 mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
-            <span class="text-[10px] font-bold">339 戰情</span>
-          </div>
-          <div class="relative group">
-            <div class="w-10 h-10 bg-gray-50 rounded-full flex items-center justify-center shadow-inner cursor-pointer" @click="syncToCloud">
-              <div class="w-3 h-3 rounded-full" :class="cloudActive ? 'bg-emerald-400 shadow-[0_0_8px_rgba(52,211,153,0.8)]' : 'bg-gray-300'"></div>
-            </div>
-          </div>
-          <div @click="currentTab = 'org'" class="flex flex-col items-center justify-center w-20 h-full cursor-pointer" :class="currentTab === 'org' ? 'text-blue-600' : 'text-gray-400'">
-            <svg class="w-6 h-6 mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path></svg>
-            <span class="text-[10px] font-bold">組織發展</span>
+    </div> <nav v-if="isUnlocked" class="fixed bottom-0 left-0 right-0 glass-nav pb-safe pt-2 px-6 z-40 shadow-[0_-5px_20px_rgba(0,0,0,0.03)]">
+      <div class="max-w-md mx-auto flex justify-around items-center h-16">
+        <div @click="currentTab = '339'" class="flex flex-col items-center justify-center w-20 h-full cursor-pointer" :class="currentTab === '339' ? 'text-blue-600' : 'text-gray-400'">
+          <svg class="w-6 h-6 mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
+          <span class="text-[10px] font-bold">339 戰情</span>
+        </div>
+        <div class="relative group">
+          <div class="w-10 h-10 bg-gray-50 rounded-full flex items-center justify-center shadow-inner cursor-pointer" @click="syncToCloud">
+            <div class="w-3 h-3 rounded-full" :class="cloudActive ? 'bg-emerald-400 shadow-[0_0_8px_rgba(52,211,153,0.8)]' : 'bg-gray-300'"></div>
           </div>
         </div>
-      </nav>
-
-      <div v-if="isActivityModalOpen" class="fixed inset-0 z-50 flex items-end justify-center">
-        <div class="absolute inset-0 bg-gray-900/60 backdrop-blur-sm" @click="isActivityModalOpen = false"></div>
-        <div class="relative w-full max-w-md bg-white rounded-t-[2rem] p-6 shadow-2xl animate-slide-up pb-10">
-          <div class="w-12 h-1.5 bg-gray-200 rounded-full mx-auto mb-6"></div>
-          <div class="flex justify-between items-start mb-6">
-            <div>
-              <h2 class="text-xl font-black text-gray-900 mb-1">記錄活動</h2>
-              <p class="text-xs font-bold text-blue-600">{{ formattedDate }} | {{ selectedTime }}</p>
-            </div>
-            <button v-if="formData.clientName" @click="deleteActivity" class="text-[10px] font-bold text-red-500 bg-red-50 px-3 py-2 rounded-xl">刪除</button>
-          </div>
-
-          <div class="space-y-4">
-            <div>
-              <label class="block text-[11px] font-bold text-gray-500 mb-2">對象 (AES 加密保護)</label>
-              <input v-model="formData.clientName" type="text" placeholder="輸入客戶或準增員..." class="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-blue-500">
-            </div>
-            <div>
-              <label class="block text-[11px] font-bold text-gray-500 mb-2">活動類型</label>
-              <div class="flex flex-wrap gap-2">
-                <button v-for="type in activityTypes" :key="type" @click="formData.type = type" 
-                        class="px-3 py-1.5 rounded-lg text-xs font-bold transition-all border" 
-                        :class="formData.type === type ? 'bg-gray-900 text-white border-gray-900 shadow-md' : 'bg-white border-gray-200 text-gray-600'">
-                  {{ type }}
-                </button>
-              </div>
-            </div>
-            <div>
-              <label class="block text-[11px] font-bold text-gray-500 mb-2">備註事項 (AES 加密保護)</label>
-              <textarea v-model="formData.notes" rows="2" placeholder="重點記錄..." class="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-blue-500"></textarea>
-            </div>
-            <button @click="saveActivity" class="w-full mt-2 bg-blue-600 text-white font-bold py-3.5 rounded-xl shadow-lg shadow-blue-200 active:scale-95 transition-transform">
-              加密並儲存至雲端
-            </button>
-          </div>
+        <div @click="currentTab = 'org'" class="flex flex-col items-center justify-center w-20 h-full cursor-pointer" :class="currentTab === 'org' ? 'text-blue-600' : 'text-gray-400'">
+          <svg class="w-6 h-6 mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path></svg>
+          <span class="text-[10px] font-bold">組織發展</span>
         </div>
       </div>
+    </nav>
 
-      <div v-if="isMemberModalOpen" class="fixed inset-0 z-50 flex items-end justify-center">
-        <div class="absolute inset-0 bg-gray-900/60 backdrop-blur-sm" @click="isMemberModalOpen = false"></div>
-        <div class="relative w-full max-w-md bg-white rounded-t-[2rem] p-6 shadow-2xl animate-slide-up pb-10">
-          <div class="w-12 h-1.5 bg-gray-200 rounded-full mx-auto mb-6"></div>
-          <div class="flex justify-between items-start mb-6">
-            <h2 class="text-xl font-black text-gray-900">{{ editingMemberIndex === -1 ? '新增團隊成員' : '編輯成員資料' }}</h2>
-            <button v-if="editingMemberIndex !== -1" @click="deleteMember" class="text-[10px] font-bold text-red-500 bg-red-50 px-3 py-2 rounded-xl">移除成員</button>
+    <div v-if="isActivityModalOpen" class="fixed inset-0 z-50 flex items-end justify-center">
+      <div class="absolute inset-0 bg-gray-900/60 backdrop-blur-sm" @click="isActivityModalOpen = false"></div>
+      <div class="relative w-full max-w-md bg-white rounded-t-[2rem] p-6 shadow-2xl animate-slide-up pb-10">
+        <div class="w-12 h-1.5 bg-gray-200 rounded-full mx-auto mb-6"></div>
+        <div class="flex justify-between items-start mb-6">
+          <div><h2 class="text-xl font-black text-gray-900 mb-1">記錄活動</h2><p class="text-xs font-bold text-blue-600">{{ formattedDate }} | {{ selectedTime }}</p></div>
+          <button v-if="formData.clientName" @click="deleteActivity" class="text-[10px] font-bold text-red-500 bg-red-50 px-3 py-2 rounded-xl">刪除</button>
+        </div>
+        <div class="space-y-4">
+          <div>
+            <label class="block text-[11px] font-bold text-gray-500 mb-2">對象 (AES 加密保護)</label>
+            <input v-model="formData.clientName" type="text" placeholder="輸入客戶或準增員..." class="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-blue-500">
           </div>
-          <div class="space-y-4">
-            <div>
-              <label class="block text-[11px] font-bold text-gray-500 mb-2">姓名</label>
-              <input v-model="memberForm.name" type="text" class="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-blue-500">
+          <div>
+            <label class="block text-[11px] font-bold text-gray-500 mb-2">活動類型</label>
+            <div class="flex flex-wrap gap-2">
+              <button v-for="type in activityTypes" :key="type" @click="formData.type = type" class="px-3 py-1.5 rounded-lg text-xs font-bold transition-all border" :class="formData.type === type ? 'bg-gray-900 text-white border-gray-900 shadow-md' : 'bg-white border-gray-200 text-gray-600'">{{ type }}</button>
             </div>
-            <div>
-              <label class="block text-[11px] font-bold text-gray-500 mb-2">目前狀態</label>
-              <select v-model="memberForm.status" class="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-blue-500 appearance-none">
-                <option v-for="status in memberStatuses" :key="status" :value="status">{{ status }}</option>
-              </select>
-            </div>
-            <div>
-              <label class="block text-[11px] font-bold text-gray-500 mb-2">重要活動/備註提醒</label>
-              <textarea v-model="memberForm.notes" rows="2" placeholder="例如：下週二公會考..." class="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-blue-500"></textarea>
-            </div>
-            <button @click="saveMember" class="w-full mt-2 bg-gray-900 text-white font-bold py-3.5 rounded-xl shadow-lg active:scale-95 transition-transform">
-              儲存組織變更
-            </button>
           </div>
+          <div>
+            <label class="block text-[11px] font-bold text-gray-500 mb-2">備註事項 (AES 加密保護)</label>
+            <textarea v-model="formData.notes" rows="2" placeholder="重點記錄..." class="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-blue-500"></textarea>
+          </div>
+          <button @click="saveActivity" class="w-full mt-2 bg-blue-600 text-white font-bold py-3.5 rounded-xl shadow-lg shadow-blue-200 active:scale-95 transition-transform">加密並儲存至雲端</button>
         </div>
       </div>
+    </div>
 
-    </template>
-  </div>
+    <div v-if="isMemberModalOpen" class="fixed inset-0 z-50 flex items-end justify-center">
+      <div class="absolute inset-0 bg-gray-900/60 backdrop-blur-sm" @click="isMemberModalOpen = false"></div>
+      <div class="relative w-full max-w-md bg-white rounded-t-[2rem] p-6 shadow-2xl animate-slide-up pb-10">
+        <div class="w-12 h-1.5 bg-gray-200 rounded-full mx-auto mb-6"></div>
+        <div class="flex justify-between items-start mb-6">
+          <h2 class="text-xl font-black text-gray-900">{{ editingMemberIndex === -1 ? '新增團隊成員' : '編輯成員資料' }}</h2>
+          <button v-if="editingMemberIndex !== -1" @click="deleteMember" class="text-[10px] font-bold text-red-500 bg-red-50 px-3 py-2 rounded-xl">移除成員</button>
+        </div>
+        <div class="space-y-4">
+          <div>
+            <label class="block text-[11px] font-bold text-gray-500 mb-2">姓名</label>
+            <input v-model="memberForm.name" type="text" class="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-blue-500">
+          </div>
+          <div>
+            <label class="block text-[11px] font-bold text-gray-500 mb-2">目前狀態</label>
+            <select v-model="memberForm.status" class="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-blue-500 appearance-none">
+              <option v-for="status in memberStatuses" :key="status" :value="status">{{ status }}</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-[11px] font-bold text-gray-500 mb-2">重要活動/備註提醒</label>
+            <textarea v-model="memberForm.notes" rows="2" placeholder="例如：下週二公會考..." class="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-blue-500"></textarea>
+          </div>
+          <button @click="saveMember" class="w-full mt-2 bg-gray-900 text-white font-bold py-3.5 rounded-xl shadow-lg active:scale-95 transition-transform">儲存組織變更</button>
+        </div>
+      </div>
+    </div>
+
+  </div> <script>
+    window.onerror = function(msg, url, line) {
+      document.getElementById('fallback-error').style.display = 'block';
+      document.getElementById('fallback-error').innerHTML = `系統啟動中斷：<br>${msg}<br><span style="font-size:12px; color:#888;">請嘗試重新整理頁面</span>`;
+    };
+  </script>
 
   <script>
-    // =========================================================================
-    // ⚠️ 鎔安請注意：請把你在 Supabase 拿到的網址和亂碼金鑰貼在下面兩個單引號裡面！
-    // ⚠️ 如果你沒貼，或是貼錯了，系統會自動變成「單機模式」保護你，絕對不會報錯。
-    // =========================================================================
     const SUPABASE_URL = 'https://mezculqrqxwlmfxgrcru.supabase.co'; 
-    const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1lemN1bHFycXh3bG1meGdyY3J1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY2NjU0NjUsImV4cCI6MjA5MjI0MTQ2NX0.U8aAJs5wi2_wPNWeNRrucQH7gPH4rEJx9KfTgHljVZI
+    const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1lemN1bHFycXh3bG1meGdyY3J1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY2NjU0NjUsImV4cCI6MjA5MjI0MTQ2NX0.U8aAJs5wi2_wPNWeNRrucQH7gPH4rEJx9KfTgHljVZI';
 
-
-
-https://mezculqrqxwlmfxgrcru.supabase.co';
-
-    const { createApp, ref, reactive, computed, onMounted, watch } = Vue;
+    const { createApp, ref, reactive, computed, onMounted } = Vue;
 
     createApp({
       setup() {
@@ -276,15 +256,12 @@ https://mezculqrqxwlmfxgrcru.supabase.co';
         const cloudStatus = ref('');
 
         let supabase = null;
-        if (SUPABASE_URL.startsWith('http') && SUPABASE_KEY.length > 20) {
+        if (typeof window.supabase !== 'undefined') {
           supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
           cloudActive.value = true;
           cloudStatus.value = "✓ 雲端資料庫連線已就緒";
-        } else {
-          cloudStatus.value = "⚠ 金鑰未設定，將使用設備單機安全模式";
         }
 
-        // --- 資料庫 (加密儲存) ---
         const allActivities = ref({}); 
         const teamMembers = ref([]);
 
@@ -297,7 +274,7 @@ https://mezculqrqxwlmfxgrcru.supabase.co';
             await loadDataFromCloudOrLocal();
             isUnlocked.value = true;
           } catch (e) {
-            loginError.value = '密碼錯誤或網路異常，無法解密資料';
+            loginError.value = '密碼錯誤，無法解密資料 (若初次使用請輸入新密碼)';
           }
           isSyncing.value = false;
         };
@@ -305,26 +282,24 @@ https://mezculqrqxwlmfxgrcru.supabase.co';
         const loadDataFromCloudOrLocal = async () => {
           let encryptedStr = null;
 
-          // 嘗試從 Supabase 雲端抓取我們特製的 "VAULT" (把整個金庫塞在 client_name = APP_VAULT_V1 的資料裡)
           if (cloudActive.value) {
-            const { data, error } = await supabase.from('activities').select('notes').eq('client_name', 'APP_VAULT_V1').limit(1);
-            if (data && data.length > 0) encryptedStr = data[0].notes;
+            try {
+              const { data, error } = await supabase.from('activities').select('notes').eq('client_name', 'APP_VAULT_V1').limit(1);
+              if (data && data.length > 0) encryptedStr = data[0].notes;
+            } catch(e) {}
           }
 
-          // 如果雲端沒有，找本機
           if (!encryptedStr) encryptedStr = localStorage.getItem('rongan_vault_data');
 
           if (encryptedStr) {
-            // 嘗試解密
             const bytes = CryptoJS.AES.decrypt(encryptedStr, ENCRYPTION_KEY.value);
             const decryptedStr = bytes.toString(CryptoJS.enc.Utf8);
-            if (!decryptedStr) throw new Error("解密失敗"); // 密碼錯誤
+            if (!decryptedStr) throw new Error("解密失敗"); 
             
             const decrypted = JSON.parse(decryptedStr);
             allActivities.value = decrypted.activities || {};
             teamMembers.value = decrypted.members || [];
           } else {
-            // 全新開始
             allActivities.value = {}; teamMembers.value = [];
           }
         };
@@ -334,26 +309,28 @@ https://mezculqrqxwlmfxgrcru.supabase.co';
           const dataToSave = { activities: allActivities.value, members: teamMembers.value, test_check: 'OK' };
           const encryptedStr = CryptoJS.AES.encrypt(JSON.stringify(dataToSave), ENCRYPTION_KEY.value).toString();
           
-          localStorage.setItem('rongan_vault_data', encryptedStr); // 永遠先存本機備份
+          localStorage.setItem('rongan_vault_data', encryptedStr); 
 
           if (cloudActive.value) {
-            // 利用活動資料表，偽裝成一筆特殊的日期紀錄來存放整個 App 的加密字串
-            await supabase.from('activities').upsert({
-              id: '00000000-0000-0000-0000-000000000001', // 固定 ID
-              activity_date: '2099-12-31',
-              start_time: '00:00', end_time: '23:59',
-              activity_type: 'VAULT',
-              client_name: 'APP_VAULT_V1',
-              notes: encryptedStr, // 加密大禮包塞這裡
-              sales_score: 0, recruit_score: 0
-            });
+            try {
+              await supabase.from('activities').upsert({
+                id: '00000000-0000-0000-0000-000000000001', 
+                activity_date: '2099-12-31', start_time: '00:00', end_time: '23:59',
+                activity_type: 'VAULT', client_name: 'APP_VAULT_V1',
+                notes: encryptedStr, sales_score: 0, recruit_score: 0
+              });
+            } catch(e) { console.error("雲端同步失敗", e); }
           }
         };
 
         // --- 日期與分析邏輯 ---
         const currentTab = ref('339');
-        const currentDate = ref((new Date(Date.now() - (new Date()).getTimezoneOffset() * 60000)).toISOString().split('T')[0]);
-        const isToday = computed(() => currentDate.value === (new Date(Date.now() - (new Date()).getTimezoneOffset() * 60000)).toISOString().split('T')[0]);
+        const getLocalToday = () => {
+          const d = new Date();
+          return new Date(d.getTime() - (d.getTimezoneOffset() * 60000)).toISOString().split('T')[0];
+        };
+        const currentDate = ref(getLocalToday());
+        const isToday = computed(() => currentDate.value === getLocalToday());
         
         const formattedDate = computed(() => {
           const d = new Date(currentDate.value);
@@ -363,8 +340,7 @@ https://mezculqrqxwlmfxgrcru.supabase.co';
         const changeDate = (days) => {
           const d = new Date(currentDate.value);
           d.setDate(d.getDate() + days);
-          const today = new Date((new Date(Date.now() - (new Date()).getTimezoneOffset() * 60000)).toISOString().split('T')[0]);
-          if (d > today) return; 
+          if (d > new Date(getLocalToday())) return; 
           currentDate.value = d.toISOString().split('T')[0];
         };
 
@@ -372,7 +348,6 @@ https://mezculqrqxwlmfxgrcru.supabase.co';
         const dailySales = computed(() => currentDayActivities.value.reduce((sum, act) => sum + act.sales, 0));
         const dailyRecruit = computed(() => currentDayActivities.value.reduce((sum, act) => sum + act.recruit, 0));
 
-        // 本週與本月計算
         const getStatsForRange = (filterFn) => {
           let s = 0; let r = 0;
           Object.keys(allActivities.value).forEach(dateStr => {
@@ -385,10 +360,9 @@ https://mezculqrqxwlmfxgrcru.supabase.co';
 
         const weeklyStats = computed(() => {
           const curr = new Date(currentDate.value);
-          const first = curr.getDate() - curr.getDay() + (curr.getDay() === 0 ? -6 : 1); // 週一為一週開始
-          const last = first + 6;
-          const firstDay = new Date(curr.setDate(first));
-          const lastDay = new Date(curr.setDate(last));
+          const first = curr.getDate() - curr.getDay() + (curr.getDay() === 0 ? -6 : 1); 
+          const firstDay = new Date(new Date(curr).setDate(first));
+          const lastDay = new Date(new Date(curr).setDate(first + 6));
           return getStatsForRange(d => d >= firstDay && d <= lastDay);
         });
 
@@ -397,7 +371,6 @@ https://mezculqrqxwlmfxgrcru.supabase.co';
           return getStatsForRange(d => d.getFullYear() === curr.getFullYear() && d.getMonth() === curr.getMonth());
         });
 
-        // --- 組織圖狀態 (新增區經理) ---
         const memberStatuses = ['臨時帳號申請中', '準備公會考試', '等待登錄中', '業務代表', '業務主任', '業務襄理', '區經理'];
         const getMemberColor = (status) => {
           if (status.includes('區經理')) return { topBar: 'bg-gradient-to-r from-yellow-400 to-amber-600', text: 'text-amber-600 font-black', bg: 'bg-amber-50 text-amber-700 border border-amber-200' };
@@ -407,14 +380,12 @@ https://mezculqrqxwlmfxgrcru.supabase.co';
           return { topBar: 'bg-gray-400', text: 'text-gray-500', bg: 'bg-gray-100 text-gray-600' };
         };
 
-        // --- UI 輔助邏輯 (同前) ---
         const timeSlots = Array.from({ length: 16 }, (_, i) => `${(i + 8).toString().padStart(2, '0')}:00`);
         const getTypeStyle = (type) => {
           const styles = { '約訪': 'bg-blue-400', '面談': 'bg-blue-600', '簽約': 'bg-purple-600', '客戶服務': 'bg-gray-400', '增員活動': 'bg-emerald-400', '增員約訪': 'bg-emerald-500', '增員面談': 'bg-emerald-600', '其他': 'bg-orange-400' };
           return styles[type] || 'bg-gray-400';
         };
 
-        // 339 表單
         const isActivityModalOpen = ref(false);
         const selectedTime = ref('');
         const activityTypes = ['約訪', '面談', '簽約', '客戶服務', '增員活動', '增員約訪', '增員面談', '其他'];
@@ -449,7 +420,6 @@ https://mezculqrqxwlmfxgrcru.supabase.co';
           isActivityModalOpen.value = false;
         };
 
-        // 成員表單
         const isMemberModalOpen = ref(false);
         const editingMemberIndex = ref(-1);
         const memberForm = reactive({ name: '', status: '準備公會考試', notes: '' });
