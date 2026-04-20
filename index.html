@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-  <title>鎔安組 | 頂級戰情系統</title>
+  <title>鎔安組 | 頂級戰情系統 1.5</title>
   
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
@@ -16,30 +16,15 @@
     body { background-color: #f8fafc; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; -webkit-tap-highlight-color: transparent; margin: 0; padding: 0; touch-action: manipulation; }
     ::-webkit-scrollbar { display: none; }
     .glass-nav { background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); border-top: 1px solid rgba(255,255,255,0.8); }
-    .glass-card { box-shadow: 0 4px 20px rgba(0,0,0,0.04); border: 1px solid rgba(255,255,255,1); }
+    .glass-card { background: rgba(255, 255, 255, 0.98); box-shadow: 0 8px 30px rgba(0,0,0,0.04); border: 1px solid rgba(255,255,255,1); }
     @keyframes slideUp { from { transform: translateY(100%); opacity: 0;} to { transform: translateY(0); opacity: 1;} }
     .animate-slide-up { animation: slideUp 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
     @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-    .animate-fade-in { animation: fadeIn 0.3s ease-out; }
+    .animate-fade-in { animation: fadeIn 0.4s ease-out; }
     input[type="date"]::-webkit-calendar-picker-indicator { position: absolute; top: 0; left: 0; right: 0; bottom: 0; width: auto; height: auto; color: transparent; background: transparent; cursor: pointer; }
     
-    /* ================= 組織樹完美原生引擎 ================= */
-    .org-tree-container { display: flex; justify-content: center; }
-    .org-node { display: flex; flex-direction: column; align-items: center; position: relative; padding: 24px 6px 0 6px; }
-    .org-node::before, .org-node::after { content: ""; position: absolute; top: 0; width: 50%; height: 2px; background: #cbd5e1; }
-    .org-node::before { right: 50%; }
-    .org-node::after { left: 50%; }
-    .org-node:only-child::before, .org-node:only-child::after { display: none; }
-    .org-node:first-child::before { display: none; }
-    .org-node:last-child::after { display: none; }
-    
-    .org-node-inner { position: relative; display: flex; flex-direction: column; align-items: center; }
-    .org-node-inner::before { content: ""; position: absolute; top: -24px; left: 50%; width: 2px; height: 24px; background: #cbd5e1; transform: translateX(-50%); }
-    .org-tree-container > .org-node > .org-node-inner::before { display: none; }
-    .org-tree-container > .org-node { padding-top: 0; }
-    
-    .org-children { display: flex; justify-content: center; position: relative; padding-top: 24px; }
-    .org-children::before { content: ""; position: absolute; top: 0; left: 50%; width: 2px; height: 24px; background: #cbd5e1; transform: translateX(-50%); }
+    .tree-line-top::before { content: ''; position: absolute; top: -16px; left: 50%; width: 2px; height: 16px; background-color: #cbd5e1; transform: translateX(-50%); }
+    .tree-connector { position: relative; padding-top: 16px; margin-top: 16px; border-top: 2px solid #cbd5e1; display: flex; justify-content: center; gap: 16px; }
   </style>
 </head>
 <body class="text-gray-800 pb-24 select-none antialiased">
@@ -270,22 +255,22 @@
     </div>
 
   </div> <script type="text/x-template" id="org-node-template">
-    <div class="org-node">
-      <div class="org-node-inner">
-        <div class="relative z-10 w-36 sm:w-40 bg-white rounded-2xl border border-gray-200 shadow-md cursor-pointer transition-transform hover:-translate-y-1 text-center overflow-hidden" @click="$emit('edit', node)">
-          <div class="absolute top-0 left-0 w-full h-1.5" :class="getColor(node.status).topBar"></div>
-          <div class="p-3 pt-4 pb-4" :class="getColor(node.status).bgCard">
-            <p class="text-[10px] font-bold mb-1" :class="getColor(node.status).text">{{ node.status }}</p>
-            <p class="text-base font-black tracking-wide" :class="getColor(node.status).name">{{ node.name }}</p>
-            <div v-if="node.notes" class="org-notes mt-2 inline-block px-1.5 py-1 rounded-lg text-[10px] font-bold w-full break-words line-clamp-3" :class="getColor(node.status).bg">{{ node.notes }}</div>
-          </div>
-          <button @click.stop="$emit('add', node)" class="absolute bottom-1 right-1 w-6 h-6 bg-white/80 backdrop-blur rounded-full flex items-center justify-center text-gray-500 hover:text-blue-600 shadow border border-gray-200 z-20">
-            <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M12 4v16m8-8H4"></path></svg>
-          </button>
+    <div class="flex flex-col items-center">
+      <div class="relative z-10 w-40 glass-card rounded-2xl border border-gray-200 shadow-sm overflow-hidden text-center cursor-pointer transition-transform hover:-translate-y-1" @click="$emit('edit', node)">
+        <div class="absolute top-0 left-0 w-full h-1.5" :class="getColor(node.status).topBar"></div>
+        <div class="p-3 pt-4">
+          <p class="text-[9px] font-bold mb-1 truncate" :class="getColor(node.status).text">{{ node.status }}</p>
+          <p class="text-sm font-black text-gray-900 truncate">{{ node.name }}</p>
+          <div v-if="node.notes" class="org-notes mt-2 inline-block px-1.5 py-1 rounded text-[9px] font-bold w-full break-words line-clamp-3" :class="getColor(node.status).bg">{{ node.notes }}</div>
         </div>
-        
-        <div v-if="node.children && node.children.length > 0" class="org-children">
-          <org-node v-for="child in node.children" :key="child.id" :node="child" @edit="$emit('edit', $event)" @add="$emit('add', $event)"></org-node>
+        <button @click.stop="$emit('add', node)" class="absolute bottom-1 right-1 w-6 h-6 bg-gray-50 rounded-full flex items-center justify-center text-gray-400 hover:text-blue-500 hover:bg-blue-50 transition-colors border border-gray-100 shadow-sm">
+          <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M12 4v16m8-8H4"></path></svg>
+        </button>
+      </div>
+
+      <div v-if="node.children && node.children.length > 0" class="tree-connector">
+        <div v-for="child in node.children" :key="child.id" class="relative pt-4 tree-line-top">
+          <org-node :node="child" @edit="$emit('edit', $event)" @add="$emit('add', $event)"></org-node>
         </div>
       </div>
     </div>
@@ -303,11 +288,11 @@
       props: ['node'],
       setup() {
         const getColor = (status) => {
-          if (status.includes('區經理')) return { topBar: 'bg-gradient-to-r from-yellow-400 to-amber-500', text: 'text-amber-500', bg: 'bg-gray-800 text-amber-400 border border-gray-600', bgCard: 'bg-gray-900', name: 'text-white' };
-          if (status.includes('襄理') || status.includes('主任')) return { topBar: 'bg-indigo-500', text: 'text-indigo-600', bg: 'bg-indigo-50 text-indigo-700', bgCard: 'bg-white', name: 'text-gray-900' };
-          if (status.includes('代表')) return { topBar: 'bg-blue-500', text: 'text-blue-500', bg: 'bg-blue-50 text-blue-700', bgCard: 'bg-white', name: 'text-gray-900' };
-          if (status.includes('登錄')) return { topBar: 'bg-emerald-400', text: 'text-emerald-600', bg: 'bg-emerald-50 text-emerald-700', bgCard: 'bg-white', name: 'text-gray-900' };
-          return { topBar: 'bg-gray-400', text: 'text-gray-500', bg: 'bg-gray-100 text-gray-600', bgCard: 'bg-white', name: 'text-gray-900' };
+          if (status.includes('區經理')) return { topBar: 'bg-gradient-to-r from-yellow-400 to-amber-600', text: 'text-amber-600', bg: 'bg-amber-50 text-amber-700' };
+          if (status.includes('襄理') || status.includes('主任')) return { topBar: 'bg-indigo-500', text: 'text-indigo-600', bg: 'bg-indigo-50 text-indigo-700' };
+          if (status.includes('代表')) return { topBar: 'bg-blue-500', text: 'text-blue-500', bg: 'bg-blue-50 text-blue-600' };
+          if (status.includes('登錄')) return { topBar: 'bg-emerald-400', text: 'text-emerald-500', bg: 'bg-emerald-50 text-emerald-600' };
+          return { topBar: 'bg-gray-400', text: 'text-gray-500', bg: 'bg-gray-100 text-gray-600' };
         };
         return { getColor };
       }
@@ -364,15 +349,11 @@
             const decrypted = JSON.parse(decryptedStr);
             allActivities.value = decrypted.activities || {};
             
-            if (decrypted.orgTree && decrypted.orgTree.id) {
+            if (decrypted.orgTree) {
               orgTree.value = decrypted.orgTree;
             } else if (decrypted.members && decrypted.members.length > 0) {
                orgTree.value.children = decrypted.members.map((m, i) => ({ id: 'old_'+i, name: m.name, status: m.status, notes: m.notes, children: [] }));
             }
-            if (!orgTree.value.name) orgTree.value.name = '鎔安';
-            if (!orgTree.value.status) orgTree.value.status = '區經理';
-            if (!orgTree.value.id) orgTree.value.id = 'root';
-            if (!orgTree.value.children) orgTree.value.children = [];
           }
         };
 
@@ -436,11 +417,21 @@
         });
 
         const timeSlots = Array.from({ length: 16 }, (_, i) => `${(i + 8).toString().padStart(2, '0')}:00`);
-        const getTypeStyle = (type) => { const styles = { '約訪': 'bg-blue-400', '面談': 'bg-blue-600', '簽約': 'bg-purple-600', '客戶服務': 'bg-gray-400', '增員活動': 'bg-emerald-400', '增員約訪': 'bg-emerald-500', '增員面談': 'bg-emerald-600', '其他': 'bg-orange-400' }; return styles[type] || 'bg-gray-400'; };
+        
+        // 🌟 新增「談建議書」顏色樣式
+        const getTypeStyle = (type) => { 
+          const styles = { 
+            '約訪': 'bg-blue-400', '面談': 'bg-blue-600', '談建議書': 'bg-indigo-500', '簽約': 'bg-purple-600', '客戶服務': 'bg-gray-400', 
+            '增員活動': 'bg-emerald-400', '增員約訪': 'bg-emerald-500', '增員面談': 'bg-emerald-600', '其他': 'bg-orange-400' 
+          }; 
+          return styles[type] || 'bg-gray-400'; 
+        };
 
         const isActivityModalOpen = ref(false);
         const selectedTime = ref('');
-        const activityTypes = ['約訪', '面談', '簽約', '客戶服務', '增員活動', '增員約訪', '增員面談', '其他'];
+        
+        // 🌟 活動類型加入「談建議書」
+        const activityTypes = ['約訪', '面談', '談建議書', '簽約', '客戶服務', '增員活動', '增員約訪', '增員面談', '其他'];
         const formData = reactive({ clientName: '', type: '約訪', notes: '' });
         const getActivity = (time) => currentDayActivities.value.find(a => a.time === time);
 
@@ -455,8 +446,20 @@
         const saveActivity = () => {
           if (!formData.clientName) { alert('請填寫姓名'); return; }
           let sScore = 0; let rScore = 0;
-          if (formData.type === '約訪') sScore = 1; if (formData.type === '面談') sScore = 2; if (formData.type === '簽約') sScore = 3;
-          if (formData.type === '增員活動') rScore = 1; if (formData.type === '增員約訪') rScore = 2; if (formData.type === '增員面談') rScore = 5;
+          
+          // 🌟 2.0 全新計分邏輯
+          if (formData.type === '約訪') sScore = 1; 
+          if (formData.type === '面談') sScore = 2; 
+          if (formData.type === '談建議書') sScore = 3; 
+          if (formData.type === '簽約') sScore = 5; 
+          if (formData.type === '客戶服務') sScore = 1;
+          
+          if (formData.type === '增員活動') rScore = 1; 
+          if (formData.type === '增員約訪') rScore = 2; 
+          if (formData.type === '增員面談') rScore = 4; 
+          
+          if (formData.type === '其他') { sScore = 1; rScore = 1; } // 其他也有基礎分
+
           if (!allActivities.value[currentDate.value]) allActivities.value[currentDate.value] = [];
           allActivities.value[currentDate.value] = allActivities.value[currentDate.value].filter(a => a.time !== selectedTime.value);
           allActivities.value[currentDate.value].push({ time: selectedTime.value, type: formData.type, clientName: formData.clientName, notes: formData.notes, sales: sScore, recruit: rScore });
