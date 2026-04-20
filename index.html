@@ -3,11 +3,10 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-  <title>鎔安組 | 企業級戰情系統 4.0</title>
+  <title>鎔安組 | 企業級戰情系統 4.5</title>
   
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
 
@@ -26,11 +25,9 @@
     .org-tree-container { display: flex; justify-content: center; }
     .org-node { display: flex; flex-direction: column; align-items: center; position: relative; padding: 24px 6px 0 6px; }
     .org-node::before, .org-node::after { content: ""; position: absolute; top: 0; width: 50%; height: 2px; background: #cbd5e1; }
-    .org-node::before { right: 50%; }
-    .org-node::after { left: 50%; }
+    .org-node::before { right: 50%; } .org-node::after { left: 50%; }
     .org-node:only-child::before, .org-node:only-child::after { display: none; }
-    .org-node:first-child::before { display: none; }
-    .org-node:last-child::after { display: none; }
+    .org-node:first-child::before { display: none; } .org-node:last-child::after { display: none; }
     .org-node-inner { position: relative; display: flex; flex-direction: column; align-items: center; }
     .org-node-inner::before { content: ""; position: absolute; top: -24px; left: 50%; width: 2px; height: 24px; background: #cbd5e1; transform: translateX(-50%); }
     .org-tree-container > .org-node > .org-node-inner::before { display: none; }
@@ -49,20 +46,19 @@
           <svg class="w-8 h-8 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path></svg>
         </div>
         <h1 class="text-2xl font-black text-white tracking-widest mb-1">鎔安組戰情室</h1>
-        <p class="text-[11px] text-blue-200/70 mb-6 tracking-widest">企業級 4.0</p>
+        <p class="text-[11px] text-blue-200/70 mb-6 tracking-widest">軍規資安 4.5 盾版</p>
         
         <input v-model="loginForm.empId" type="text" placeholder="請輸入您的員編" class="w-full bg-black/30 border border-white/10 rounded-xl px-4 py-3.5 text-base text-center text-white tracking-widest focus:outline-none focus:border-blue-400/50 transition-colors mb-3">
         <input v-model="loginForm.password" type="password" placeholder="請輸入密碼" class="w-full bg-black/30 border border-white/10 rounded-xl px-4 py-3.5 text-base text-center text-white tracking-widest focus:outline-none focus:border-blue-400/50 transition-colors mb-6" @keyup.enter="doLogin">
         
         <button @click="doLogin" :disabled="isLoading" class="w-full bg-blue-600 hover:bg-blue-500 text-white font-bold py-3.5 rounded-xl shadow-lg transition-colors disabled:opacity-50">
-          {{ isLoading ? '資料同步中...' : '登入系統' }}
+          {{ isLoading ? '資料同步中...' : '安全登入' }}
         </button>
         <p v-if="loginError" class="text-red-400 text-xs mt-3 font-bold">{{ loginError }}</p>
       </div>
     </div>
 
     <div v-else class="w-full h-full animate-fade-in">
-      
       <div class="fixed top-0 left-0 right-0 h-14 bg-white/90 backdrop-blur-md border-b border-gray-100 z-30 flex justify-between items-center px-4 shadow-sm">
         <div class="text-sm font-black text-gray-800 tracking-wider">鎔安組 CRM</div>
         <button @click="isSettingsModalOpen = true" class="flex items-center gap-2 bg-gray-50 hover:bg-gray-100 px-3 py-1.5 rounded-lg border border-gray-200 transition-colors">
@@ -72,7 +68,6 @@
       </div>
 
       <div v-show="currentTab === '339'" class="p-5 pt-20 pb-20 max-w-md mx-auto">
-        
         <div v-if="currentUser.role === 'admin'" class="mb-4 flex items-center justify-between bg-gray-900 text-white p-3 rounded-xl shadow-md">
           <span class="text-xs font-bold tracking-widest text-amber-400">🛡️ 主管透視模式</span>
           <select v-model="viewingEmpId" @change="loadActivitiesData" class="bg-gray-800 border border-gray-700 text-white text-sm rounded-lg px-2 py-1 outline-none">
@@ -95,7 +90,6 @@
         </div>
 
         <div v-if="viewingEmpId === 'ALL'" class="animate-fade-in space-y-4">
-          
           <div class="flex justify-center gap-2 mb-4">
             <button @click="groupViewMode = 'day'" class="px-6 py-2 rounded-full text-sm font-bold transition-all shadow-sm" :class="groupViewMode === 'day' ? 'bg-blue-600 text-white' : 'bg-white text-gray-500 border border-gray-200'">今日戰績</button>
             <button @click="groupViewMode = 'month'" class="px-6 py-2 rounded-full text-sm font-bold transition-all shadow-sm" :class="groupViewMode === 'month' ? 'bg-blue-600 text-white' : 'bg-white text-gray-500 border border-gray-200'">本月累積</button>
@@ -307,7 +301,6 @@
                 </select>
              </div>
           </div>
-          
           <button @click="createUserAccountPro" class="w-full bg-emerald-600 text-white font-bold py-3 rounded-lg text-sm active:scale-95 transition-transform">建立帳號並執行連動</button>
         </div>
 
@@ -451,9 +444,6 @@
   </script>
 
   <script>
-    const SUPABASE_URL = 'https://mezculqrqxwlmfxgrcru.supabase.co'; 
-    const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1lemN1bHFycXh3bG1meGdyY3J1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY2NjU0NjUsImV4cCI6MjA5MjI0MTQ2NX0.U8aAJs5wi2_wPNWeNRrucQH7gPH4rEJx9KfTgHljVZI';
-
     const { createApp, ref, reactive, computed } = Vue;
 
     const OrgNode = {
@@ -474,14 +464,25 @@
 
     const app = createApp({
       setup() {
-        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-        
         const currentUser = ref(null);
         const viewingEmpId = ref('');
         const teamMembers = ref([]);
         const loginForm = reactive({ empId: '', password: '' });
         const loginError = ref('');
         const isLoading = ref(false);
+
+        // 🛡️ 核心防護：透過代理 API 拿資料
+        const secureFetch = async (action, payload = {}) => {
+          const credentials = { empId: currentUser.value?.emp_id || loginForm.empId, password: currentUser.value?.password || loginForm.password };
+          const res = await fetch('/api/db', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ action, credentials, payload })
+          });
+          const result = await res.json();
+          if (!res.ok) throw new Error(result.error || '伺服器連線錯誤');
+          return result;
+        };
 
         const isSettingsModalOpen = ref(false);
         const newPassword = ref('');
@@ -490,24 +491,20 @@
         const currentDayActivities = ref([]); 
         const orgTree = ref({ id: 'root', name: '鎔安', status: '區經理', notes: '', children: [] });
         const orgZoom = ref(1.0);
-        
         const groupViewMode = ref('day'); 
 
         const doLogin = async () => {
           if (!loginForm.empId || !loginForm.password) { loginError.value = '請輸入帳號與密碼'; return; }
           isLoading.value = true; loginError.value = '';
           try {
-            const { data } = await supabase.from('team_users').select('*').eq('emp_id', loginForm.empId).eq('password', loginForm.password).single();
-            if (data) {
-              if (data.is_active === false) { loginError.value = '帳號已被停權，登入失敗。'; isLoading.value = false; return; }
-              currentUser.value = data; viewingEmpId.value = data.emp_id; 
-              if (data.role === 'admin') {
-                const res = await supabase.from('team_users').select('emp_id, name, is_active, role');
-                teamMembers.value = res.data || [];
-              }
-              await loadActivitiesData(); await loadOrgTree();
-            } else { loginError.value = '帳號或密碼錯誤'; }
-          } catch (e) { loginError.value = '伺服器連線錯誤'; }
+            const userData = await secureFetch('login');
+            currentUser.value = userData; viewingEmpId.value = userData.emp_id; 
+            if (userData.role === 'admin') {
+              const teamData = await secureFetch('get_team');
+              teamMembers.value = teamData || [];
+            }
+            await loadActivitiesData(); await loadOrgTree();
+          } catch (e) { loginError.value = e.message; }
           isLoading.value = false;
         };
 
@@ -524,35 +521,39 @@
 
         const changeMyPassword = async () => {
           if (newPassword.value.length < 4) return alert('密碼太短');
-          await supabase.from('team_users').update({ password: newPassword.value }).eq('emp_id', currentUser.value.emp_id);
-          alert('密碼修改成功！下次登入請使用新密碼。'); newPassword.value = ''; isSettingsModalOpen.value = false;
+          try {
+             await secureFetch('update_password', { newPassword: newPassword.value });
+             currentUser.value.password = newPassword.value;
+             loginForm.password = newPassword.value;
+             alert('密碼修改成功！下次登入請使用新密碼。'); newPassword.value = ''; isSettingsModalOpen.value = false;
+          } catch(e) { alert('修改失敗'); }
         };
 
         const loadActivitiesData = async () => {
-          let query = supabase.from('team_activities').select('*');
-          if (viewingEmpId.value !== 'ALL') query = query.eq('emp_id', viewingEmpId.value);
-          const { data } = await query;
-          allActivitiesData.value = data || [];
-          currentDayActivities.value = allActivitiesData.value.filter(a => a.activity_date === currentDate.value);
+          try {
+             const data = await secureFetch('load_activities', { viewingEmpId: viewingEmpId.value });
+             allActivitiesData.value = data || [];
+             currentDayActivities.value = allActivitiesData.value.filter(a => a.activity_date === currentDate.value);
+          } catch(e) {}
         };
 
         const refreshData = async () => { await loadActivitiesData(); await loadOrgTree(); };
 
         const loadOrgTree = async () => {
-          const { data } = await supabase.from('activities').select('notes').eq('client_name', 'APP_VAULT_V1').limit(1);
-          if (data && data.length > 0) {
-            try {
+          try {
+             const data = await secureFetch('load_org');
+             if (data && data.length > 0) {
                const bytes = CryptoJS.AES.decrypt(data[0].notes, '123456');
                const vault = JSON.parse(bytes.toString(CryptoJS.enc.Utf8));
                if (vault.orgTree) orgTree.value = vault.orgTree;
-            } catch(e) {}
-          }
+             }
+          } catch(e) {}
         };
 
         const saveOrgTree = async () => {
            const vaultData = { orgTree: orgTree.value };
            const encryptedStr = CryptoJS.AES.encrypt(JSON.stringify(vaultData), '123456').toString();
-           await supabase.from('activities').upsert({ id: '00000000-0000-0000-0000-000000000001', activity_date: '2099-12-31', start_time: '00:00', activity_type: 'VAULT', client_name: 'APP_VAULT_V1', notes: encryptedStr });
+           await secureFetch('save_org', { notes: encryptedStr });
         };
 
         const getFlatNodes = (node, arr = []) => { arr.push(node); if (node.children) { node.children.forEach(c => getFlatNodes(c, arr)); } return arr; };
@@ -653,12 +654,21 @@
           if (formData.type === '約訪') sScore = 1; if (formData.type === '面談') sScore = 2; if (formData.type === '談建議書') sScore = 3; if (formData.type === '簽約') sScore = 5; if (formData.type === '客戶服務') sScore = 1;
           if (formData.type === '增員活動') rScore = 1; if (formData.type === '增員約訪') rScore = 2; if (formData.type === '增員面談') rScore = 4; if (formData.type === '其他') { sScore = 1; rScore = 1; }
 
-          const payload = { emp_id: viewingEmpId.value, activity_date: currentDate.value, start_time: selectedTime.value, activity_type: formData.type, client_name: formData.clientName, notes: formData.notes, sales_score: sScore, recruit_score: rScore };
+          const payload = { activity_date: currentDate.value, start_time: selectedTime.value, activity_type: formData.type, client_name: formData.clientName, notes: formData.notes, sales_score: sScore, recruit_score: rScore };
           if (formData.id) payload.id = formData.id;
           
-          await supabase.from('team_activities').upsert(payload); await loadActivitiesData(); isActivityModalOpen.value = false;
+          try {
+             await secureFetch('save_activity', { activityPayload: payload });
+             await loadActivitiesData(); isActivityModalOpen.value = false;
+          } catch(e) { alert('儲存失敗'); }
         };
-        const deleteActivity = async () => { if(formData.id) { await supabase.from('team_activities').delete().eq('id', formData.id); await loadActivitiesData(); } isActivityModalOpen.value = false; };
+        
+        const deleteActivity = async () => { 
+           if(formData.id) { 
+              try { await secureFetch('delete_activity', { id: formData.id }); await loadActivitiesData(); } catch(e) {}
+           } 
+           isActivityModalOpen.value = false; 
+        };
 
         const zoomInOrg = () => { orgZoom.value = Math.min(1.5, orgZoom.value + 0.1); };
         const zoomOutOrg = () => { orgZoom.value = Math.max(0.4, orgZoom.value - 0.1); };
@@ -728,22 +738,23 @@
 
         const createUserAccountPro = async () => {
           if(!newUserForm.empId || !newUserForm.name || !newUserForm.password) return alert('請填寫完整');
-          await supabase.from('team_users').insert({ emp_id: newUserForm.empId, password: newUserForm.password, name: newUserForm.name, role: 'agent' });
-          
-          if (newUserForm.bindMode === 'existing' && newUserForm.targetNodeId) {
-             const tNode = allNodes.value.find(n => n.id === newUserForm.targetNodeId);
-             if(tNode) { tNode.emp_id = newUserForm.empId; await saveOrgTree(); }
-          } else if (newUserForm.bindMode === 'new' && newUserForm.parentNodeId) {
-             const pNode = allNodes.value.find(n => n.id === newUserForm.parentNodeId);
-             if(pNode) {
-                const newNode = { id: 'node_' + Date.now(), name: newUserForm.name, status: newUserForm.newStatus, notes: '', emp_id: newUserForm.empId, children: [] };
-                if(!pNode.children) pNode.children = []; pNode.children.push(newNode); await saveOrgTree();
+          try {
+             await secureFetch('create_user', { empId: newUserForm.empId, password: newUserForm.password, name: newUserForm.name });
+             
+             if (newUserForm.bindMode === 'existing' && newUserForm.targetNodeId) {
+                const tNode = allNodes.value.find(n => n.id === newUserForm.targetNodeId);
+                if(tNode) { tNode.emp_id = newUserForm.empId; await saveOrgTree(); }
+             } else if (newUserForm.bindMode === 'new' && newUserForm.parentNodeId) {
+                const pNode = allNodes.value.find(n => n.id === newUserForm.parentNodeId);
+                if(pNode) {
+                   const newNode = { id: 'node_' + Date.now(), name: newUserForm.name, status: newUserForm.newStatus, notes: '', emp_id: newUserForm.empId, children: [] };
+                   if(!pNode.children) pNode.children = []; pNode.children.push(newNode); await saveOrgTree();
+                }
              }
-          }
-          
-          const res = await supabase.from('team_users').select('emp_id, name, is_active, role'); teamMembers.value = res.data;
-          newUserForm.empId = ''; newUserForm.name = ''; newUserForm.password = ''; newUserForm.bindMode = 'none'; 
-          alert('帳號開通且設定完成！');
+             const teamData = await secureFetch('get_team'); teamMembers.value = teamData;
+             newUserForm.empId = ''; newUserForm.name = ''; newUserForm.password = ''; newUserForm.bindMode = 'none'; 
+             alert('帳號開通且設定完成！');
+          } catch(e) { alert(e.message); }
         };
 
         const isSingleAccountManageOpen = ref(false);
@@ -756,29 +767,34 @@
 
         const toggleUserLock = async (user) => {
           if (user.role === 'admin') return alert('無法停權總管帳號');
-          const newStatus = !user.is_active; await supabase.from('team_users').update({ is_active: newStatus }).eq('emp_id', user.emp_id);
-          user.is_active = newStatus;
-          const res = await supabase.from('team_users').select('emp_id, name, is_active, role'); teamMembers.value = res.data;
+          try {
+             const newStatus = !user.is_active; 
+             await secureFetch('update_user', { empId: user.emp_id, updateData: { is_active: newStatus } });
+             user.is_active = newStatus;
+             const teamData = await secureFetch('get_team'); teamMembers.value = teamData;
+          } catch(e) { alert('更新失敗'); }
         };
 
         const resetUserPassword = async (user) => {
           if(confirm(`確定要重設 ${user.name} 的密碼為 000000 嗎？`)) {
-            await supabase.from('team_users').update({ password: '000000' }).eq('emp_id', user.emp_id); alert(`密碼已重設`);
+             try {
+                await secureFetch('update_user', { empId: user.emp_id, updateData: { password: '000000' } });
+                alert(`密碼已重設`);
+             } catch(e) { alert('重設失敗'); }
           }
         };
 
         const deleteUserAccount = async (user) => {
           if (user.role === 'admin') return alert('系統拒絕刪除總管帳號');
           if (confirm(`【極度危險】\n確定要徹底刪除 ${user.name} 的帳號嗎？\n此動作會刪除該員編的所有行程紀錄，且完全無法復原！`)) {
-             await supabase.from('team_activities').delete().eq('emp_id', user.emp_id);
-             await supabase.from('team_users').delete().eq('emp_id', user.emp_id);
-             
-             const linkedNode = allNodes.value.find(n => n.emp_id === user.emp_id);
-             if(linkedNode) { linkedNode.emp_id = ''; await saveOrgTree(); }
-             
-             const res = await supabase.from('team_users').select('emp_id, name, is_active, role'); teamMembers.value = res.data;
-             isSingleAccountManageOpen.value = false;
-             alert('帳號與行程皆已徹底刪除。');
+             try {
+                await secureFetch('delete_user', { empId: user.emp_id });
+                const linkedNode = allNodes.value.find(n => n.emp_id === user.emp_id);
+                if(linkedNode) { linkedNode.emp_id = ''; await saveOrgTree(); }
+                const teamData = await secureFetch('get_team'); teamMembers.value = teamData;
+                isSingleAccountManageOpen.value = false;
+                alert('帳號與行程皆已徹底刪除。');
+             } catch(e) { alert('刪除失敗'); }
           }
         };
 
@@ -791,7 +807,6 @@
           }, 300); 
         };
 
-        // 🌟 這裡就是修復畫面當機的關鍵：把 weeklyStats 和 monthlyStats 導出！
         return { 
           currentUser, viewingEmpId, teamMembers, loginForm, loginError, isLoading, doLogin, getViewingName, getUserStatus, loadActivitiesData, refreshData,
           isSettingsModalOpen, newPassword, changeMyPassword,
