@@ -1,0 +1,7 @@
+{
+  "name": "rongan-api",
+  "dependencies": {
+    "@supabase/supabase-js": "^2.39.0",
+    "crypto-js": "^4.2.0"
+  }
+}
