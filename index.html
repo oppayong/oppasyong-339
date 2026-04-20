@@ -13,19 +13,18 @@
 
   <style>
     [v-cloak] { display: none !important; }
-    /* 加入 touch-action: manipulation 徹底阻斷 iOS 雙擊放大 */
     body { background-color: #f8fafc; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; -webkit-tap-highlight-color: transparent; margin: 0; padding: 0; touch-action: manipulation; }
     ::-webkit-scrollbar { display: none; }
     .glass-nav { background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); border-top: 1px solid rgba(255,255,255,0.8); }
-    .glass-card { background: rgba(255, 255, 255, 0.98); box-shadow: 0 8px 30px rgba(0,0,0,0.04); border: 1px solid rgba(255,255,255,1); }
+    .glass-card { box-shadow: 0 4px 20px rgba(0,0,0,0.04); border: 1px solid rgba(255,255,255,1); }
     @keyframes slideUp { from { transform: translateY(100%); opacity: 0;} to { transform: translateY(0); opacity: 1;} }
     .animate-slide-up { animation: slideUp 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
     @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
     .animate-fade-in { animation: fadeIn 0.3s ease-out; }
     input[type="date"]::-webkit-calendar-picker-indicator { position: absolute; top: 0; left: 0; right: 0; bottom: 0; width: auto; height: auto; color: transparent; background: transparent; cursor: pointer; }
     
-    .tree-line-top::before { content: ''; position: absolute; top: -16px; left: 50%; width: 2px; height: 16px; background-color: #cbd5e1; transform: translateX(-50%); }
-    .tree-connector { position: relative; padding-top: 16px; margin-top: 16px; border-top: 2px solid #cbd5e1; display: flex; justify-content: center; gap: 16px; }
+    /* 組織樹專屬樣式 (PC 橫向連線) */
+    .tree-line-top-md::before { content: ''; position: absolute; top: -24px; left: 50%; width: 2px; height: 24px; background-color: #cbd5e1; transform: translateX(-50%); }
   </style>
 </head>
 <body class="text-gray-800 pb-24 select-none antialiased">
@@ -69,7 +68,7 @@
             </div>
           </div>
 
-          <button @click="changeDate(1)" class="p-2 text-gray-400 hover:text-blue-600 transition-colors active:scale-90" :class="{ 'opacity-30 pointer-events-none': isToday }">
+          <button @click="changeDate(1)" class="p-2 text-gray-400 hover:text-blue-600 transition-colors active:scale-90">
             <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7"></path></svg>
           </button>
         </div>
@@ -94,8 +93,8 @@
               <template v-if="getActivity(time)">
                 <div>
                   <span class="inline-block px-2 py-0.5 text-[10px] font-black rounded text-white mb-1.5 shadow-sm" :class="getTypeStyle(getActivity(time).type)">{{ getActivity(time).type }}</span>
-                  <p class="text-sm font-bold text-gray-900">{{ getActivity(time).clientName }}</p>
-                  <p v-if="getActivity(time).notes" class="text-xs text-gray-400 mt-1 truncate">{{ getActivity(time).notes }}</p>
+                  <p class="text-sm font-bold text-gray-900 break-words">{{ getActivity(time).clientName }}</p>
+                  <p v-if="getActivity(time).notes" class="text-xs text-gray-400 mt-1 break-words line-clamp-2">{{ getActivity(time).notes }}</p>
                 </div>
               </template>
               <template v-else><span class="text-[11px] text-gray-300 font-bold tracking-wider">+ 點擊新增行程</span></template>
@@ -110,22 +109,20 @@
             <h1 class="text-2xl font-black text-gray-900 tracking-tight">組織發展</h1>
             <p class="text-[10px] font-bold text-gray-400 mt-1 uppercase tracking-widest">團隊架構圖</p>
           </div>
-          <div class="flex gap-2">
-            <button @click="exportOrgChart" class="flex items-center gap-1.5 bg-gray-900 text-white px-3 py-2 rounded-xl active:scale-95 transition-transform shadow-md">
-              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
-              <span class="text-[10px] font-bold tracking-wide">匯出</span>
-            </button>
-          </div>
+          <button @click="exportOrgChart" class="flex items-center gap-1.5 bg-gray-900 text-white px-3.5 py-2 rounded-xl active:scale-95 transition-transform shadow-md">
+            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
+            <span class="text-[10px] font-bold tracking-wide">匯出</span>
+          </button>
         </header>
 
-        <div class="flex justify-center items-center gap-3 mb-6 bg-white py-2 px-4 rounded-full shadow-sm border border-gray-100 self-center">
+        <div class="flex justify-center items-center gap-3 mb-4 bg-white py-2 px-4 rounded-full shadow-sm border border-gray-100 self-center">
           <button @click="zoomOutOrg" class="w-6 h-6 flex items-center justify-center bg-gray-100 rounded-full text-gray-600 active:bg-gray-200">➖</button>
           <span class="text-xs font-bold text-blue-600 w-10 text-center">{{ Math.round(orgZoom * 100) }}%</span>
           <button @click="zoomInOrg" class="w-6 h-6 flex items-center justify-center bg-gray-100 rounded-full text-gray-600 active:bg-gray-200">➕</button>
         </div>
 
         <div id="org-chart-wrapper" class="flex-1 bg-[#f8fafc] p-2 -mx-4 overflow-auto rounded-xl border-y border-gray-100/50 relative">
-          <div id="org-chart-content" class="min-w-max flex justify-center pb-12 pt-6 px-12 transition-transform duration-200" :style="{ transform: `scale(${orgZoom})`, transformOrigin: 'top center' }">
+          <div id="org-chart-content" class="w-full md:w-auto md:min-w-max flex justify-start md:justify-center pb-12 pt-6 px-4 md:px-12 transition-transform duration-200" :style="{ transform: `scale(${orgZoom})`, transformOrigin: 'top center' }">
             <org-node :node="orgTree" @edit="openMemberModal" @add="openAddSubordinateModal"></org-node>
           </div>
         </div>
@@ -153,7 +150,7 @@
 
     <div v-if="isStatsModalOpen" class="fixed inset-0 z-50 flex items-center justify-center p-4">
       <div class="absolute inset-0 bg-gray-900/40 backdrop-blur-sm" @click="isStatsModalOpen = false"></div>
-      <div class="relative w-full max-w-sm glass-card rounded-[2rem] p-8 shadow-2xl animate-fade-in">
+      <div class="relative w-full max-w-sm glass-card bg-white/95 rounded-[2rem] p-8 shadow-2xl animate-fade-in">
         <button @click="isStatsModalOpen = false" class="absolute top-5 right-5 text-gray-400 hover:text-gray-600">
           <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
         </button>
@@ -197,7 +194,7 @@
     </div>
 
     <div v-if="isActivityModalOpen" class="fixed inset-0 z-50 flex items-end justify-center">
-      <div class="absolute inset-0 bg-gray-900/40 backdrop-blur-sm" @click="isActivityModalOpen = false"></div>
+      <div class="absolute inset-0 bg-gray-900/60 backdrop-blur-sm" @click="isActivityModalOpen = false"></div>
       <div class="relative w-full max-w-md bg-white rounded-t-[2rem] p-6 shadow-2xl animate-slide-up pb-10">
         <div class="w-12 h-1.5 bg-gray-200 rounded-full mx-auto mb-6"></div>
         <div class="flex justify-between items-start mb-6">
@@ -225,7 +222,7 @@
     </div>
 
     <div v-if="isMemberModalOpen" class="fixed inset-0 z-50 flex items-end justify-center">
-      <div class="absolute inset-0 bg-gray-900/40 backdrop-blur-sm" @click="isMemberModalOpen = false"></div>
+      <div class="absolute inset-0 bg-gray-900/60 backdrop-blur-sm" @click="isMemberModalOpen = false"></div>
       <div class="relative w-full max-w-md bg-white rounded-t-[2rem] p-6 shadow-2xl animate-slide-up pb-10">
         <div class="w-12 h-1.5 bg-gray-200 rounded-full mx-auto mb-6"></div>
         <div class="flex justify-between items-start mb-6">
@@ -256,21 +253,30 @@
     </div>
 
   </div> <script type="text/x-template" id="org-node-template">
-    <div class="flex flex-col items-center">
-      <div class="relative z-10 w-40 glass-card rounded-2xl border border-gray-200 shadow-sm overflow-hidden text-center cursor-pointer transition-transform hover:-translate-y-1" @click="$emit('edit', node)">
-        <div class="absolute top-0 left-0 w-full h-1.5" :class="getColor(node.status).topBar"></div>
-        <div class="p-3 pt-4">
-          <p class="text-[9px] font-bold mb-1 truncate" :class="getColor(node.status).text">{{ node.status }}</p>
-          <p class="text-sm font-black text-gray-900 truncate">{{ node.name }}</p>
-          <div v-if="node.notes" class="mt-2 inline-block px-1.5 py-1 rounded text-[9px] font-bold truncate w-full" :class="getColor(node.status).bg">{{ node.notes }}</div>
+    <div class="flex flex-col items-start md:items-center w-full md:w-auto">
+      <div class="relative z-10 min-w-[140px] md:min-w-[160px] bg-white rounded-2xl border border-gray-200 shadow-sm cursor-pointer transition-transform hover:-translate-y-1 w-full md:w-auto text-left md:text-center"
+           :class="getColor(node.status).card" @click="$emit('edit', node)">
+        <div class="absolute top-0 left-0 w-full h-1.5 rounded-t-2xl" :class="getColor(node.status).topBar"></div>
+        <div class="p-3 pt-4 pb-4">
+          <p class="text-[10px] font-bold mb-1" :class="getColor(node.status).text">{{ node.status }}</p>
+          <p class="text-base font-black tracking-wide" :class="getColor(node.status).name">{{ node.name }}</p>
+          <div v-if="node.notes" class="mt-2 inline-block px-2 py-1 rounded text-[10px] font-bold w-full break-words line-clamp-3" :class="getColor(node.status).bg">{{ node.notes }}</div>
         </div>
-        <button @click.stop="$emit('add', node)" class="absolute bottom-1 right-1 w-6 h-6 bg-gray-50 rounded-full flex items-center justify-center text-gray-400 hover:text-blue-500 hover:bg-blue-50 transition-colors border border-gray-100 shadow-sm">
+        <button @click.stop="$emit('add', node)" class="absolute bottom-2 right-2 w-6 h-6 bg-gray-50 rounded-full flex items-center justify-center text-gray-400 hover:text-blue-500 hover:bg-blue-50 transition-colors border border-gray-100 shadow-sm">
           <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M12 4v16m8-8H4"></path></svg>
         </button>
       </div>
 
-      <div v-if="node.children && node.children.length > 0" class="tree-connector">
-        <div v-for="child in node.children" :key="child.id" class="relative pt-4 tree-line-top">
+      <div v-if="node.children && node.children.length > 0"
+           class="flex flex-col md:flex-row md:justify-center relative
+                  border-l-2 border-gray-200 md:border-l-0 md:border-t-2 md:pt-6
+                  ml-4 md:ml-0 mt-0 md:mt-4 gap-2 md:gap-6
+                  pl-4 md:pl-0 w-full md:w-auto pb-2 md:pb-0">
+        
+        <div v-for="child in node.children" :key="child.id" class="relative pt-2 md:pt-0 w-full md:w-auto">
+          <div class="hidden md:block absolute top-[-24px] left-1/2 w-0.5 h-6 bg-gray-200 -translate-x-1/2"></div>
+          <div class="md:hidden absolute top-[1.75rem] left-[-16px] w-4 h-0.5 bg-gray-200"></div>
+
           <org-node :node="child" @edit="$emit('edit', $event)" @add="$emit('add', $event)"></org-node>
         </div>
       </div>
@@ -289,11 +295,14 @@
       props: ['node'],
       setup() {
         const getColor = (status) => {
-          if (status.includes('區經理')) return { topBar: 'bg-gradient-to-r from-yellow-400 to-amber-600', text: 'text-amber-600', bg: 'bg-amber-50 text-amber-700' };
-          if (status.includes('襄理') || status.includes('主任')) return { topBar: 'bg-indigo-500', text: 'text-indigo-600', bg: 'bg-indigo-50 text-indigo-700' };
-          if (status.includes('代表')) return { topBar: 'bg-blue-500', text: 'text-blue-500', bg: 'bg-blue-50 text-blue-600' };
-          if (status.includes('登錄')) return { topBar: 'bg-emerald-400', text: 'text-emerald-500', bg: 'bg-emerald-50 text-emerald-600' };
-          return { topBar: 'bg-gray-400', text: 'text-gray-500', bg: 'bg-gray-100 text-gray-600' };
+          if (status.includes('區經理')) return { 
+            topBar: 'bg-gradient-to-r from-yellow-400 to-amber-600', text: 'text-amber-400', bg: 'bg-amber-900/30 text-amber-200 border border-amber-500/30', 
+            card: 'bg-gradient-to-br from-gray-900 to-slate-800 border-gray-700', name: 'text-white' 
+          };
+          if (status.includes('襄理') || status.includes('主任')) return { topBar: 'bg-indigo-500', text: 'text-indigo-600', bg: 'bg-indigo-50 text-indigo-700', card: 'bg-white', name: 'text-gray-900' };
+          if (status.includes('代表')) return { topBar: 'bg-blue-500', text: 'text-blue-500', bg: 'bg-blue-50 text-blue-600', card: 'bg-white', name: 'text-gray-900' };
+          if (status.includes('登錄')) return { topBar: 'bg-emerald-400', text: 'text-emerald-500', bg: 'bg-emerald-50 text-emerald-600', card: 'bg-white', name: 'text-gray-900' };
+          return { topBar: 'bg-gray-400', text: 'text-gray-500', bg: 'bg-gray-100 text-gray-600', card: 'bg-white', name: 'text-gray-900' };
         };
         return { getColor };
       }
@@ -319,7 +328,6 @@
         const allActivities = ref({}); 
         const orgTree = ref({ id: 'root', name: '鎔安', status: '區經理', notes: '', children: [] });
         
-        // 組織圖縮放狀態
         const orgZoom = ref(1.0);
         const zoomInOrg = () => { orgZoom.value = Math.min(1.5, orgZoom.value + 0.1); };
         const zoomOutOrg = () => { orgZoom.value = Math.max(0.4, orgZoom.value - 0.1); };
@@ -373,14 +381,19 @@
           }
         };
 
-        // --- 339 邏輯 ---
         const currentTab = ref('339');
         const isStatsModalOpen = ref(false); 
         const getLocalToday = () => { const d = new Date(); return new Date(d.getTime() - (d.getTimezoneOffset() * 60000)).toISOString().split('T')[0]; };
         const currentDate = ref(getLocalToday());
         const isToday = computed(() => currentDate.value === getLocalToday());
         const formattedDate = computed(() => { const d = new Date(currentDate.value); return `${d.getFullYear()}/${(d.getMonth()+1).toString().padStart(2,'0')}/${d.getDate().toString().padStart(2,'0')}`; });
-        const changeDate = (days) => { const d = new Date(currentDate.value); d.setDate(d.getDate() + days); if (d > new Date(getLocalToday())) return; currentDate.value = d.toISOString().split('T')[0]; };
+        
+        // 拔除不可往右點的限制，解鎖未來規劃
+        const changeDate = (days) => { 
+          const d = new Date(currentDate.value); 
+          d.setDate(d.getDate() + days); 
+          currentDate.value = d.toISOString().split('T')[0]; 
+        };
         
         const currentDayActivities = computed(() => allActivities.value[currentDate.value] || []);
         const dailySales = computed(() => currentDayActivities.value.reduce((sum, act) => sum + act.sales, 0));
@@ -495,31 +508,35 @@
           }
         };
 
-        // 完美截圖邏輯修正
+        // 終極高畫質、防裁切截圖邏輯
         const exportOrgChart = () => {
-          // 先記憶目前的縮放比例，然後重置為 1 以確保高畫質截圖不會破圖
-          const currentZoom = orgZoom.value;
-          orgZoom.value = 1;
+          const container = document.getElementById('org-chart-wrapper');
+          const content = document.getElementById('org-chart-content');
+          const originalZoom = orgZoom.value;
           
-          // 等待 Vue 重新渲染畫面後再截圖
+          orgZoom.value = 1; // 暫時重置畫面縮放
+          container.style.overflow = 'visible'; // 防止內容被捲軸裁切
+
           setTimeout(() => {
-            const element = document.getElementById('org-chart-content');
-            html2canvas(element, { 
+            html2canvas(content, { 
               backgroundColor: '#f8fafc', 
-              scale: 2, // 2倍高畫質
-              useCORS: true,
-              logging: false,
-              windowWidth: element.scrollWidth,
-              windowHeight: element.scrollHeight
+              scale: 2, // 2倍高解析度
+              windowWidth: 1400, // 強制使用電腦版寬度，確保生成完美的橫向樹狀圖
+              onclone: (doc) => {
+                 const clonedContent = doc.getElementById('org-chart-content');
+                 clonedContent.style.transform = 'none';
+                 clonedContent.style.width = 'max-content';
+              }
             }).then(canvas => {
+              container.style.overflow = 'auto'; // 恢復捲軸
+              orgZoom.value = originalZoom; // 恢復使用者縮放
+              
               const link = document.createElement('a');
               link.download = `鎔安組_組織架構圖.png`;
               link.href = canvas.toDataURL('image/png');
               link.click();
-              // 截圖完成後，恢復使用者原本的縮放大小
-              orgZoom.value = currentZoom;
             });
-          }, 300);
+          }, 300); // 給 Vue 一點時間渲染大版面
         };
 
         return { 
