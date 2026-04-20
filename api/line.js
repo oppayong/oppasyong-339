@@ -21,23 +21,34 @@ export default async function handler(req, res) {
         let replyText = '';
 
         if (userMessage.startsWith('綁定')) {
-          const empId = userMessage.replace('綁定', '').trim();
-          const { data: user } = await supabase.from('team_users').select('*').eq('emp_id', empId).single();
+          // 以空格拆分文字，預期格式：綁定 員編 密碼
+          const parts = userMessage.split(/\s+/);
           
-          if (user) {
-            await supabase.from('team_users').update({ line_user_id: lineUserId }).eq('emp_id', empId);
-            replyText = `🎉 綁定成功！歡迎回來，${user.name} ${user.role === 'admin' ? '主管' : '夥伴'}。\n未來的行程與追蹤提醒將會發送到這裡。`;
+          if (parts.length < 3) {
+            replyText = `⚠️ 格式錯誤！\n基於資安防護，綁定時需驗證您的密碼。\n請輸入：「綁定 您的員編 您的密碼」\n（中間請用空格隔開）`;
           } else {
-            replyText = `找不到此員編。請確認輸入格式為「綁定 員編」，或請區經理為您開通帳號。`;
+            const empId = parts[1];
+            const password = parts[2];
+            
+            const { data: user } = await supabase.from('team_users').select('*').eq('emp_id', empId).single();
+            
+            if (!user) {
+              replyText = `❌ 找不到此員編。請確認輸入是否正確。`;
+            } else if (user.password !== password) {
+              replyText = `❌ 密碼錯誤！請確認您輸入的密碼是否正確，以保護客戶資料安全。`;
+            } else if (user.password === '000000') {
+              replyText = `🔒 【資安阻擋】\n您目前使用的是「預設密碼(000000)」。\n為了保護客戶名單不被盜用，請先至 339 戰情室網頁版「修改個人密碼」後，再回 LINE 進行綁定！`;
+            } else {
+              await supabase.from('team_users').update({ line_user_id: lineUserId }).eq('emp_id', empId);
+              replyText = `🎉 綁定成功！歡迎回來，${user.name} ${user.role === 'admin' ? '主管' : '夥伴'}。\n未來的行程與追蹤提醒將會發送到這裡。`;
+            }
           }
         } 
-        // 🌟 新增：處理互動按鈕的回覆，不再鬼打牆
         else if (userMessage.startsWith('更新進度：')) {
           replyText = `✅ 收到！已為您記錄此進度。鎔安組系統會持續與您一起追蹤！💪`;
         }
         else {
-          // 修正資安：拔除真實員編範例
-          replyText = '您好！我是鎔安組戰情管家。\n若尚未綁定，請輸入「綁定 您的員編」（例如：綁定 12345678）來啟用自動化提醒服務。';
+          replyText = '您好！我是鎔安組戰情管家。\n若尚未綁定，請輸入：「綁定 您的員編 您的密碼」（中間需有空格）來啟用自動化提醒服務。';
         }
 
         await fetch('https://api.line.me/v2/bot/message/reply', {
