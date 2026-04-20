@@ -23,55 +23,23 @@
     .animate-fade-in { animation: fadeIn 0.3s ease-out; }
     input[type="date"]::-webkit-calendar-picker-indicator { position: absolute; top: 0; left: 0; right: 0; bottom: 0; width: auto; height: auto; color: transparent; background: transparent; cursor: pointer; }
     
-    /* ================= 組織樹專屬原生 CSS 引擎 ================= */
-    .org-card { position: relative; z-index: 10; min-width: 140px; border-radius: 1rem; border: 1px solid #e2e8f0; box-shadow: 0 1px 3px rgba(0,0,0,0.05); text-align: center; cursor: pointer; transition: transform 0.2s; background: white; }
-    .org-card:hover { transform: translateY(-4px); }
-    .org-topbar { position: absolute; top: 0; left: 0; width: 100%; height: 6px; border-top-left-radius: 1rem; border-top-right-radius: 1rem; }
-
-    /* 頂級職級配色 (直接寫死確保絕對渲染) */
-    .theme-manager { background: linear-gradient(135deg, #111827, #1e293b); border-color: #334155; }
-    .theme-manager .org-name { color: #ffffff; }
-    .theme-manager .org-status { color: #fbbf24; }
-    .theme-manager .org-notes { background: rgba(251, 191, 36, 0.1); color: #fbbf24; border: 1px solid rgba(251, 191, 36, 0.2); }
-    .theme-manager .org-topbar { background: linear-gradient(90deg, #facc15, #d97706); }
+    /* ================= 組織樹完美原生引擎 (支援全設備) ================= */
+    .org-tree-container { display: flex; justify-content: center; }
+    .org-node { display: flex; flex-direction: column; align-items: center; position: relative; padding: 24px 6px 0 6px; }
+    .org-node::before, .org-node::after { content: ""; position: absolute; top: 0; width: 50%; height: 2px; background: #cbd5e1; }
+    .org-node::before { right: 50%; }
+    .org-node::after { left: 50%; }
+    .org-node:only-child::before, .org-node:only-child::after { display: none; }
+    .org-node:first-child::before { display: none; }
+    .org-node:last-child::after { display: none; }
     
-    .theme-director .org-topbar { background-color: #6366f1; }
-    .theme-director .org-status { color: #4f46e5; }
-    .theme-director .org-notes { background-color: #eef2ff; color: #4338ca; }
-
-    .theme-agent .org-topbar { background-color: #3b82f6; }
-    .theme-agent .org-status { color: #3b82f6; }
-    .theme-agent .org-notes { background-color: #eff6ff; color: #1d4ed8; }
-
-    .theme-exam .org-topbar { background-color: #9ca3af; }
-    .theme-exam .org-status { color: #6b7280; }
-    .theme-exam .org-notes { background-color: #f3f4f6; color: #4b5563; }
-    .theme-default .org-name { color: #111827; }
-
-    /* 電腦/iPad 橫向樹狀連線 (絕對精準) */
-    @media (min-width: 768px) {
-      .org-node-group { display: flex; justify-content: center; padding-top: 24px; position: relative; margin-top: 0; width: max-content; }
-      .org-node-group::before { content: ''; position: absolute; top: 0; left: 50%; width: 2px; height: 24px; background-color: #cbd5e1; transform: translateX(-50%); }
-      .org-node-item { position: relative; padding: 24px 12px 0 12px; display: flex; flex-direction: column; align-items: center; }
-      .org-node-item::before, .org-node-item::after { content: ''; position: absolute; top: 0; width: 50%; height: 24px; border-top: 2px solid #cbd5e1; }
-      .org-node-item::before { right: 50%; }
-      .org-node-item::after { left: 50%; border-left: 2px solid #cbd5e1; }
-      .org-node-item:only-child { padding-top: 0; }
-      .org-node-item:only-child::before, .org-node-item:only-child::after { display: none; }
-      .org-node-item:first-child::before, .org-node-item:last-child::after { border: none; }
-      .org-node-item:first-child::after { border-top-left-radius: 8px; }
-      .org-node-item:last-child::before { border-top-right-radius: 8px; border-right: 2px solid #cbd5e1; }
-    }
-
-    /* 手機垂直資料夾連線 */
-    @media (max-width: 767px) {
-      .org-node-group { display: flex; flex-direction: column; padding-left: 20px; margin-top: 12px; border-left: 2px solid #e2e8f0; margin-left: 16px; gap: 12px; width: 100%; }
-      .org-node-item { position: relative; width: 100%; display: flex; flex-direction: column; align-items: flex-start; padding-top: 0; }
-      .org-node-item::before { content: ''; position: absolute; top: 32px; left: -20px; width: 20px; height: 2px; background-color: #e2e8f0; }
-      .org-node-item::after { display: none; }
-      .org-card { width: calc(100% - 10px); text-align: left; }
-      .org-card button { right: 12px; bottom: 12px; }
-    }
+    .org-node-inner { position: relative; display: flex; flex-direction: column; align-items: center; }
+    .org-node-inner::before { content: ""; position: absolute; top: -24px; left: 50%; width: 2px; height: 24px; background: #cbd5e1; transform: translateX(-50%); }
+    .org-tree-container > .org-node > .org-node-inner::before { display: none; }
+    .org-tree-container > .org-node { padding-top: 0; }
+    
+    .org-children { display: flex; justify-content: center; position: relative; padding-top: 24px; }
+    .org-children::before { content: ""; position: absolute; top: 0; left: 50%; width: 2px; height: 24px; background: #cbd5e1; transform: translateX(-50%); }
   </style>
 </head>
 <body class="text-gray-800 pb-24 select-none antialiased">
@@ -168,9 +136,9 @@
           <button @click="zoomInOrg" class="w-6 h-6 flex items-center justify-center bg-gray-100 rounded-full text-gray-600 active:bg-gray-200">➕</button>
         </div>
 
-        <div id="org-chart-wrapper" class="flex-1 bg-[#f8fafc] p-2 -mx-4 overflow-auto rounded-xl border-y border-gray-100/50 relative">
-          <div id="org-chart-content" class="min-w-max flex justify-center pb-12 pt-6 px-12 transition-transform duration-200" :style="{ transform: `scale(${orgZoom})`, transformOrigin: 'top center' }">
-            <div class="org-node-group" style="padding-top:0; margin-top:0; border:none;">
+        <div id="org-chart-wrapper" class="flex-1 bg-[#f8fafc] p-2 -mx-4 overflow-auto rounded-xl border-y border-gray-100/50 relative cursor-grab active:cursor-grabbing" style="touch-action: pan-x pan-y;">
+          <div id="org-chart-content" class="min-w-max flex justify-center pb-16 pt-8 px-12 transition-transform duration-200" :style="{ transform: `scale(${orgZoom})`, transformOrigin: 'top center' }">
+            <div class="org-tree-container">
               <org-node :node="orgTree" @edit="openMemberModal" @add="openAddSubordinateModal"></org-node>
             </div>
           </div>
@@ -302,21 +270,23 @@
     </div>
 
   </div> <script type="text/x-template" id="org-node-template">
-    <div class="org-node-item">
-      <div class="org-card" :class="getTheme(node.status)" @click="$emit('edit', node)">
-        <div class="org-topbar"></div>
-        <div class="p-3 pt-4 pb-4">
-          <p class="org-status text-[10px] font-bold mb-1">{{ node.status }}</p>
-          <p class="org-name text-base font-black tracking-wide">{{ node.name }}</p>
-          <div v-if="node.notes" class="org-notes mt-2 inline-block px-2 py-1 rounded text-[10px] font-bold w-full break-words line-clamp-3">{{ node.notes }}</div>
+    <div class="org-node">
+      <div class="org-node-inner">
+        <div class="relative z-10 w-36 sm:w-40 bg-white rounded-2xl border border-gray-200 shadow-md cursor-pointer transition-transform hover:-translate-y-1 text-center overflow-hidden" @click="$emit('edit', node)">
+          <div class="absolute top-0 left-0 w-full h-1.5" :class="getColor(node.status).topBar"></div>
+          <div class="p-3 pt-4 pb-4" :class="getColor(node.status).bgCard">
+            <p class="text-[10px] font-bold mb-1" :class="getColor(node.status).text">{{ node.status }}</p>
+            <p class="text-base font-black tracking-wide" :class="getColor(node.status).name">{{ node.name }}</p>
+            <div v-if="node.notes" class="org-notes mt-2 inline-block px-1.5 py-1 rounded-lg text-[10px] font-bold w-full break-words line-clamp-3" :class="getColor(node.status).bg">{{ node.notes }}</div>
+          </div>
+          <button @click.stop="$emit('add', node)" class="absolute bottom-1 right-1 w-6 h-6 bg-white/80 backdrop-blur rounded-full flex items-center justify-center text-gray-500 hover:text-blue-600 shadow border border-gray-200 z-20">
+            <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M12 4v16m8-8H4"></path></svg>
+          </button>
         </div>
-        <button @click.stop="$emit('add', node)" class="absolute bottom-2 right-2 w-6 h-6 bg-gray-50 rounded-full flex items-center justify-center text-gray-400 hover:text-blue-500 hover:bg-blue-50 transition-colors border border-gray-100 shadow-sm">
-          <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M12 4v16m8-8H4"></path></svg>
-        </button>
-      </div>
-
-      <div v-if="node.children && node.children.length > 0" class="org-node-group">
-        <org-node v-for="child in node.children" :key="child.id" :node="child" @edit="$emit('edit', $event)" @add="$emit('add', $event)"></org-node>
+        
+        <div v-if="node.children && node.children.length > 0" class="org-children">
+          <org-node v-for="child in node.children" :key="child.id" :node="child" @edit="$emit('edit', $event)" @add="$emit('add', $event)"></org-node>
+        </div>
       </div>
     </div>
   </script>
@@ -332,13 +302,14 @@
       template: '#org-node-template',
       props: ['node'],
       setup() {
-        const getTheme = (status) => {
-          if (status.includes('區經理')) return 'theme-manager';
-          if (status.includes('襄理') || status.includes('主任')) return 'theme-director theme-default';
-          if (status.includes('代表') || status.includes('登錄')) return 'theme-agent theme-default';
-          return 'theme-exam theme-default';
+        const getColor = (status) => {
+          if (status.includes('區經理')) return { topBar: 'bg-gradient-to-r from-yellow-400 to-amber-500', text: 'text-amber-500', bg: 'bg-gray-800 text-amber-400 border border-gray-600', bgCard: 'bg-gray-900', name: 'text-white' };
+          if (status.includes('襄理') || status.includes('主任')) return { topBar: 'bg-indigo-500', text: 'text-indigo-600', bg: 'bg-indigo-50 text-indigo-700', bgCard: 'bg-white', name: 'text-gray-900' };
+          if (status.includes('代表')) return { topBar: 'bg-blue-500', text: 'text-blue-500', bg: 'bg-blue-50 text-blue-700', bgCard: 'bg-white', name: 'text-gray-900' };
+          if (status.includes('登錄')) return { topBar: 'bg-emerald-400', text: 'text-emerald-600', bg: 'bg-emerald-50 text-emerald-700', bgCard: 'bg-white', name: 'text-gray-900' };
+          return { topBar: 'bg-gray-400', text: 'text-gray-500', bg: 'bg-gray-100 text-gray-600', bgCard: 'bg-white', name: 'text-gray-900' };
         };
-        return { getTheme };
+        return { getColor };
       }
     };
 
@@ -392,11 +363,17 @@
             if (!decryptedStr) throw new Error("解密失敗"); 
             const decrypted = JSON.parse(decryptedStr);
             allActivities.value = decrypted.activities || {};
-            if (decrypted.orgTree) {
+            
+            // 資料自癒系統：修復之前可能破圖存檔的組織樹
+            if (decrypted.orgTree && decrypted.orgTree.id) {
               orgTree.value = decrypted.orgTree;
             } else if (decrypted.members && decrypted.members.length > 0) {
                orgTree.value.children = decrypted.members.map((m, i) => ({ id: 'old_'+i, name: m.name, status: m.status, notes: m.notes, children: [] }));
             }
+            if (!orgTree.value.name) orgTree.value.name = '鎔安';
+            if (!orgTree.value.status) orgTree.value.status = '區經理';
+            if (!orgTree.value.id) orgTree.value.id = 'root';
+            if (!orgTree.value.children) orgTree.value.children = [];
           }
         };
 
@@ -488,7 +465,6 @@
         };
         const deleteActivity = () => { allActivities.value[currentDate.value] = allActivities.value[currentDate.value].filter(a => a.time !== selectedTime.value); syncToCloud(); isActivityModalOpen.value = false; };
 
-        // --- 組織圖邏輯 ---
         const memberStatuses = ['臨時帳號申請中', '準備公會考試', '等待登錄中', '業務代表', '業務主任', '業務襄理', '區經理'];
         const isMemberModalOpen = ref(false);
         const memberForm = reactive({ mode: 'add', nodeId: null, targetNode: null, name: '', status: '準備公會考試', notes: '' });
@@ -541,28 +517,27 @@
           }
         };
 
-        // 終極高畫質截圖 (解決手機寬度不足被裁切的問題)
+        // 終極高畫質不裁切截圖引擎
         const exportOrgChart = () => {
-          const container = document.getElementById('org-chart-wrapper');
           const content = document.getElementById('org-chart-content');
           const originalZoom = orgZoom.value;
-          
           orgZoom.value = 1; 
-          container.style.overflow = 'visible'; 
           
           setTimeout(() => {
             html2canvas(content, { 
               backgroundColor: '#f8fafc', 
               scale: 2, 
-              windowWidth: Math.max(1200, content.scrollWidth), // 強制給予 1200px 以上的寬度進行截圖
+              windowWidth: Math.max(1400, content.scrollWidth), // 強制給予大版面防止文字擠壓
               onclone: (doc) => {
                  const el = doc.getElementById('org-chart-content');
-                 el.style.transform = 'none'; // 防止縮放干擾畫質
+                 el.style.transform = 'none'; 
+                 el.style.width = 'max-content';
+                 // 暫時移除 line-clamp-3，讓截圖字體完全顯示
+                 const notes = el.querySelectorAll('.org-notes');
+                 notes.forEach(n => { n.classList.remove('line-clamp-3', 'truncate'); n.style.whiteSpace = 'normal'; });
               }
             }).then(canvas => {
-              container.style.overflow = 'auto'; 
               orgZoom.value = originalZoom; 
-              
               const link = document.createElement('a');
               link.download = `鎔安組_組織架構圖.png`;
               link.href = canvas.toDataURL('image/png');
