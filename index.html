@@ -3,11 +3,10 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-  <title>鎔安組 | 頂級戰情系統 1.5</title>
+  <title>鎔安組 | 企業級戰情系統 2.0</title>
   
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
 
@@ -23,28 +22,45 @@
     .animate-fade-in { animation: fadeIn 0.4s ease-out; }
     input[type="date"]::-webkit-calendar-picker-indicator { position: absolute; top: 0; left: 0; right: 0; bottom: 0; width: auto; height: auto; color: transparent; background: transparent; cursor: pointer; }
     
-    .tree-line-top::before { content: ''; position: absolute; top: -16px; left: 50%; width: 2px; height: 16px; background-color: #cbd5e1; transform: translateX(-50%); }
-    .tree-connector { position: relative; padding-top: 16px; margin-top: 16px; border-top: 2px solid #cbd5e1; display: flex; justify-content: center; gap: 16px; }
+    /* 組織樹完美原生引擎 */
+    .org-tree-container { display: flex; justify-content: center; }
+    .org-node { display: flex; flex-direction: column; align-items: center; position: relative; padding: 24px 6px 0 6px; }
+    .org-node::before, .org-node::after { content: ""; position: absolute; top: 0; width: 50%; height: 2px; background: #cbd5e1; }
+    .org-node::before { right: 50%; }
+    .org-node::after { left: 50%; }
+    .org-node:only-child::before, .org-node:only-child::after { display: none; }
+    .org-node:first-child::before { display: none; }
+    .org-node:last-child::after { display: none; }
+    
+    .org-node-inner { position: relative; display: flex; flex-direction: column; align-items: center; }
+    .org-node-inner::before { content: ""; position: absolute; top: -24px; left: 50%; width: 2px; height: 24px; background: #cbd5e1; transform: translateX(-50%); }
+    .org-tree-container > .org-node > .org-node-inner::before { display: none; }
+    .org-tree-container > .org-node { padding-top: 0; }
+    
+    .org-children { display: flex; justify-content: center; position: relative; padding-top: 24px; }
+    .org-children::before { content: ""; position: absolute; top: 0; left: 50%; width: 2px; height: 24px; background: #cbd5e1; transform: translateX(-50%); }
   </style>
 </head>
 <body class="text-gray-800 pb-24 select-none antialiased">
 
   <div id="app" class="w-full min-h-screen relative overflow-x-hidden" v-cloak>
 
-    <div v-if="!isUnlocked" class="fixed inset-0 z-[100] bg-gray-900 flex flex-col justify-center items-center p-6 animate-fade-in">
+    <div v-if="!currentUser" class="fixed inset-0 z-[100] bg-gray-900 flex flex-col justify-center items-center p-6 animate-fade-in">
       <div class="w-full max-w-sm bg-white/10 backdrop-blur-2xl rounded-[2rem] p-8 border border-white/20 shadow-2xl text-center">
         <div class="w-16 h-16 bg-blue-500/20 rounded-full flex items-center justify-center mx-auto mb-4 border border-blue-400/30">
           <svg class="w-8 h-8 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path></svg>
         </div>
         <h1 class="text-2xl font-black text-white tracking-widest mb-1">鎔安組戰情室</h1>
-        <p class="text-[11px] text-blue-200/70 mb-2 tracking-widest">AES-256 端到端加密</p>
-        <p class="text-[10px] text-emerald-400 mb-6 font-bold" v-if="cloudStatus">{{ cloudStatus }}</p>
+        <p class="text-[11px] text-blue-200/70 mb-6 tracking-widest">企業級 CRM 登入系統</p>
         
-        <input v-model="passcode" type="password" placeholder="請輸入專屬解鎖密碼" 
-               class="w-full bg-black/30 border border-white/10 rounded-xl px-4 py-3 text-base text-center text-white tracking-widest focus:outline-none focus:border-blue-400/50 transition-colors mb-4">
+        <input v-model="loginForm.empId" type="text" placeholder="請輸入您的員編" 
+               class="w-full bg-black/30 border border-white/10 rounded-xl px-4 py-3.5 text-base text-center text-white tracking-widest focus:outline-none focus:border-blue-400/50 transition-colors mb-3">
         
-        <button @click="unlockApp" :disabled="isSyncing" class="w-full bg-blue-600 hover:bg-blue-500 text-white font-bold py-3.5 rounded-xl shadow-lg transition-colors disabled:opacity-50">
-          {{ isSyncing ? '雲端同步解密中...' : '解鎖系統' }}
+        <input v-model="loginForm.password" type="password" placeholder="請輸入密碼" 
+               class="w-full bg-black/30 border border-white/10 rounded-xl px-4 py-3.5 text-base text-center text-white tracking-widest focus:outline-none focus:border-blue-400/50 transition-colors mb-6">
+        
+        <button @click="doLogin" :disabled="isLoading" class="w-full bg-blue-600 hover:bg-blue-500 text-white font-bold py-3.5 rounded-xl shadow-lg transition-colors disabled:opacity-50">
+          {{ isLoading ? '登入驗證中...' : '進入系統' }}
         </button>
         <p v-if="loginError" class="text-red-400 text-xs mt-3 font-bold">{{ loginError }}</p>
       </div>
@@ -54,13 +70,20 @@
       
       <div v-show="currentTab === '339'" class="p-5 pb-20 max-w-md mx-auto">
         
+        <div v-if="currentUser.role === 'admin'" class="mb-4 flex items-center justify-between bg-gray-900 text-white p-3 rounded-xl shadow-md">
+          <span class="text-xs font-bold tracking-widest text-amber-400">🛡️ 主管透視模式</span>
+          <select v-model="viewingEmpId" @change="loadDayActivities" class="bg-gray-800 border border-gray-700 text-white text-sm rounded-lg px-2 py-1 outline-none">
+            <option v-for="user in teamMembers" :key="user.emp_id" :value="user.emp_id">{{ user.name }} ({{ user.emp_id }})</option>
+          </select>
+        </div>
+
         <div class="flex justify-between items-center mb-6 px-1">
           <button @click="changeDate(-1)" class="p-2 text-gray-400 hover:text-blue-600 transition-colors active:scale-90">
             <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15 19l-7-7 7-7"></path></svg>
           </button>
           
           <div class="text-center relative flex flex-col items-center justify-center">
-            <input type="date" v-model="currentDate" class="absolute inset-0 opacity-0 w-full h-full z-10 cursor-pointer text-base">
+            <input type="date" v-model="currentDate" @change="loadDayActivities" class="absolute inset-0 opacity-0 w-full h-full z-10 cursor-pointer text-base">
             <p class="text-xl font-black text-gray-900 tracking-tight">{{ formattedDate }}</p>
             <div class="flex items-center gap-1 text-blue-500 mt-0.5">
               <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
@@ -75,7 +98,7 @@
 
         <div class="flex justify-between items-end mb-6 px-1">
           <div>
-            <h1 class="text-2xl font-black text-gray-900 tracking-tight">鎔安組</h1>
+            <h1 class="text-2xl font-black text-gray-900 tracking-tight">{{ getViewingName() }}的戰情室</h1>
             <p class="text-[10px] font-bold text-gray-400 mt-1 uppercase tracking-widest">339 活動量紀錄</p>
           </div>
           <button @click="isStatsModalOpen = true" class="flex items-center gap-1.5 bg-blue-50 text-blue-600 px-3.5 py-2 rounded-xl active:scale-95 transition-transform shadow-sm">
@@ -92,8 +115,8 @@
             <div class="flex-1 p-4 border-l border-gray-50 flex flex-col justify-center min-h-[4.5rem]">
               <template v-if="getActivity(time)">
                 <div>
-                  <span class="inline-block px-2 py-0.5 text-[10px] font-black rounded text-white mb-1.5 shadow-sm" :class="getTypeStyle(getActivity(time).type)">{{ getActivity(time).type }}</span>
-                  <p class="text-sm font-bold text-gray-900 break-words">{{ getActivity(time).clientName }}</p>
+                  <span class="inline-block px-2 py-0.5 text-[10px] font-black rounded text-white mb-1.5 shadow-sm" :class="getTypeStyle(getActivity(time).activity_type)">{{ getActivity(time).activity_type }}</span>
+                  <p class="text-sm font-bold text-gray-900 break-words">{{ getActivity(time).client_name }}</p>
                   <p v-if="getActivity(time).notes" class="text-xs text-gray-400 mt-1 break-words line-clamp-2">{{ getActivity(time).notes }}</p>
                 </div>
               </template>
@@ -109,10 +132,14 @@
             <h1 class="text-2xl font-black text-gray-900 tracking-tight">組織發展</h1>
             <p class="text-[10px] font-bold text-gray-400 mt-1 uppercase tracking-widest">團隊架構圖</p>
           </div>
-          <button @click="exportOrgChart" class="flex items-center gap-1.5 bg-gray-900 text-white px-3.5 py-2 rounded-xl active:scale-95 transition-transform shadow-md">
-            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
-            <span class="text-[10px] font-bold tracking-wide">匯出架構圖</span>
-          </button>
+          <div class="flex gap-2">
+            <button v-if="currentUser.role === 'admin'" @click="isAddUserModalOpen = true" class="flex items-center gap-1.5 bg-emerald-500 text-white px-3 py-2 rounded-xl active:scale-95 shadow-md">
+              <span class="text-[10px] font-bold tracking-wide">+ 開通帳號</span>
+            </button>
+            <button @click="exportOrgChart" class="flex items-center gap-1.5 bg-gray-900 text-white px-3 py-2 rounded-xl active:scale-95 transition-transform shadow-md">
+              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
+            </button>
+          </div>
         </header>
 
         <div class="flex justify-center items-center gap-3 mb-6 bg-white py-2 px-4 rounded-full shadow-sm border border-gray-100 w-fit mx-auto">
@@ -124,7 +151,7 @@
         <div id="org-chart-wrapper" class="flex-1 bg-[#f8fafc] p-2 -mx-4 sm:mx-0 overflow-auto rounded-xl border-y sm:border border-gray-100/50 cursor-grab active:cursor-grabbing">
           <div id="org-chart-content" class="min-w-max flex justify-center pb-16 pt-8 px-4 sm:px-12 transition-transform duration-200" :style="{ transform: `scale(${orgZoom})`, transformOrigin: 'top center' }">
             <div class="org-tree-container">
-              <org-node :node="orgTree" @edit="openMemberModal" @add="openAddSubordinateModal"></org-node>
+              <org-node :node="orgTree" @edit="openMemberModal" @add="openAddSubordinateModal" :is-admin="currentUser.role === 'admin'"></org-node>
             </div>
           </div>
         </div>
@@ -132,15 +159,15 @@
 
     </div> 
     
-    <nav v-if="isUnlocked" class="fixed bottom-0 left-0 right-0 glass-nav pb-safe pt-2 px-6 z-40 shadow-[0_-5px_20px_rgba(0,0,0,0.03)]">
+    <nav v-if="currentUser" class="fixed bottom-0 left-0 right-0 glass-nav pb-safe pt-2 px-6 z-40 shadow-[0_-5px_20px_rgba(0,0,0,0.03)]">
       <div class="max-w-md mx-auto flex justify-around items-center h-16">
         <div @click="currentTab = '339'" class="flex flex-col items-center justify-center w-20 h-full cursor-pointer" :class="currentTab === '339' ? 'text-blue-600' : 'text-gray-400'">
           <svg class="w-6 h-6 mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
           <span class="text-[10px] font-bold tracking-widest">339 戰情</span>
         </div>
-        <div class="relative group">
-          <div class="w-10 h-10 bg-white border border-gray-100 rounded-full flex items-center justify-center shadow-sm cursor-pointer active:scale-90 transition-transform" @click="syncToCloud">
-            <div class="w-2.5 h-2.5 rounded-full transition-colors" :class="cloudActive ? 'bg-blue-500 shadow-[0_0_8px_rgba(59,130,246,0.6)]' : 'bg-gray-300'"></div>
+        <div @click="loadDayActivities" class="relative group cursor-pointer">
+          <div class="w-10 h-10 bg-white border border-gray-100 rounded-full flex items-center justify-center shadow-sm active:scale-90 transition-transform">
+            <div class="w-2.5 h-2.5 rounded-full transition-colors bg-blue-500 shadow-[0_0_8px_rgba(59,130,246,0.6)]"></div>
           </div>
         </div>
         <div @click="currentTab = 'org'" class="flex flex-col items-center justify-center w-20 h-full cursor-pointer" :class="currentTab === 'org' ? 'text-blue-600' : 'text-gray-400'">
@@ -157,34 +184,13 @@
           <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
         </button>
         <h2 class="text-2xl font-black text-gray-900 mb-1">戰績分析</h2>
-        <p class="text-[11px] font-bold text-gray-400 uppercase tracking-widest mb-8">AI 數據評分系統</p>
+        <p class="text-[11px] font-bold text-gray-400 uppercase tracking-widest mb-8">當日即時戰力</p>
 
         <div class="mb-6 p-5 bg-blue-50/50 rounded-2xl border border-blue-100/50">
-          <p class="text-xs font-bold text-blue-800 mb-3">{{ formattedDate }} 當日戰力</p>
+          <p class="text-xs font-bold text-blue-800 mb-3">{{ formattedDate }}</p>
           <div class="flex justify-between items-end">
             <div><span class="text-[10px] text-gray-500 mr-2">銷售總分</span><span class="text-3xl font-black text-blue-600">{{ dailySales }}</span></div>
             <div><span class="text-[10px] text-gray-500 mr-2">增員總分</span><span class="text-3xl font-black text-emerald-500">{{ dailyRecruit }}</span></div>
-          </div>
-        </div>
-
-        <div class="grid grid-cols-2 gap-4 mb-6">
-          <div class="p-4 bg-white rounded-2xl border border-gray-100 shadow-sm">
-            <p class="text-[10px] text-gray-400 font-bold tracking-widest mb-2">本週累積</p>
-            <div class="flex justify-between items-end mb-1">
-              <span class="text-xs text-gray-500">銷售</span><span class="text-lg font-black text-blue-500">{{ weeklyStats.sales }}</span>
-            </div>
-            <div class="flex justify-between items-end">
-              <span class="text-xs text-gray-500">增員</span><span class="text-lg font-black text-emerald-500">{{ weeklyStats.recruit }}</span>
-            </div>
-          </div>
-          <div class="p-4 bg-white rounded-2xl border border-gray-100 shadow-sm">
-            <p class="text-[10px] text-gray-400 font-bold tracking-widest mb-2">本月累積</p>
-            <div class="flex justify-between items-end mb-1">
-              <span class="text-xs text-gray-500">銷售</span><span class="text-lg font-black text-blue-600">{{ monthlyStats.sales }}</span>
-            </div>
-            <div class="flex justify-between items-end">
-              <span class="text-xs text-gray-500">增員</span><span class="text-lg font-black text-emerald-600">{{ monthlyStats.recruit }}</span>
-            </div>
           </div>
         </div>
 
@@ -201,24 +207,24 @@
         <div class="w-12 h-1.5 bg-gray-200 rounded-full mx-auto mb-6"></div>
         <div class="flex justify-between items-start mb-6">
           <div><h2 class="text-xl font-black text-gray-900 mb-1">記錄活動</h2><p class="text-xs font-bold text-blue-600">{{ formattedDate }} | {{ selectedTime }}</p></div>
-          <button v-if="formData.clientName" @click="deleteActivity" class="text-[10px] font-bold text-red-500 bg-red-50 px-3 py-2 rounded-xl">刪除</button>
+          <button v-if="formData.id" @click="deleteActivity" class="text-[10px] font-bold text-red-500 bg-red-50 px-3 py-2 rounded-xl">刪除</button>
         </div>
         <div class="space-y-4">
           <div>
-            <label class="block text-[11px] font-bold text-gray-500 mb-2">對象 (AES 加密保護)</label>
+            <label class="block text-[11px] font-bold text-gray-500 mb-2">對象姓名</label>
             <input v-model="formData.clientName" type="text" placeholder="輸入客戶或準增員..." class="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-base focus:outline-none focus:border-blue-500">
           </div>
           <div>
-            <label class="block text-[11px] font-bold text-gray-500 mb-2">活動類型</label>
+            <label class="block text-[11px] font-bold text-gray-500 mb-2">活動類型 (自動雲端計分)</label>
             <div class="flex flex-wrap gap-2">
               <button v-for="type in activityTypes" :key="type" @click="formData.type = type" class="px-3 py-1.5 rounded-lg text-xs font-bold transition-all border" :class="formData.type === type ? 'bg-gray-900 text-white border-gray-900 shadow-md' : 'bg-white border-gray-200 text-gray-600'">{{ type }}</button>
             </div>
           </div>
           <div>
-            <label class="block text-[11px] font-bold text-gray-500 mb-2">備註事項 (AES 加密保護)</label>
+            <label class="block text-[11px] font-bold text-gray-500 mb-2">備註事項</label>
             <textarea v-model="formData.notes" rows="2" placeholder="重點記錄..." class="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-base focus:outline-none focus:border-blue-500"></textarea>
           </div>
-          <button @click="saveActivity" class="w-full mt-2 bg-blue-600 text-white font-bold py-3.5 rounded-xl shadow-lg shadow-blue-200 active:scale-95 transition-transform">加密並儲存至雲端</button>
+          <button @click="saveActivity" class="w-full mt-2 bg-blue-600 text-white font-bold py-3.5 rounded-xl shadow-lg shadow-blue-200 active:scale-95 transition-transform">儲存至雲端系統</button>
         </div>
       </div>
     </div>
@@ -229,19 +235,16 @@
         <div class="w-12 h-1.5 bg-gray-200 rounded-full mx-auto mb-6"></div>
         <div class="flex justify-between items-start mb-6">
           <h2 class="text-xl font-black text-gray-900">{{ memberForm.mode === 'add' ? '新增下屬成員' : '編輯成員資料' }}</h2>
-          <button v-if="memberForm.mode === 'edit' && memberForm.nodeId !== 'root'" @click="deleteMember" class="text-[10px] font-bold text-red-500 bg-red-50 px-3 py-2 rounded-xl">移除成員</button>
+          <button v-if="memberForm.mode === 'edit' && memberForm.nodeId !== 'root' && currentUser.role === 'admin'" @click="deleteMember" class="text-[10px] font-bold text-red-500 bg-red-50 px-3 py-2 rounded-xl">移除成員</button>
         </div>
         <div class="space-y-4">
-          <div v-if="memberForm.nodeId === 'root'">
-            <p class="text-xs text-amber-600 font-bold bg-amber-50 p-3 rounded-lg mb-2">💡 頂層主管僅能修改職稱與姓名。</p>
-          </div>
           <div>
             <label class="block text-[11px] font-bold text-gray-500 mb-2">姓名</label>
-            <input v-model="memberForm.name" type="text" class="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-base focus:outline-none focus:border-blue-500">
+            <input v-model="memberForm.name" type="text" class="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-base focus:outline-none focus:border-blue-500" :disabled="currentUser.role !== 'admin'">
           </div>
           <div>
             <label class="block text-[11px] font-bold text-gray-500 mb-2">目前狀態 / 職級</label>
-            <select v-model="memberForm.status" class="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-base focus:outline-none focus:border-blue-500 appearance-none">
+            <select v-model="memberForm.status" class="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-base focus:outline-none focus:border-blue-500 appearance-none" :disabled="currentUser.role !== 'admin'">
               <option v-for="status in memberStatuses" :key="status" :value="status">{{ status }}</option>
             </select>
           </div>
@@ -254,23 +257,48 @@
       </div>
     </div>
 
-  </div> <script type="text/x-template" id="org-node-template">
-    <div class="flex flex-col items-center">
-      <div class="relative z-10 w-40 glass-card rounded-2xl border border-gray-200 shadow-sm overflow-hidden text-center cursor-pointer transition-transform hover:-translate-y-1" @click="$emit('edit', node)">
-        <div class="absolute top-0 left-0 w-full h-1.5" :class="getColor(node.status).topBar"></div>
-        <div class="p-3 pt-4">
-          <p class="text-[9px] font-bold mb-1 truncate" :class="getColor(node.status).text">{{ node.status }}</p>
-          <p class="text-sm font-black text-gray-900 truncate">{{ node.name }}</p>
-          <div v-if="node.notes" class="org-notes mt-2 inline-block px-1.5 py-1 rounded text-[9px] font-bold w-full break-words line-clamp-3" :class="getColor(node.status).bg">{{ node.notes }}</div>
+    <div v-if="isAddUserModalOpen" class="fixed inset-0 z-50 flex items-end justify-center">
+      <div class="absolute inset-0 bg-gray-900/60 backdrop-blur-sm" @click="isAddUserModalOpen = false"></div>
+      <div class="relative w-full max-w-md bg-white rounded-t-[2rem] p-6 shadow-2xl animate-slide-up pb-10">
+        <div class="w-12 h-1.5 bg-gray-200 rounded-full mx-auto mb-6"></div>
+        <div class="flex justify-between items-start mb-6">
+          <div><h2 class="text-xl font-black text-gray-900 mb-1">開通夥伴系統帳號</h2><p class="text-xs font-bold text-emerald-600">建立後即可讓夥伴登入使用 339 系統</p></div>
         </div>
-        <button @click.stop="$emit('add', node)" class="absolute bottom-1 right-1 w-6 h-6 bg-gray-50 rounded-full flex items-center justify-center text-gray-400 hover:text-blue-500 hover:bg-blue-50 transition-colors border border-gray-100 shadow-sm">
-          <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M12 4v16m8-8H4"></path></svg>
-        </button>
+        <div class="space-y-4">
+          <div>
+            <label class="block text-[11px] font-bold text-gray-500 mb-2">登入員編 (帳號)</label>
+            <input v-model="newUserForm.empId" type="text" placeholder="例如：200101234" class="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-base focus:outline-none focus:border-blue-500">
+          </div>
+          <div>
+            <label class="block text-[11px] font-bold text-gray-500 mb-2">真實姓名</label>
+            <input v-model="newUserForm.name" type="text" placeholder="夥伴姓名" class="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-base focus:outline-none focus:border-blue-500">
+          </div>
+          <div>
+            <label class="block text-[11px] font-bold text-gray-500 mb-2">預設密碼 (夥伴登入後可改)</label>
+            <input v-model="newUserForm.password" type="text" placeholder="例如：000000" class="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-base focus:outline-none focus:border-blue-500">
+          </div>
+          <button @click="createUserAccount" class="w-full mt-2 bg-emerald-600 text-white font-bold py-3.5 rounded-xl shadow-lg active:scale-95 transition-transform">確認開通</button>
+        </div>
       </div>
+    </div>
 
-      <div v-if="node.children && node.children.length > 0" class="tree-connector">
-        <div v-for="child in node.children" :key="child.id" class="relative pt-4 tree-line-top">
-          <org-node :node="child" @edit="$emit('edit', $event)" @add="$emit('add', $event)"></org-node>
+  </div> <script type="text/x-template" id="org-node-template">
+    <div class="org-node">
+      <div class="org-node-inner">
+        <div class="relative z-10 w-36 sm:w-40 bg-white rounded-2xl border border-gray-200 shadow-md cursor-pointer transition-transform hover:-translate-y-1 text-center overflow-hidden" @click="$emit('edit', node)">
+          <div class="absolute top-0 left-0 w-full h-1.5" :class="getColor(node.status).topBar"></div>
+          <div class="p-3 pt-4 pb-4" :class="getColor(node.status).bgCard">
+            <p class="text-[10px] font-bold mb-1" :class="getColor(node.status).text">{{ node.status }}</p>
+            <p class="text-base font-black tracking-wide" :class="getColor(node.status).name">{{ node.name }}</p>
+            <div v-if="node.notes" class="org-notes mt-2 inline-block px-1.5 py-1 rounded-lg text-[10px] font-bold w-full break-words line-clamp-3" :class="getColor(node.status).bg">{{ node.notes }}</div>
+          </div>
+          <button v-if="isAdmin" @click.stop="$emit('add', node)" class="absolute bottom-1 right-1 w-6 h-6 bg-white/80 backdrop-blur rounded-full flex items-center justify-center text-gray-500 hover:text-blue-600 shadow border border-gray-200 z-20">
+            <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M12 4v16m8-8H4"></path></svg>
+          </button>
+        </div>
+        
+        <div v-if="node.children && node.children.length > 0" class="org-children">
+          <org-node v-for="child in node.children" :key="child.id" :node="child" @edit="$emit('edit', $event)" @add="$emit('add', $event)" :is-admin="isAdmin"></org-node>
         </div>
       </div>
     </div>
@@ -285,14 +313,14 @@
     const OrgNode = {
       name: 'OrgNode',
       template: '#org-node-template',
-      props: ['node'],
+      props: ['node', 'isAdmin'],
       setup() {
         const getColor = (status) => {
-          if (status.includes('區經理')) return { topBar: 'bg-gradient-to-r from-yellow-400 to-amber-600', text: 'text-amber-600', bg: 'bg-amber-50 text-amber-700' };
-          if (status.includes('襄理') || status.includes('主任')) return { topBar: 'bg-indigo-500', text: 'text-indigo-600', bg: 'bg-indigo-50 text-indigo-700' };
-          if (status.includes('代表')) return { topBar: 'bg-blue-500', text: 'text-blue-500', bg: 'bg-blue-50 text-blue-600' };
-          if (status.includes('登錄')) return { topBar: 'bg-emerald-400', text: 'text-emerald-500', bg: 'bg-emerald-50 text-emerald-600' };
-          return { topBar: 'bg-gray-400', text: 'text-gray-500', bg: 'bg-gray-100 text-gray-600' };
+          if (status.includes('區經理')) return { topBar: 'bg-gradient-to-r from-yellow-400 to-amber-500', text: 'text-amber-500', bg: 'bg-gray-800 text-amber-400 border border-gray-600', bgCard: 'bg-gray-900', name: 'text-white' };
+          if (status.includes('襄理') || status.includes('主任')) return { topBar: 'bg-indigo-500', text: 'text-indigo-600', bg: 'bg-indigo-50 text-indigo-700', bgCard: 'bg-white', name: 'text-gray-900' };
+          if (status.includes('代表')) return { topBar: 'bg-blue-500', text: 'text-blue-500', bg: 'bg-blue-50 text-blue-700', bgCard: 'bg-white', name: 'text-gray-900' };
+          if (status.includes('登錄')) return { topBar: 'bg-emerald-400', text: 'text-emerald-600', bg: 'bg-emerald-50 text-emerald-700', bgCard: 'bg-white', name: 'text-gray-900' };
+          return { topBar: 'bg-gray-400', text: 'text-gray-500', bg: 'bg-gray-100 text-gray-600', bgCard: 'bg-white', name: 'text-gray-900' };
         };
         return { getColor };
       }
@@ -300,114 +328,104 @@
 
     const app = createApp({
       setup() {
-        const isUnlocked = ref(false);
-        const passcode = ref('');
-        const loginError = ref('');
-        const ENCRYPTION_KEY = ref('');
-        const cloudActive = ref(false);
-        const isSyncing = ref(false);
-        const cloudStatus = ref('');
-
-        let supabase = null;
-        if (typeof window.supabase !== 'undefined') {
-          supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-          cloudActive.value = true;
-          cloudStatus.value = "✓ 雲端連線就緒";
-        }
-
-        const allActivities = ref({}); 
-        const orgTree = ref({ id: 'root', name: '鎔安', status: '區經理', notes: '', children: [] });
+        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
         
+        // 狀態管理
+        const currentUser = ref(null);
+        const viewingEmpId = ref('');
+        const teamMembers = ref([]);
+        const loginForm = reactive({ empId: '', password: '' });
+        const loginError = ref('');
+        const isLoading = ref(false);
+
+        // 資料
+        const currentDayActivities = ref([]); 
+        const orgTree = ref({ id: 'root', name: '鎔安', status: '區經理', notes: '', children: [] });
         const orgZoom = ref(1.0);
-        const zoomInOrg = () => { orgZoom.value = Math.min(1.5, orgZoom.value + 0.1); };
-        const zoomOutOrg = () => { orgZoom.value = Math.max(0.4, orgZoom.value - 0.1); };
 
-        const unlockApp = async () => {
-          if (!passcode.value) { loginError.value = '密碼不能為空'; return; }
-          isSyncing.value = true; ENCRYPTION_KEY.value = passcode.value;
+        // 登入邏輯
+        const doLogin = async () => {
+          if (!loginForm.empId || !loginForm.password) { loginError.value = '請輸入帳號與密碼'; return; }
+          isLoading.value = true; loginError.value = '';
+          
           try {
-            await loadDataFromCloudOrLocal();
-            isUnlocked.value = true;
-          } catch (e) { loginError.value = '密碼錯誤，無法解密'; }
-          isSyncing.value = false;
-        };
-
-        const loadDataFromCloudOrLocal = async () => {
-          let encryptedStr = null;
-          if (cloudActive.value) {
-            try {
-              const { data } = await supabase.from('activities').select('notes').eq('client_name', 'APP_VAULT_V1').limit(1);
-              if (data && data.length > 0) encryptedStr = data[0].notes;
-            } catch(e) {}
-          }
-          if (!encryptedStr) encryptedStr = localStorage.getItem('rongan_vault_data');
-
-          if (encryptedStr) {
-            const bytes = CryptoJS.AES.decrypt(encryptedStr, ENCRYPTION_KEY.value);
-            const decryptedStr = bytes.toString(CryptoJS.enc.Utf8);
-            if (!decryptedStr) throw new Error("解密失敗"); 
-            const decrypted = JSON.parse(decryptedStr);
-            allActivities.value = decrypted.activities || {};
-            
-            if (decrypted.orgTree) {
-              orgTree.value = decrypted.orgTree;
-            } else if (decrypted.members && decrypted.members.length > 0) {
-               orgTree.value.children = decrypted.members.map((m, i) => ({ id: 'old_'+i, name: m.name, status: m.status, notes: m.notes, children: [] }));
+            const { data, error } = await supabase.from('team_users').select('*').eq('emp_id', loginForm.empId).eq('password', loginForm.password).single();
+            if (data) {
+              currentUser.value = data;
+              viewingEmpId.value = data.emp_id; // 預設看自己
+              
+              if (data.role === 'admin') {
+                const res = await supabase.from('team_users').select('emp_id, name');
+                teamMembers.value = res.data || [];
+              }
+              
+              await loadDayActivities();
+              await loadOrgTree();
+            } else {
+              loginError.value = '帳號或密碼錯誤';
             }
+          } catch (e) {
+            loginError.value = '伺服器連線錯誤';
+          }
+          isLoading.value = false;
+        };
+
+        const getViewingName = () => {
+          if (currentUser.value?.role !== 'admin') return currentUser.value?.name;
+          const target = teamMembers.value.find(m => m.emp_id === viewingEmpId.value);
+          return target ? target.name : '';
+        };
+
+        // 讀取當天行程 (CRM 正規化架構)
+        const loadDayActivities = async () => {
+          const { data } = await supabase.from('team_activities')
+                                 .select('*')
+                                 .eq('emp_id', viewingEmpId.value)
+                                 .eq('activity_date', currentDate.value);
+          currentDayActivities.value = data || [];
+        };
+
+        // 讀取組織圖 (保留從舊保險箱讀取以相容舊資料)
+        const loadOrgTree = async () => {
+          const { data } = await supabase.from('activities').select('notes').eq('client_name', 'APP_VAULT_V1').limit(1);
+          if (data && data.length > 0) {
+            try {
+               // 使用管理員密碼解密舊有組織圖
+               const bytes = CryptoJS.AES.decrypt(data[0].notes, '123456');
+               const decryptedStr = bytes.toString(CryptoJS.enc.Utf8);
+               const vault = JSON.parse(decryptedStr);
+               if (vault.orgTree) orgTree.value = vault.orgTree;
+            } catch(e) { console.log('解密組織圖失敗，使用預設值'); }
           }
         };
 
-        const syncToCloud = async () => {
-          if (!ENCRYPTION_KEY.value) return;
-          const dataToSave = { activities: allActivities.value, orgTree: orgTree.value, test_check: 'OK' };
-          const encryptedStr = CryptoJS.AES.encrypt(JSON.stringify(dataToSave), ENCRYPTION_KEY.value).toString();
-          localStorage.setItem('rongan_vault_data', encryptedStr); 
-          if (cloudActive.value) {
-            try {
-              await supabase.from('activities').upsert({
-                id: '00000000-0000-0000-0000-000000000001', activity_date: '2099-12-31', start_time: '00:00', end_time: '23:59',
-                activity_type: 'VAULT', client_name: 'APP_VAULT_V1', notes: encryptedStr, sales_score: 0, recruit_score: 0
-              });
-            } catch(e) {}
-          }
+        // 儲存組織圖
+        const saveOrgTree = async () => {
+           // 只有管理員可以變更組織圖
+           if (currentUser.value.role !== 'admin') return;
+           const vaultData = { orgTree: orgTree.value };
+           const encryptedStr = CryptoJS.AES.encrypt(JSON.stringify(vaultData), '123456').toString();
+           await supabase.from('activities').upsert({
+              id: '00000000-0000-0000-0000-000000000001', activity_date: '2099-12-31', start_time: '00:00', end_time: '23:59',
+              activity_type: 'VAULT', client_name: 'APP_VAULT_V1', notes: encryptedStr, sales_score: 0, recruit_score: 0
+           });
         };
 
         const currentTab = ref('339');
         const isStatsModalOpen = ref(false); 
         const getLocalToday = () => { const d = new Date(); return new Date(d.getTime() - (d.getTimezoneOffset() * 60000)).toISOString().split('T')[0]; };
         const currentDate = ref(getLocalToday());
-        const isToday = computed(() => currentDate.value === getLocalToday());
         const formattedDate = computed(() => { const d = new Date(currentDate.value); return `${d.getFullYear()}/${(d.getMonth()+1).toString().padStart(2,'0')}/${d.getDate().toString().padStart(2,'0')}`; });
         
         const changeDate = (days) => { 
           const d = new Date(currentDate.value); 
           d.setDate(d.getDate() + days); 
           currentDate.value = d.toISOString().split('T')[0]; 
+          loadDayActivities();
         };
         
-        const currentDayActivities = computed(() => allActivities.value[currentDate.value] || []);
-        const dailySales = computed(() => currentDayActivities.value.reduce((sum, act) => sum + act.sales, 0));
-        const dailyRecruit = computed(() => currentDayActivities.value.reduce((sum, act) => sum + act.recruit, 0));
-
-        const getStatsForRange = (filterFn) => {
-          let s = 0; let r = 0;
-          Object.keys(allActivities.value).forEach(dateStr => {
-            if (filterFn(new Date(dateStr))) { allActivities.value[dateStr].forEach(act => { s += act.sales; r += act.recruit; }); }
-          });
-          return { sales: s, recruit: r };
-        };
-
-        const weeklyStats = computed(() => {
-          const curr = new Date(currentDate.value);
-          const first = curr.getDate() - curr.getDay() + (curr.getDay() === 0 ? -6 : 1); 
-          const firstDay = new Date(new Date(curr).setDate(first)); const lastDay = new Date(new Date(curr).setDate(first + 6));
-          return getStatsForRange(d => d >= firstDay && d <= lastDay);
-        });
-
-        const monthlyStats = computed(() => {
-          const curr = new Date(currentDate.value);
-          return getStatsForRange(d => d.getFullYear() === curr.getFullYear() && d.getMonth() === curr.getMonth());
-        });
+        const dailySales = computed(() => currentDayActivities.value.reduce((sum, act) => sum + act.sales_score, 0));
+        const dailyRecruit = computed(() => currentDayActivities.value.reduce((sum, act) => sum + act.recruit_score, 0));
 
         const aiSuggestion = computed(() => {
           if (dailySales.value === 0 && dailyRecruit.value === 0) return '今日尚未有活動紀錄，立刻展開行動！';
@@ -418,55 +436,70 @@
 
         const timeSlots = Array.from({ length: 16 }, (_, i) => `${(i + 8).toString().padStart(2, '0')}:00`);
         
-        // 🌟 新增「談建議書」顏色樣式
+        // 2.0 活動類型加入「談建議書」
+        const activityTypes = ['約訪', '面談', '談建議書', '簽約', '客戶服務', '增員活動', '增員約訪', '增員面談', '其他'];
         const getTypeStyle = (type) => { 
-          const styles = { 
-            '約訪': 'bg-blue-400', '面談': 'bg-blue-600', '談建議書': 'bg-indigo-500', '簽約': 'bg-purple-600', '客戶服務': 'bg-gray-400', 
-            '增員活動': 'bg-emerald-400', '增員約訪': 'bg-emerald-500', '增員面談': 'bg-emerald-600', '其他': 'bg-orange-400' 
-          }; 
+          const styles = { '約訪': 'bg-blue-400', '面談': 'bg-blue-600', '談建議書': 'bg-indigo-500', '簽約': 'bg-purple-600', '客戶服務': 'bg-gray-400', '增員活動': 'bg-emerald-400', '增員約訪': 'bg-emerald-500', '增員面談': 'bg-emerald-600', '其他': 'bg-orange-400' }; 
           return styles[type] || 'bg-gray-400'; 
         };
 
         const isActivityModalOpen = ref(false);
         const selectedTime = ref('');
+        const formData = reactive({ id: null, clientName: '', type: '約訪', notes: '' });
         
-        // 🌟 活動類型加入「談建議書」
-        const activityTypes = ['約訪', '面談', '談建議書', '簽約', '客戶服務', '增員活動', '增員約訪', '增員面談', '其他'];
-        const formData = reactive({ clientName: '', type: '約訪', notes: '' });
-        const getActivity = (time) => currentDayActivities.value.find(a => a.time === time);
+        const getActivity = (time) => currentDayActivities.value.find(a => a.start_time === time);
 
         const openActivityModal = (time) => {
           selectedTime.value = time;
           const existing = getActivity(time);
-          if (existing) { formData.clientName = existing.clientName; formData.type = existing.type; formData.notes = existing.notes; } 
-          else { formData.clientName = ''; formData.type = '約訪'; formData.notes = ''; }
+          if (existing) { formData.id = existing.id; formData.clientName = existing.client_name; formData.type = existing.activity_type; formData.notes = existing.notes; } 
+          else { formData.id = null; formData.clientName = ''; formData.type = '約訪'; formData.notes = ''; }
           isActivityModalOpen.value = true;
         };
 
-        const saveActivity = () => {
+        const saveActivity = async () => {
           if (!formData.clientName) { alert('請填寫姓名'); return; }
           let sScore = 0; let rScore = 0;
           
-          // 🌟 2.0 全新計分邏輯
+          // 2.0 新配分邏輯
           if (formData.type === '約訪') sScore = 1; 
           if (formData.type === '面談') sScore = 2; 
           if (formData.type === '談建議書') sScore = 3; 
           if (formData.type === '簽約') sScore = 5; 
           if (formData.type === '客戶服務') sScore = 1;
-          
           if (formData.type === '增員活動') rScore = 1; 
           if (formData.type === '增員約訪') rScore = 2; 
           if (formData.type === '增員面談') rScore = 4; 
+          if (formData.type === '其他') { sScore = 1; rScore = 1; }
+
+          const payload = {
+            emp_id: viewingEmpId.value,
+            activity_date: currentDate.value,
+            start_time: selectedTime.value,
+            activity_type: formData.type,
+            client_name: formData.clientName,
+            notes: formData.notes,
+            sales_score: sScore,
+            recruit_score: rScore
+          };
+          if (formData.id) payload.id = formData.id; // 更新舊有
           
-          if (formData.type === '其他') { sScore = 1; rScore = 1; } // 其他也有基礎分
-
-          if (!allActivities.value[currentDate.value]) allActivities.value[currentDate.value] = [];
-          allActivities.value[currentDate.value] = allActivities.value[currentDate.value].filter(a => a.time !== selectedTime.value);
-          allActivities.value[currentDate.value].push({ time: selectedTime.value, type: formData.type, clientName: formData.clientName, notes: formData.notes, sales: sScore, recruit: rScore });
-          syncToCloud(); isActivityModalOpen.value = false;
+          await supabase.from('team_activities').upsert(payload);
+          await loadDayActivities();
+          isActivityModalOpen.value = false;
         };
-        const deleteActivity = () => { allActivities.value[currentDate.value] = allActivities.value[currentDate.value].filter(a => a.time !== selectedTime.value); syncToCloud(); isActivityModalOpen.value = false; };
 
+        const deleteActivity = async () => { 
+          if(formData.id) {
+            await supabase.from('team_activities').delete().eq('id', formData.id);
+            await loadDayActivities();
+          }
+          isActivityModalOpen.value = false; 
+        };
+
+        // 組織圖邏輯
+        const zoomInOrg = () => { orgZoom.value = Math.min(1.5, orgZoom.value + 0.1); };
+        const zoomOutOrg = () => { orgZoom.value = Math.max(0.4, orgZoom.value - 0.1); };
         const memberStatuses = ['臨時帳號申請中', '準備公會考試', '等待登錄中', '業務代表', '業務主任', '業務襄理', '區經理'];
         const isMemberModalOpen = ref(false);
         const memberForm = reactive({ mode: 'add', nodeId: null, targetNode: null, name: '', status: '準備公會考試', notes: '' });
@@ -489,34 +522,55 @@
         };
 
         const openAddSubordinateModal = (parentNode) => {
+          if(currentUser.value.role !== 'admin') return;
           memberForm.mode = 'add'; memberForm.targetNode = parentNode;
           memberForm.name = ''; memberForm.status = '準備公會考試'; memberForm.notes = '';
           isMemberModalOpen.value = true;
         };
 
-        const saveMember = () => {
-          if (!memberForm.name) { alert('請填寫姓名'); return; }
+        const saveMember = async () => {
           if (memberForm.mode === 'add') {
             const newNode = { id: 'node_' + Date.now(), name: memberForm.name, status: memberForm.status, notes: memberForm.notes, children: [] };
             if (!memberForm.targetNode.children) memberForm.targetNode.children = [];
             memberForm.targetNode.children.push(newNode);
           } else {
-            memberForm.targetNode.name = memberForm.name;
-            memberForm.targetNode.status = memberForm.status;
             memberForm.targetNode.notes = memberForm.notes;
+            if(currentUser.value.role === 'admin'){
+               memberForm.targetNode.name = memberForm.name;
+               memberForm.targetNode.status = memberForm.status;
+            }
           }
-          syncToCloud(); isMemberModalOpen.value = false;
+          await saveOrgTree();
+          isMemberModalOpen.value = false;
         };
 
-        const deleteMember = () => {
-          if (memberForm.nodeId === 'root') return;
+        const deleteMember = async () => {
+          if (memberForm.nodeId === 'root' || currentUser.value.role !== 'admin') return;
           if (confirm('確定要移除此成員與其所有下屬嗎？')) {
             const result = findNodeAndParent(orgTree.value, memberForm.nodeId);
             if (result && result.parent) {
               result.parent.children = result.parent.children.filter(c => c.id !== memberForm.nodeId);
-              syncToCloud(); isMemberModalOpen.value = false;
+              await saveOrgTree();
+              isMemberModalOpen.value = false;
             }
           }
+        };
+
+        // 開通帳號邏輯
+        const isAddUserModalOpen = ref(false);
+        const newUserForm = reactive({ empId: '', name: '', password: ''});
+        const createUserAccount = async () => {
+          if(!newUserForm.empId || !newUserForm.name || !newUserForm.password) return alert('請填寫完整');
+          await supabase.from('team_users').insert({
+             emp_id: newUserForm.empId,
+             password: newUserForm.password,
+             name: newUserForm.name,
+             role: 'agent'
+          });
+          const res = await supabase.from('team_users').select('emp_id, name');
+          teamMembers.value = res.data;
+          isAddUserModalOpen.value = false;
+          alert('夥伴帳號開通成功！');
         };
 
         const exportOrgChart = () => {
@@ -526,13 +580,10 @@
           
           setTimeout(() => {
             html2canvas(content, { 
-              backgroundColor: '#f8fafc', 
-              scale: 2, 
-              windowWidth: Math.max(1400, content.scrollWidth),
+              backgroundColor: '#f8fafc', scale: 2, windowWidth: Math.max(1400, content.scrollWidth),
               onclone: (doc) => {
                  const el = doc.getElementById('org-chart-content');
-                 el.style.transform = 'none'; 
-                 el.style.width = 'max-content';
+                 el.style.transform = 'none'; el.style.width = 'max-content';
                  const notes = el.querySelectorAll('.org-notes');
                  notes.forEach(n => { n.classList.remove('line-clamp-3', 'truncate'); n.style.whiteSpace = 'normal'; });
               }
@@ -540,18 +591,18 @@
               orgZoom.value = originalZoom; 
               const link = document.createElement('a');
               link.download = `鎔安組_組織架構圖.png`;
-              link.href = canvas.toDataURL('image/png');
-              link.click();
+              link.href = canvas.toDataURL('image/png'); link.click();
             });
           }, 300); 
         };
 
         return { 
-          isUnlocked, passcode, loginError, unlockApp, cloudStatus, cloudActive, isSyncing, syncToCloud,
-          currentTab, currentDate, formattedDate, isToday, changeDate, isStatsModalOpen,
-          timeSlots, dailySales, dailyRecruit, weeklyStats, monthlyStats, aiSuggestion, getActivity, getTypeStyle, 
+          currentUser, viewingEmpId, teamMembers, loginForm, loginError, isLoading, doLogin, getViewingName, loadDayActivities,
+          currentTab, currentDate, formattedDate, changeDate, isStatsModalOpen,
+          timeSlots, dailySales, dailyRecruit, aiSuggestion, getActivity, getTypeStyle, 
           isActivityModalOpen, selectedTime, activityTypes, formData, openActivityModal, saveActivity, deleteActivity,
-          orgTree, orgZoom, zoomInOrg, zoomOutOrg, memberStatuses, isMemberModalOpen, memberForm, openMemberModal, openAddSubordinateModal, saveMember, deleteMember, exportOrgChart
+          orgTree, orgZoom, zoomInOrg, zoomOutOrg, memberStatuses, isMemberModalOpen, memberForm, openMemberModal, openAddSubordinateModal, saveMember, deleteMember, exportOrgChart,
+          isAddUserModalOpen, newUserForm, createUserAccount
         };
       }
     });
