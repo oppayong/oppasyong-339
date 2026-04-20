@@ -2,7 +2,7 @@
 <html lang="zh-TW">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
   <title>鎔安組 | 頂級戰情系統</title>
   
   <script src="https://cdn.tailwindcss.com"></script>
@@ -13,17 +13,17 @@
 
   <style>
     [v-cloak] { display: none !important; }
-    body { background-color: #f8fafc; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; -webkit-tap-highlight-color: transparent; margin: 0; padding: 0; }
+    /* 加入 touch-action: manipulation 徹底阻斷 iOS 雙擊放大 */
+    body { background-color: #f8fafc; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; -webkit-tap-highlight-color: transparent; margin: 0; padding: 0; touch-action: manipulation; }
     ::-webkit-scrollbar { display: none; }
     .glass-nav { background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); border-top: 1px solid rgba(255,255,255,0.8); }
     .glass-card { background: rgba(255, 255, 255, 0.98); box-shadow: 0 8px 30px rgba(0,0,0,0.04); border: 1px solid rgba(255,255,255,1); }
     @keyframes slideUp { from { transform: translateY(100%); opacity: 0;} to { transform: translateY(0); opacity: 1;} }
     .animate-slide-up { animation: slideUp 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
     @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-    .animate-fade-in { animation: fadeIn 0.4s ease-out; }
+    .animate-fade-in { animation: fadeIn 0.3s ease-out; }
     input[type="date"]::-webkit-calendar-picker-indicator { position: absolute; top: 0; left: 0; right: 0; bottom: 0; width: auto; height: auto; color: transparent; background: transparent; cursor: pointer; }
     
-    /* 組織樹專用連線樣式 */
     .tree-line-top::before { content: ''; position: absolute; top: -16px; left: 50%; width: 2px; height: 16px; background-color: #cbd5e1; transform: translateX(-50%); }
     .tree-connector { position: relative; padding-top: 16px; margin-top: 16px; border-top: 2px solid #cbd5e1; display: flex; justify-content: center; gap: 16px; }
   </style>
@@ -42,7 +42,7 @@
         <p class="text-[10px] text-emerald-400 mb-6 font-bold" v-if="cloudStatus">{{ cloudStatus }}</p>
         
         <input v-model="passcode" type="password" placeholder="請輸入專屬解鎖密碼" 
-               class="w-full bg-black/30 border border-white/10 rounded-xl px-4 py-3.5 text-center text-white tracking-widest focus:outline-none focus:border-blue-400/50 transition-colors mb-4">
+               class="w-full bg-black/30 border border-white/10 rounded-xl px-4 py-3 text-base text-center text-white tracking-widest focus:outline-none focus:border-blue-400/50 transition-colors mb-4">
         
         <button @click="unlockApp" :disabled="isSyncing" class="w-full bg-blue-600 hover:bg-blue-500 text-white font-bold py-3.5 rounded-xl shadow-lg transition-colors disabled:opacity-50">
           {{ isSyncing ? '雲端同步解密中...' : '解鎖系統' }}
@@ -61,7 +61,7 @@
           </button>
           
           <div class="text-center relative flex flex-col items-center justify-center">
-            <input type="date" v-model="currentDate" class="absolute inset-0 opacity-0 w-full h-full z-10 cursor-pointer">
+            <input type="date" v-model="currentDate" class="absolute inset-0 opacity-0 w-full h-full z-10 cursor-pointer text-base">
             <p class="text-xl font-black text-gray-900 tracking-tight">{{ formattedDate }}</p>
             <div class="flex items-center gap-1 text-blue-500 mt-0.5">
               <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
@@ -87,6 +87,7 @@
 
         <div class="space-y-3 relative pb-8">
           <div class="absolute left-[3.25rem] top-4 bottom-4 w-[2px] bg-gray-200/50 -z-10 rounded-full"></div>
+          
           <div v-for="time in timeSlots" :key="time" @click="openActivityModal(time)" class="flex bg-white rounded-2xl shadow-sm border border-gray-100 active:scale-[0.98] transition-all cursor-pointer overflow-hidden group hover:border-blue-200">
             <div class="w-20 flex justify-center py-4"><span class="text-[13px] font-bold text-gray-400 group-hover:text-blue-500 transition-colors">{{ time }}</span></div>
             <div class="flex-1 p-4 border-l border-gray-50 flex flex-col justify-center min-h-[4.5rem]">
@@ -103,26 +104,36 @@
         </div>
       </div>
 
-      <div v-show="currentTab === 'org'" class="p-5 pb-24">
-        <header class="mb-8 mt-2 flex justify-between items-end">
+      <div v-show="currentTab === 'org'" class="p-5 pb-24 flex flex-col min-h-screen">
+        <header class="mb-4 mt-2 flex justify-between items-end">
           <div>
             <h1 class="text-2xl font-black text-gray-900 tracking-tight">組織發展</h1>
             <p class="text-[10px] font-bold text-gray-400 mt-1 uppercase tracking-widest">團隊架構圖</p>
           </div>
-          <button @click="exportOrgChart" class="flex items-center gap-1.5 bg-gray-900 text-white px-3.5 py-2 rounded-xl active:scale-95 transition-transform shadow-md">
-            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
-            <span class="text-[10px] font-bold tracking-wide">匯出架構圖</span>
-          </button>
+          <div class="flex gap-2">
+            <button @click="exportOrgChart" class="flex items-center gap-1.5 bg-gray-900 text-white px-3 py-2 rounded-xl active:scale-95 transition-transform shadow-md">
+              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
+              <span class="text-[10px] font-bold tracking-wide">匯出</span>
+            </button>
+          </div>
         </header>
 
-        <div id="org-chart-container" class="bg-[#f8fafc] p-4 -mx-4 overflow-x-auto">
-          <div class="min-w-max flex justify-center pb-8 pt-4 px-8">
+        <div class="flex justify-center items-center gap-3 mb-6 bg-white py-2 px-4 rounded-full shadow-sm border border-gray-100 self-center">
+          <button @click="zoomOutOrg" class="w-6 h-6 flex items-center justify-center bg-gray-100 rounded-full text-gray-600 active:bg-gray-200">➖</button>
+          <span class="text-xs font-bold text-blue-600 w-10 text-center">{{ Math.round(orgZoom * 100) }}%</span>
+          <button @click="zoomInOrg" class="w-6 h-6 flex items-center justify-center bg-gray-100 rounded-full text-gray-600 active:bg-gray-200">➕</button>
+        </div>
+
+        <div id="org-chart-wrapper" class="flex-1 bg-[#f8fafc] p-2 -mx-4 overflow-auto rounded-xl border-y border-gray-100/50 relative">
+          <div id="org-chart-content" class="min-w-max flex justify-center pb-12 pt-6 px-12 transition-transform duration-200" :style="{ transform: `scale(${orgZoom})`, transformOrigin: 'top center' }">
             <org-node :node="orgTree" @edit="openMemberModal" @add="openAddSubordinateModal"></org-node>
           </div>
         </div>
       </div>
 
-    </div> <nav v-if="isUnlocked" class="fixed bottom-0 left-0 right-0 glass-nav pb-safe pt-2 px-6 z-40 shadow-[0_-5px_20px_rgba(0,0,0,0.03)]">
+    </div> 
+
+    <nav v-if="isUnlocked" class="fixed bottom-0 left-0 right-0 glass-nav pb-safe pt-2 px-6 z-40 shadow-[0_-5px_20px_rgba(0,0,0,0.03)]">
       <div class="max-w-md mx-auto flex justify-around items-center h-16">
         <div @click="currentTab = '339'" class="flex flex-col items-center justify-center w-20 h-full cursor-pointer" :class="currentTab === '339' ? 'text-blue-600' : 'text-gray-400'">
           <svg class="w-6 h-6 mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
@@ -196,7 +207,7 @@
         <div class="space-y-4">
           <div>
             <label class="block text-[11px] font-bold text-gray-500 mb-2">對象 (AES 加密保護)</label>
-            <input v-model="formData.clientName" type="text" placeholder="輸入客戶或準增員..." class="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-blue-500">
+            <input v-model="formData.clientName" type="text" placeholder="輸入客戶或準增員..." class="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-base focus:outline-none focus:border-blue-500">
           </div>
           <div>
             <label class="block text-[11px] font-bold text-gray-500 mb-2">活動類型</label>
@@ -206,7 +217,7 @@
           </div>
           <div>
             <label class="block text-[11px] font-bold text-gray-500 mb-2">備註事項 (AES 加密保護)</label>
-            <textarea v-model="formData.notes" rows="2" placeholder="重點記錄..." class="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-blue-500"></textarea>
+            <textarea v-model="formData.notes" rows="2" placeholder="重點記錄..." class="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-base focus:outline-none focus:border-blue-500"></textarea>
           </div>
           <button @click="saveActivity" class="w-full mt-2 bg-blue-600 text-white font-bold py-3.5 rounded-xl shadow-lg shadow-blue-200 active:scale-95 transition-transform">加密並儲存至雲端</button>
         </div>
@@ -227,17 +238,17 @@
           </div>
           <div>
             <label class="block text-[11px] font-bold text-gray-500 mb-2">姓名</label>
-            <input v-model="memberForm.name" type="text" class="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-blue-500">
+            <input v-model="memberForm.name" type="text" class="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-base focus:outline-none focus:border-blue-500">
           </div>
           <div>
             <label class="block text-[11px] font-bold text-gray-500 mb-2">目前狀態 / 職級</label>
-            <select v-model="memberForm.status" class="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-blue-500 appearance-none">
+            <select v-model="memberForm.status" class="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-base focus:outline-none focus:border-blue-500 appearance-none">
               <option v-for="status in memberStatuses" :key="status" :value="status">{{ status }}</option>
             </select>
           </div>
           <div v-if="memberForm.nodeId !== 'root'">
             <label class="block text-[11px] font-bold text-gray-500 mb-2">重要活動/備註提醒</label>
-            <textarea v-model="memberForm.notes" rows="2" placeholder="例如：下週二公會考..." class="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-blue-500"></textarea>
+            <textarea v-model="memberForm.notes" rows="2" placeholder="例如：下週二公會考..." class="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-base focus:outline-none focus:border-blue-500"></textarea>
           </div>
           <button @click="saveMember" class="w-full mt-2 bg-gray-900 text-white font-bold py-3.5 rounded-xl shadow-lg active:scale-95 transition-transform">儲存組織變更</button>
         </div>
@@ -272,7 +283,6 @@
 
     const { createApp, ref, reactive, computed, onMounted } = Vue;
 
-    // 定義組織樹組件
     const OrgNode = {
       name: 'OrgNode',
       template: '#org-node-template',
@@ -307,10 +317,12 @@
         }
 
         const allActivities = ref({}); 
-        // 樹狀組織資料結構
-        const orgTree = ref({
-          id: 'root', name: '鎔安', status: '區經理', notes: '', children: []
-        });
+        const orgTree = ref({ id: 'root', name: '鎔安', status: '區經理', notes: '', children: [] });
+        
+        // 組織圖縮放狀態
+        const orgZoom = ref(1.0);
+        const zoomInOrg = () => { orgZoom.value = Math.min(1.5, orgZoom.value + 0.1); };
+        const zoomOutOrg = () => { orgZoom.value = Math.max(0.4, orgZoom.value - 0.1); };
 
         const unlockApp = async () => {
           if (!passcode.value) { loginError.value = '密碼不能為空'; return; }
@@ -338,11 +350,9 @@
             if (!decryptedStr) throw new Error("解密失敗"); 
             const decrypted = JSON.parse(decryptedStr);
             allActivities.value = decrypted.activities || {};
-            // 兼容舊版陣列與新版樹狀
             if (decrypted.orgTree) {
               orgTree.value = decrypted.orgTree;
             } else if (decrypted.members && decrypted.members.length > 0) {
-               // 將舊的平面資料轉到根節點下
                orgTree.value.children = decrypted.members.map((m, i) => ({ id: 'old_'+i, name: m.name, status: m.status, notes: m.notes, children: [] }));
             }
           }
@@ -365,7 +375,7 @@
 
         // --- 339 邏輯 ---
         const currentTab = ref('339');
-        const isStatsModalOpen = ref(false); // 獨立戰績分析面板
+        const isStatsModalOpen = ref(false); 
         const getLocalToday = () => { const d = new Date(); return new Date(d.getTime() - (d.getTimezoneOffset() * 60000)).toISOString().split('T')[0]; };
         const currentDate = ref(getLocalToday());
         const isToday = computed(() => currentDate.value === getLocalToday());
@@ -437,7 +447,6 @@
         const isMemberModalOpen = ref(false);
         const memberForm = reactive({ mode: 'add', nodeId: null, targetNode: null, name: '', status: '準備公會考試', notes: '' });
 
-        // 遞迴尋找節點
         const findNodeAndParent = (node, id, parent = null) => {
           if (node.id === id) return { node, parent };
           if (node.children) {
@@ -486,15 +495,31 @@
           }
         };
 
+        // 完美截圖邏輯修正
         const exportOrgChart = () => {
-          const element = document.getElementById('org-chart-container');
-          // 加上白底並提高畫質
-          html2canvas(element, { backgroundColor: '#f8fafc', scale: 2 }).then(canvas => {
-            const link = document.createElement('a');
-            link.download = '鎔安組_組織架構圖.png';
-            link.href = canvas.toDataURL('image/png');
-            link.click();
-          });
+          // 先記憶目前的縮放比例，然後重置為 1 以確保高畫質截圖不會破圖
+          const currentZoom = orgZoom.value;
+          orgZoom.value = 1;
+          
+          // 等待 Vue 重新渲染畫面後再截圖
+          setTimeout(() => {
+            const element = document.getElementById('org-chart-content');
+            html2canvas(element, { 
+              backgroundColor: '#f8fafc', 
+              scale: 2, // 2倍高畫質
+              useCORS: true,
+              logging: false,
+              windowWidth: element.scrollWidth,
+              windowHeight: element.scrollHeight
+            }).then(canvas => {
+              const link = document.createElement('a');
+              link.download = `鎔安組_組織架構圖.png`;
+              link.href = canvas.toDataURL('image/png');
+              link.click();
+              // 截圖完成後，恢復使用者原本的縮放大小
+              orgZoom.value = currentZoom;
+            });
+          }, 300);
         };
 
         return { 
@@ -502,7 +527,7 @@
           currentTab, currentDate, formattedDate, isToday, changeDate, isStatsModalOpen,
           timeSlots, dailySales, dailyRecruit, weeklyStats, monthlyStats, aiSuggestion, getActivity, getTypeStyle, 
           isActivityModalOpen, selectedTime, activityTypes, formData, openActivityModal, saveActivity, deleteActivity,
-          orgTree, memberStatuses, isMemberModalOpen, memberForm, openMemberModal, openAddSubordinateModal, saveMember, deleteMember, exportOrgChart
+          orgTree, orgZoom, zoomInOrg, zoomOutOrg, memberStatuses, isMemberModalOpen, memberForm, openMemberModal, openAddSubordinateModal, saveMember, deleteMember, exportOrgChart
         };
       }
     });
