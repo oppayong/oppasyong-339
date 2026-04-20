@@ -491,7 +491,7 @@
         const orgTree = ref({ id: 'root', name: '鎔安', status: '區經理', notes: '', children: [] });
         const orgZoom = ref(1.0);
         
-        const groupViewMode = ref('day'); // 'day' 或 'month'
+        const groupViewMode = ref('day'); 
 
         const doLogin = async () => {
           if (!loginForm.empId || !loginForm.password) { loginError.value = '請輸入帳號與密碼'; return; }
@@ -555,7 +555,6 @@
            await supabase.from('activities').upsert({ id: '00000000-0000-0000-0000-000000000001', activity_date: '2099-12-31', start_time: '00:00', activity_type: 'VAULT', client_name: 'APP_VAULT_V1', notes: encryptedStr });
         };
 
-        // 計算與輔助功能
         const getFlatNodes = (node, arr = []) => { arr.push(node); if (node.children) { node.children.forEach(c => getFlatNodes(c, arr)); } return arr; };
         const allNodes = computed(() => getFlatNodes(orgTree.value));
         const unboundNodes = computed(() => allNodes.value.filter(n => !n.emp_id));
@@ -597,7 +596,6 @@
           return '持續累積活動量，量大是致勝的關鍵！';
         });
 
-        // 🌍 全組分析 (支援日/月切換)
         const filteredGroupActivities = computed(() => {
            if (groupViewMode.value === 'day') return currentDayActivities.value;
            const curr = new Date(currentDate.value); const y = curr.getFullYear(); const m = curr.getMonth();
@@ -623,7 +621,7 @@
         const groupAiSuggestion = computed(() => {
            if(viewingEmpId.value !== 'ALL') return '';
            const list = memberStatsList.value;
-           const zeros = list.filter(u => u.total === 0 && u.emp_id !== currentUser.value.emp_id).map(u => u.name); // 排除總管自己
+           const zeros = list.filter(u => u.total === 0 && u.emp_id !== currentUser.value.emp_id).map(u => u.name); 
            const period = groupViewMode.value === 'day' ? '今日' : '本月';
            let msg = `${period}全組總推銷動能為 ${allGroupStats.value.sales} 分，增員動能 ${allGroupStats.value.recruit} 分。\n\n`;
            if(list.length > 0 && list[0].total > 0) msg += `🔥 ${period} MVP：${list[0].name} (表現優異！)\n`;
@@ -719,7 +717,6 @@
            alert('已成功將帳號綁定至此節點！'); isMemberModalOpen.value = false;
         };
 
-        // 總管專屬功能：帳號管理中心
         const isAccountManagerOpen = ref(false);
         const isAddUserModalOpen = ref(false);
         const newUserForm = reactive({ empId: '', name: '', password: '', bindMode: 'none', targetNodeId: '', parentNodeId: '', newStatus: '業務代表' });
@@ -731,10 +728,8 @@
 
         const createUserAccountPro = async () => {
           if(!newUserForm.empId || !newUserForm.name || !newUserForm.password) return alert('請填寫完整');
-          // 1. 建立帳號
           await supabase.from('team_users').insert({ emp_id: newUserForm.empId, password: newUserForm.password, name: newUserForm.name, role: 'agent' });
           
-          // 2. 處理組織圖連動
           if (newUserForm.bindMode === 'existing' && newUserForm.targetNodeId) {
              const tNode = allNodes.value.find(n => n.id === newUserForm.targetNodeId);
              if(tNode) { tNode.emp_id = newUserForm.empId; await saveOrgTree(); }
@@ -778,7 +773,6 @@
              await supabase.from('team_activities').delete().eq('emp_id', user.emp_id);
              await supabase.from('team_users').delete().eq('emp_id', user.emp_id);
              
-             // 從組織圖解除綁定
              const linkedNode = allNodes.value.find(n => n.emp_id === user.emp_id);
              if(linkedNode) { linkedNode.emp_id = ''; await saveOrgTree(); }
              
@@ -797,6 +791,7 @@
           }, 300); 
         };
 
+        // 🌟 這裡就是修復畫面當機的關鍵：把 weeklyStats 和 monthlyStats 導出！
         return { 
           currentUser, viewingEmpId, teamMembers, loginForm, loginError, isLoading, doLogin, getViewingName, getUserStatus, loadActivitiesData, refreshData,
           isSettingsModalOpen, newPassword, changeMyPassword,
@@ -804,7 +799,7 @@
           isAddUserModalOpen, newUserForm, openBindUserModal, createUserAccountPro, bindExistingEmpId, bindExistingAccountToNode,
           allNodes, unboundNodes, unboundUsers, groupViewMode,
           currentTab, currentDate, formattedDate, changeDate, isStatsModalOpen,
-          timeSlots, dailySales, dailyRecruit, personalAiSuggestion, allGroupStats, memberStatsList, groupAiSuggestion, getActivity, getTypeStyle, 
+          timeSlots, dailySales, dailyRecruit, weeklyStats, monthlyStats, personalAiSuggestion, allGroupStats, memberStatsList, groupAiSuggestion, getActivity, getTypeStyle, 
           isActivityModalOpen, selectedTime, activityTypes, formData, openActivityModal, saveActivity, deleteActivity,
           orgTree, orgZoom, zoomInOrg, zoomOutOrg, memberStatuses, isMemberModalOpen, memberForm, openMemberModal, openAddSubordinateModal, saveMember, deleteMember, exportOrgChart
         };
