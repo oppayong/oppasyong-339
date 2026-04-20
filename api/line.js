@@ -5,10 +5,10 @@ export default async function handler(req, res) {
     return res.status(200).send('鎔安組 LINE Bot 正常運作中！');
   }
 
-  const SUPABASE_URL = 'https://mezculqrqxwlmfxgrcru.supabase.co';
-  const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1lemN1bHFycXh3bG1meGdyY3J1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY2NjU0NjUsImV4cCI6MjA5MjI0MTQ2NX0.U8aAJs5wi2_wPNWeNRrucQH7gPH4rEJx9KfTgHljVZI';
+  const SUPABASE_URL = process.env.SUPABASE_URL;
+  const SUPABASE_KEY = process.env.SUPABASE_KEY;
   const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
-  const LINE_ACCESS_TOKEN = 'WHDTIJsWkLiawh3goUk5p1GX1PHrNDzCx1BX+yuSaUIM0DUZal8NN5YWDoNkAapgBWen96t3HrifG9sNJhyn77o/Vuz3iWXOcg8h5+0sqj8vuQ8zbHRJyTfU+AfJAbniQWwXnJg68JA1U7CK/UgHvgdB04t89/1O/w1cDnyilFU=';
+  const LINE_ACCESS_TOKEN = process.env.LINE_ACCESS_TOKEN;
 
   try {
     const events = req.body.events;
@@ -21,9 +21,7 @@ export default async function handler(req, res) {
         let replyText = '';
 
         if (userMessage.startsWith('綁定')) {
-          // 以空格拆分文字，預期格式：綁定 員編 密碼
           const parts = userMessage.split(/\s+/);
-          
           if (parts.length < 3) {
             replyText = `⚠️ 格式錯誤！\n基於資安防護，綁定時需驗證您的密碼。\n請輸入：「綁定 您的員編 您的密碼」\n（中間請用空格隔開）`;
           } else {
@@ -31,7 +29,6 @@ export default async function handler(req, res) {
             const password = parts[2];
             
             const { data: user } = await supabase.from('team_users').select('*').eq('emp_id', empId).single();
-            
             if (!user) {
               replyText = `❌ 找不到此員編。請確認輸入是否正確。`;
             } else if (user.password !== password) {
