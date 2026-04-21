@@ -1,7 +1,6 @@
 import { createClient } from '@supabase/supabase-js';
 
 export default async function handler(req, res) {
-  // 🔥 終極殺手鐧：強制所有手機瀏覽器不准快取，確保永遠拿到最新資料！
   res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
   res.setHeader('Pragma', 'no-cache');
   res.setHeader('Expires', '0');
@@ -53,9 +52,9 @@ export default async function handler(req, res) {
         return res.status(200).json(acts);
 
       case 'load_org':
-        // 🔥 終極修正：強制抓取絕對唯一 ID，解決舊版本重複產生的問題
-        const { data: orgData } = await supabase.from('activities').select('notes').eq('id', '00000000-0000-0000-0000-000000000001').single();
-        return res.status(200).json(orgData ? [orgData] : []);
+        // 🔥 終極修正：強制精準抓取指定 ID (000...1)，徹底無視舊有的無 ID 幽靈備份！
+        const { data: orgList } = await supabase.from('activities').select('notes').eq('id', '00000000-0000-0000-0000-000000000001');
+        return res.status(200).json(orgList && orgList.length > 0 ? orgList[0] : null);
 
       case 'save_org':
         if (user.role !== 'admin') return res.status(403).json({ error: '無權限' });
