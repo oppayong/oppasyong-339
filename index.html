@@ -287,8 +287,9 @@
         </div>
         <div class="shrink-0 p-6 pt-2 bg-white rounded-b-[2rem] flex gap-3">
           <button v-if="formData.id" @click="deleteActivity" :disabled="isProcessing" class="bg-red-50 text-red-500 font-bold px-4 rounded-xl active:scale-90 transition-transform text-sm disabled:opacity-50">刪除</button>
-          <button @click="saveActivity" :disabled="isProcessing" class="flex-1 bg-blue-600 text-white font-bold py-3.5 rounded-xl shadow-lg active:scale-95 transition-all duration-200 disabled:opacity-50 disabled:bg-blue-400">
-            {{ isProcessing ? '⏳ 儲存中...' : '✅ 儲存行程' }}
+          <button @click="saveActivity" :disabled="isProcessing" class="flex-1 flex justify-center items-center bg-blue-600 text-white font-bold py-3.5 rounded-xl shadow-lg active:scale-95 transition-all duration-200 disabled:opacity-50 disabled:bg-blue-400">
+            <svg v-if="isProcessing" class="animate-spin -ml-1 mr-2 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"></path></svg>
+            <span>{{ isProcessing ? '處理中...' : '✅ 儲存行程' }}</span>
           </button>
         </div>
       </div>
@@ -315,7 +316,7 @@
           <div v-if="currentUser.role === 'admin' && memberForm.mode === 'edit' && memberForm.nodeId !== 'root'" class="mt-6 pt-6 border-t border-gray-200">
             <p class="text-[11px] font-black text-gray-400 tracking-widest uppercase mb-3">系統帳號與專屬清單</p>
             <template v-if="memberForm.empId">
-              <div class="bg-blue-50 rounded-xl p-4 border border-blue-100 flex flex-col gap-3">
+               <div class="bg-blue-50 rounded-xl p-4 border border-blue-100 flex flex-col gap-3">
                 <div class="flex justify-between items-center">
                   <div><p class="text-xs font-bold text-blue-700">已綁定登入員編</p><p class="text-xl font-black text-blue-600">{{ memberForm.empId }}</p></div>
                   <div class="px-2 py-1 rounded text-[10px] font-bold" :class="getUserStatus(memberForm.empId) ? 'bg-emerald-100 text-emerald-600' : 'bg-red-100 text-red-600'">{{ getUserStatus(memberForm.empId) ? '✅ 正常使用中' : '❌ 已停權' }}</div>
@@ -328,7 +329,7 @@
             </template>
             <template v-else>
               <div class="bg-gray-50 rounded-xl p-4 border border-dashed border-gray-300">
-                <p class="text-xs font-bold text-gray-500 mb-3 text-center">尚未綁定登入帳號</p>
+                 <p class="text-xs font-bold text-gray-500 mb-3 text-center">尚未綁定登入帳號</p>
                 <div class="space-y-2">
                    <div v-if="unboundUsers.length > 0" class="flex gap-2">
                       <select v-model="bindExistingEmpId" class="flex-1 bg-white border border-gray-200 rounded px-2 py-2 text-xs"><option disabled value="">選擇已開通之帳號</option><option v-for="u in unboundUsers" :key="u.emp_id" :value="u.emp_id">{{ u.name }} ({{ u.emp_id }})</option></select>
@@ -336,15 +337,16 @@
                    </div>
                    <button @click="openBindUserModal" class="w-full bg-emerald-500 text-white font-bold py-2.5 rounded-lg shadow-sm active:scale-95 transition-transform text-sm">+ 建立新帳號並綁定</button>
                 </div>
-              </div>
+               </div>
             </template>
           </div>
         </div>
         
         <div class="shrink-0 p-6 pt-2 bg-white rounded-b-[2rem] flex gap-3">
            <button v-if="memberForm.mode === 'edit' && memberForm.nodeId !== 'root' && currentUser.role === 'admin'" @click="deleteMember" :disabled="isProcessing" class="bg-red-50 text-red-500 font-bold px-4 rounded-xl active:scale-90 transition-transform text-sm disabled:opacity-50">從圖表移除</button>
-           <button @click="saveMember" :disabled="isProcessing" class="flex-1 bg-gray-900 text-white font-bold py-3.5 rounded-xl shadow-md active:scale-95 transition-all duration-200 disabled:opacity-50">
-             {{ isProcessing ? '⏳ 儲存中...' : '✅ 儲存變更' }}
+           <button @click="saveMember" :disabled="isProcessing" class="flex-1 flex justify-center items-center bg-gray-900 text-white font-bold py-3.5 rounded-xl shadow-md active:scale-95 transition-all duration-200 disabled:opacity-50">
+             <svg v-if="isProcessing" class="animate-spin -ml-1 mr-2 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"></path></svg>
+             <span>{{ isProcessing ? '處理中...' : '✅ 儲存變更' }}</span>
            </button>
         </div>
       </div>
@@ -354,7 +356,7 @@
       <div class="absolute inset-0 bg-gray-900/60 backdrop-blur-sm" @click="isProspectsModalOpen = false"></div>
       <div class="relative w-full max-w-md bg-[#f8fafc] rounded-t-[2rem] shadow-2xl animate-slide-up flex flex-col max-h-[90vh]">
         <div class="shrink-0 p-6 pb-4 flex flex-col border-b border-gray-200 bg-white rounded-t-[2rem]">
-          <div class="flex justify-between items-center mb-3">
+           <div class="flex justify-between items-center mb-3">
              <h2 class="text-xl font-black text-gray-900 mb-1">準增員私密清單</h2>
              <button @click="isProspectsModalOpen = false" class="p-2 bg-gray-100 text-gray-500 rounded-full active:scale-90 transition-transform"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg></button>
           </div>
@@ -379,11 +381,12 @@
              <textarea v-model="prospectForm.notes" rows="2" placeholder="追蹤進度與備註..." class="w-full bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 text-sm mb-2 focus:border-indigo-500"></textarea>
              <div class="flex gap-2">
                 <button v-if="prospectForm.id" @click="prospectForm.id = null; prospectForm.name=''" class="px-3 py-2 text-xs font-bold text-gray-500 bg-gray-100 rounded-lg active:scale-90 transition-transform">取消</button>
-                <button @click="saveProspect" :disabled="isProcessing" class="flex-1 bg-indigo-600 text-white font-bold py-2 rounded-lg text-sm active:scale-95 transition-all duration-200 disabled:opacity-50">
-                  {{ isProcessing ? '⏳ 儲存中...' : '✅ 儲存至私密清單' }}
+                <button @click="saveProspect" :disabled="isProcessing" class="flex-1 flex justify-center items-center bg-indigo-600 text-white font-bold py-2 rounded-lg text-sm active:scale-95 transition-all duration-200 disabled:opacity-50">
+                  <svg v-if="isProcessing" class="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"></path></svg>
+                  <span>{{ isProcessing ? '處理中...' : '✅ 儲存至私密清單' }}</span>
                 </button>
              </div>
-          </div>
+           </div>
           <div v-else class="bg-indigo-50 p-3 rounded-xl border border-indigo-100 text-center">
              <p class="text-xs font-bold text-indigo-600">請從上方選單選擇特定夥伴，即可新增或編輯名單。</p>
           </div>
@@ -526,7 +529,7 @@
   </script>
 
   <script>
-    const { createApp, ref, reactive, computed } = Vue;
+    const { createApp, ref, reactive, computed, watch } = Vue; // ✅ 引入 watch
 
     const OrgNode = {
       name: 'OrgNode',
@@ -553,7 +556,6 @@
         const loginError = ref('');
         const isLoading = ref(false);
 
-        // 🌟 絲滑引擎：全局 Loading 與 Toast 通知
         const activeRequests = ref(0);
         const isProcessing = computed(() => activeRequests.value > 0);
         
@@ -567,7 +569,6 @@
             toastTimeout = setTimeout(() => { toast.show = false; }, 2500);
         };
 
-        // 🛡️ API 橋樑 + 絲滑動畫
         const secureFetch = async (action, payload = {}, showSpinner = true) => {
           if (showSpinner) activeRequests.value++;
           try {
@@ -585,7 +586,6 @@
           }
         };
 
-        // 👑 排序功能，讓 Admin 永遠在帳號大廳的第一個
         const sortTeam = (arr) => {
            if (!arr) return [];
            return arr.sort((a, b) => {
@@ -599,13 +599,21 @@
         const newPassword = ref('');
 
         const allActivitiesData = ref([]); 
-        const currentDayActivities = ref([]); 
+        const currentDayActivities = ref([]);
         const orgTree = ref({ id: 'root', name: '鎔安', status: '區經理', notes: '', children: [] });
         const orgZoom = ref(1.0);
         const groupViewMode = ref('day'); 
 
-        // 🔍 搜尋引擎變數
         const searchQuery = ref('');
+
+        // ✅ 全局搜尋監聽：主管輸入時自動切換全組
+        watch(searchQuery, async (newVal) => {
+            if (newVal && currentUser.value?.role === 'admin' && viewingEmpId.value !== 'ALL') {
+                viewingEmpId.value = 'ALL';
+                await loadActivitiesData(true);
+                showToast('已自動切換至「全組跨庫搜尋」', 'success');
+            }
+        });
 
         const doLogin = async () => {
           if (!loginForm.empId || !loginForm.password) { loginError.value = '請輸入帳號與密碼'; return; }
@@ -631,7 +639,8 @@
         };
 
         const getUserStatus = (empId) => {
-          const u = teamMembers.value.find(m => m.emp_id === empId); return u ? u.is_active : false;
+          const u = teamMembers.value.find(m => m.emp_id === empId);
+          return u ? u.is_active : false;
         };
 
         const changeMyPassword = async () => {
@@ -683,10 +692,8 @@
         const getLocalToday = () => { const d = new Date(); return new Date(d.getTime() - (d.getTimezoneOffset() * 60000)).toISOString().split('T')[0]; };
         const currentDate = ref(getLocalToday());
         const formattedDate = computed(() => { const d = new Date(currentDate.value); return `${d.getFullYear()}/${(d.getMonth()+1).toString().padStart(2,'0')}/${d.getDate().toString().padStart(2,'0')}`; });
-        
         const changeDate = (days) => { const d = new Date(currentDate.value); d.setDate(d.getDate() + days); currentDate.value = d.toISOString().split('T')[0]; loadActivitiesData(); };
         
-        // 🔍 搜尋結果過濾
         const searchResults = computed(() => {
             if (!searchQuery.value) return [];
             const q = searchQuery.value.toLowerCase();
@@ -705,7 +712,6 @@
 
         const dailySales = computed(() => currentDayActivities.value.reduce((sum, act) => sum + act.sales_score, 0));
         const dailyRecruit = computed(() => currentDayActivities.value.reduce((sum, act) => sum + act.recruit_score, 0));
-
         const getStatsForRange = (filterFn) => {
           let s = 0; let r = 0;
           allActivitiesData.value.filter(a=>a.activity_type!=='準增員名單').forEach(act => { if (filterFn(new Date(act.activity_date))) { s += act.sales_score; r += act.recruit_score; } });
@@ -773,11 +779,10 @@
         const isActivityModalOpen = ref(false);
         const selectedTime = ref('');
         const formData = reactive({ id: null, clientName: '', type: '約訪', notes: '', activity_date: '' });
-        
-        const getActivity = (time) => currentDayActivities.value.find(a => a.start_time === time);
 
+        const getActivity = (time) => currentDayActivities.value.find(a => a.start_time === time);
         const openActivityModal = (time) => {
-          if(viewingEmpId.value === 'ALL') return; 
+          if(viewingEmpId.value === 'ALL') return;
           selectedTime.value = time; const existing = getActivity(time);
           if (existing) { formData.id = existing.id; formData.clientName = existing.client_name; formData.type = existing.activity_type; formData.notes = existing.notes; formData.activity_date = existing.activity_date; } 
           else { formData.id = null; formData.clientName = ''; formData.type = '約訪'; formData.notes = ''; formData.activity_date = currentDate.value;}
@@ -803,13 +808,15 @@
         const saveActivity = async () => {
           if (!formData.clientName) { showToast('請填寫姓名', 'error'); return; }
           let sScore = 0; let rScore = 0;
-          if (formData.type === '約訪') sScore = 1; if (formData.type === '面談') sScore = 2; if (formData.type === '談建議書') sScore = 3; if (formData.type === '簽約') sScore = 5; if (formData.type === '客戶服務') sScore = 1;
-          if (formData.type === '增員活動') rScore = 1; if (formData.type === '增員約訪') rScore = 2; if (formData.type === '增員面談') rScore = 4; 
+          if (formData.type === '約訪') sScore = 1; if (formData.type === '面談') sScore = 2;
+          if (formData.type === '談建議書') sScore = 3; if (formData.type === '簽約') sScore = 5;
+          if (formData.type === '客戶服務') sScore = 1;
+          if (formData.type === '增員活動') rScore = 1;
+          if (formData.type === '增員約訪') rScore = 2; if (formData.type === '增員面談') rScore = 4;
           if (formData.type === '其他') { sScore = 0; rScore = 0; } // 🌟 強制其他選項為 0 分
 
           const payload = { emp_id: viewingEmpId.value, activity_date: formData.activity_date || currentDate.value, start_time: selectedTime.value, activity_type: formData.type, client_name: formData.clientName, notes: formData.notes, sales_score: sScore, recruit_score: rScore };
           if (formData.id) payload.id = formData.id;
-          
           try {
              await secureFetch('save_activity', { activityPayload: payload });
              await loadActivitiesData(false);
@@ -822,10 +829,9 @@
            if(formData.id) { 
               try { await secureFetch('delete_activity', { id: formData.id }); await loadActivitiesData(false); showToast('已刪除', 'success'); } catch(e) {}
            } 
-           isActivityModalOpen.value = false; 
+           isActivityModalOpen.value = false;
         };
 
-        // 📋 獨立：準增員名單 (Prospects) 系統
         const isProspectsModalOpen = ref(false);
         const prospectViewEmpId = ref('');
         const prospectViewName = ref('');
@@ -833,7 +839,6 @@
         const prospectStatuses = ['名單收集', '初步接觸', '待考試', '開班', '臨時帳號申請中', '準備登錄'];
         const targetProspects = ref([]);
         const isLoadingProspects = ref(false);
-
         const currentProspects = computed(() => targetProspects.value);
 
         const parseProspectNotes = (notesStr) => {
@@ -842,7 +847,8 @@
         };
 
         const getProspectOwnerName = (empId) => {
-           const u = teamMembers.value.find(m => m.emp_id === empId); return u ? u.name : '未知';
+           const u = teamMembers.value.find(m => m.emp_id === empId);
+           return u ? u.name : '未知';
         };
 
         const fetchProspects = async () => {
@@ -859,7 +865,8 @@
             isMemberModalOpen.value = false; 
             prospectViewEmpId.value = empId; prospectViewName.value = name;
             isProspectsModalOpen.value = true;
-            prospectForm.id = null; prospectForm.name = ''; prospectForm.notes = ''; prospectForm.status = '初步接觸';
+            prospectForm.id = null; prospectForm.name = '';
+            prospectForm.notes = ''; prospectForm.status = '初步接觸';
             await fetchProspects();
         };
 
@@ -894,7 +901,6 @@
             }
         };
 
-        // 組織圖與節點管理
         const zoomInOrg = () => { orgZoom.value = Math.min(1.5, orgZoom.value + 0.1); };
         const zoomOutOrg = () => { orgZoom.value = Math.max(0.4, orgZoom.value - 0.1); };
         const memberStatuses = ['臨時帳號申請中', '準備公會考試', '等待登錄中', '業務代表', '業務主任', '業務襄理', '區經理'];
@@ -903,7 +909,9 @@
         const memberForm = reactive({ mode: 'add', nodeId: null, targetNode: null, name: '', status: '準備公會考試', notes: '', empId: '' });
         const bindExistingEmpId = ref('');
 
-        const checkIsDescendant = (parentNode, targetId) => { if (parentNode.id === targetId) return true; if (parentNode.children) { for (let child of parentNode.children) { if (checkIsDescendant(child, targetId)) return true; } } return false; };
+        const checkIsDescendant = (parentNode, targetId) => { if (parentNode.id === targetId) return true;
+        if (parentNode.children) { for (let child of parentNode.children) { if (checkIsDescendant(child, targetId)) return true; } } return false; };
+        
         const hasEditPermission = (targetNode) => {
           if (currentUser.value.role === 'admin') return true;
           const myNode = allNodes.value.find(n => n.name === currentUser.value.name);
@@ -912,11 +920,14 @@
 
         const openMemberModal = (node) => {
           if (currentUser.value.role !== 'admin' && node.name === currentUser.value.name) {
-             openProspectsModal(currentUser.value.emp_id, currentUser.value.name); return;
+             openProspectsModal(currentUser.value.emp_id, currentUser.value.name);
+             return;
           }
           if (!hasEditPermission(node)) return showToast('權限不足，您僅能修改自己轄下的資料', 'error');
-          memberForm.mode = 'edit'; memberForm.nodeId = node.id; memberForm.targetNode = node;
-          memberForm.name = node.name; memberForm.status = node.status; memberForm.notes = node.notes || ''; memberForm.empId = node.emp_id || '';
+          memberForm.mode = 'edit';
+          memberForm.nodeId = node.id; memberForm.targetNode = node;
+          memberForm.name = node.name; memberForm.status = node.status; memberForm.notes = node.notes || '';
+          memberForm.empId = node.emp_id || '';
           bindExistingEmpId.value = ''; isMemberModalOpen.value = true;
         };
 
@@ -927,7 +938,8 @@
           isMemberModalOpen.value = true;
         };
 
-        const findNodeAndParent = (node, id, parent = null) => { if (node.id === id) return { node, parent }; if (node.children) { for (let child of node.children) { const result = findNodeAndParent(child, id, node); if (result) return result; } } return null; };
+        const findNodeAndParent = (node, id, parent = null) => { if (node.id === id) return { node, parent };
+        if (node.children) { for (let child of node.children) { const result = findNodeAndParent(child, id, node); if (result) return result; } } return null; };
 
         const saveMember = async () => {
           if (!memberForm.name) { showToast('請填寫姓名', 'error'); return; }
@@ -938,14 +950,17 @@
             memberForm.targetNode.notes = memberForm.notes;
             if(currentUser.value.role === 'admin'){ memberForm.targetNode.name = memberForm.name; memberForm.targetNode.status = memberForm.status; }
           }
-          await saveOrgTree(); isMemberModalOpen.value = false; showToast('組織圖已更新', 'success');
+          await saveOrgTree();
+          await loadOrgTree(false); // ✅ 解決脫鉤：寫入後強制重新向資料庫要最新結構
+          isMemberModalOpen.value = false; showToast('組織圖已更新', 'success');
         };
 
         const deleteMember = async () => {
           if (memberForm.nodeId === 'root' || currentUser.value.role !== 'admin') return;
           if (confirm('確定要從組織圖移除此成員與其所有下屬嗎？\n(注意：此動作不會刪除對方的登入帳號)')) {
             const result = findNodeAndParent(orgTree.value, memberForm.nodeId);
-            if (result && result.parent) { result.parent.children = result.parent.children.filter(c => c.id !== memberForm.nodeId); await saveOrgTree(); isMemberModalOpen.value = false; showToast('已從組織圖移除', 'success');}
+            if (result && result.parent) { result.parent.children = result.parent.children.filter(c => c.id !== memberForm.nodeId); await saveOrgTree(); isMemberModalOpen.value = false;
+            showToast('已從組織圖移除', 'success');}
           }
         };
 
@@ -960,7 +975,8 @@
         const newUserForm = reactive({ empId: '', name: '', password: '', bindMode: 'none', targetNodeId: '', parentNodeId: '', newStatus: '業務代表' });
         
         const openBindUserModal = () => {
-           newUserForm.empId = ''; newUserForm.name = memberForm.name; newUserForm.password = '000000'; newUserForm.bindMode = 'existing'; newUserForm.targetNodeId = memberForm.nodeId;
+           newUserForm.empId = '';
+           newUserForm.name = memberForm.name; newUserForm.password = '000000'; newUserForm.bindMode = 'existing'; newUserForm.targetNodeId = memberForm.nodeId;
            isMemberModalOpen.value = false; isAddUserModalOpen.value = true;
         };
 
@@ -978,7 +994,8 @@
                    if(!pNode.children) pNode.children = []; pNode.children.push(newNode); await saveOrgTree();
                 }
              }
-             const teamData = await secureFetch('get_team'); teamMembers.value = sortTeam(teamData);
+             const teamData = await secureFetch('get_team');
+             teamMembers.value = sortTeam(teamData);
              newUserForm.empId = ''; newUserForm.name = ''; newUserForm.password = ''; newUserForm.bindMode = 'none'; 
              isAddUserModalOpen.value = false;
              showToast('帳號開通成功', 'success');
@@ -996,10 +1013,11 @@
         const toggleUserLock = async (user) => {
           if (user.role === 'admin') return showToast('無法停權總管帳號', 'error');
           try {
-             const newStatus = !user.is_active; 
+             const newStatus = !user.is_active;
              await secureFetch('update_user', { empId: user.emp_id, updateData: { is_active: newStatus } });
              user.is_active = newStatus;
-             const teamData = await secureFetch('get_team'); teamMembers.value = sortTeam(teamData);
+             const teamData = await secureFetch('get_team');
+             teamMembers.value = sortTeam(teamData);
              showToast(newStatus ? '帳號已解鎖' : '帳號已停權', 'success');
           } catch(e) { showToast('更新失敗', 'error'); }
         };
@@ -1017,7 +1035,8 @@
                 await secureFetch('delete_user', { empId: user.emp_id });
                 const linkedNode = allNodes.value.find(n => n.emp_id === user.emp_id);
                 if(linkedNode) { linkedNode.emp_id = ''; await saveOrgTree(); }
-                const teamData = await secureFetch('get_team'); teamMembers.value = sortTeam(teamData);
+                const teamData = await secureFetch('get_team');
+                teamMembers.value = sortTeam(teamData);
                 isSingleAccountManageOpen.value = false;
                 showToast('帳號與行程皆已徹底刪除', 'success');
              } catch(e) { showToast('刪除失敗', 'error'); }
@@ -1025,11 +1044,13 @@
         };
 
         const exportOrgChart = () => {
-          const content = document.getElementById('org-chart-content'); const originalZoom = orgZoom.value; orgZoom.value = 1; 
+          const content = document.getElementById('org-chart-content');
+          const originalZoom = orgZoom.value; orgZoom.value = 1; 
           setTimeout(() => { html2canvas(content, { backgroundColor: '#f8fafc', scale: 2, windowWidth: Math.max(1400, content.scrollWidth),
               onclone: (doc) => { const el = doc.getElementById('org-chart-content'); el.style.transform = 'none'; el.style.width = 'max-content';
                  const notes = el.querySelectorAll('.org-notes'); notes.forEach(n => { n.classList.remove('line-clamp-3', 'truncate'); n.style.whiteSpace = 'normal'; }); }
-            }).then(canvas => { orgZoom.value = originalZoom; const link = document.createElement('a'); link.download = `鎔安組_組織架構圖.png`; link.href = canvas.toDataURL('image/png'); link.click(); });
+            }).then(canvas => { orgZoom.value = originalZoom; const link = document.createElement('a'); link.download = `鎔安組_組織架構圖.png`; 
+            link.href = canvas.toDataURL('image/png'); link.click(); });
           }, 300); 
         };
 
