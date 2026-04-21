@@ -134,8 +134,8 @@
 
         <div v-if="searchQuery" class="animate-fade-in space-y-3">
            <p class="text-[11px] font-bold text-gray-400 px-2 tracking-widest uppercase">🔍 搜尋結果 ({{ searchResults.length }} 筆)</p>
-           <div v-for="act in searchResults" :key="act.id" @click="openActivityModalForEdit(act)" class="glass-card p-5 rounded-2xl btn-press cursor-pointer relative overflow-hidden">
-              <div class="absolute left-0 top-0 bottom-0 w-1" :class="getTypeColor(act.activity_type)"></div>
+           <div v-for="act in searchResults" :key="act.id" @click="openActivityModalForEdit(act)" class="bg-white p-5 rounded-2xl shadow-sm border border-gray-200 btn-press cursor-pointer relative overflow-hidden">
+              <div class="absolute left-0 top-0 bottom-0 w-1.5" :class="getTypeColor(act.activity_type)"></div>
               <div class="flex justify-between items-start mb-2 pl-2">
                  <div>
                     <span class="text-sm font-black text-gray-900">{{ act.client_name }}</span>
@@ -222,23 +222,29 @@
 
             <div class="space-y-4 relative pb-8">
               <div class="absolute left-[3.5rem] top-4 bottom-4 w-[1px] bg-gray-200 -z-10"></div>
-              <div v-for="time in timeSlots" :key="time" @click="openActivityModal(time)" class="flex glass-card rounded-2xl btn-press cursor-pointer overflow-hidden group">
-                <div class="w-24 flex justify-center py-5"><span class="text-xs font-black text-gray-400">{{ time }}</span></div>
-                <div class="flex-1 p-4 flex flex-col justify-center min-h-[5rem] relative">
+              
+              <div v-for="time in timeSlots" :key="time" @click="openActivityModal(time)" class="flex bg-white rounded-2xl shadow-[0_3px_12px_-4px_rgba(0,0,0,0.06)] border border-gray-200 btn-press cursor-pointer overflow-hidden group">
+                <div class="w-24 flex items-center justify-center py-5 bg-gray-50/80 border-r border-gray-100">
+                  <span class="text-[13px] font-black text-gray-800">{{ time }}</span>
+                </div>
+                <div class="flex-1 p-4 flex flex-col justify-center min-h-[5.5rem] relative">
                   <template v-if="getActivity(time)">
-                    <div class="absolute left-0 top-0 bottom-0 w-1" :class="getTypeColor(getActivity(time).activity_type)"></div>
-                    <div class="pl-2">
-                      <p class="text-sm font-black text-gray-900 break-words mb-0.5">{{ getActivity(time).client_name }}</p>
+                    <div class="absolute left-0 top-0 bottom-0 w-1.5" :class="getTypeColor(getActivity(time).activity_type)"></div>
+                    <div class="pl-2.5">
+                      <p class="text-[15px] font-black text-gray-900 break-words mb-0.5">{{ getActivity(time).client_name }}</p>
                       <span class="inline-block text-[10px] font-bold text-gray-500">{{ getActivity(time).activity_type }}</span>
-                      <p v-if="getActivity(time).notes" class="text-[11px] text-gray-400 mt-1.5 break-words line-clamp-2 leading-relaxed">{{ getActivity(time).notes }}</p>
+                      <p v-if="getActivity(time).notes" class="text-[11px] text-gray-500 mt-1.5 break-words line-clamp-2 leading-relaxed font-medium">{{ getActivity(time).notes }}</p>
                     </div>
                   </template>
                   <template v-else>
-                    <span class="text-[11px] text-gray-300 font-bold tracking-widest uppercase">+ 新增行程</span>
+                    <div class="pl-2.5">
+                       <span class="text-[11px] text-gray-300 font-bold tracking-widest uppercase">+ 新增行程</span>
+                    </div>
                   </template>
                 </div>
               </div>
             </div>
+            
           </div>
         </div> 
       </div>
@@ -534,9 +540,9 @@
   <script type="text/x-template" id="org-node-template">
     <div class="org-node">
       <div class="org-node-inner">
-        <div class="relative z-10 w-36 sm:w-44 glass-card rounded-2xl cursor-pointer transition-transform hover:-translate-y-1 text-center overflow-hidden btn-press" @click="$emit('edit', node)">
+        <div class="relative z-10 w-36 sm:w-44 rounded-2xl cursor-pointer transition-transform hover:-translate-y-1 text-center overflow-hidden btn-press shadow-[0_4px_15px_-3px_rgba(0,0,0,0.05)] border" :class="getColor(node.status).bgCard" @click="$emit('edit', node)">
           <div class="absolute top-0 left-0 w-full h-1.5" :class="getColor(node.status).topBar"></div>
-          <div class="p-4 pt-5 pb-5" :class="getColor(node.status).bgCard">
+          <div class="p-4 pt-5 pb-5">
             <p class="text-[9px] font-black mb-1.5 tracking-widest uppercase" :class="getColor(node.status).text">{{ node.status }}</p>
             <p class="text-base font-black tracking-widest" :class="getColor(node.status).name">{{ node.name }}</p>
             <div v-if="node.notes" class="org-notes mt-2 inline-block px-2 py-1 rounded-lg text-[10px] font-bold w-full break-words line-clamp-3 leading-relaxed" :class="getColor(node.status).bg">{{ node.notes }}</div>
@@ -562,11 +568,14 @@
       props: ['node', 'isAdmin'],
       setup() {
         const getColor = (status) => {
-          if (status.includes('區經理')) return { topBar: 'bg-gradient-to-r from-yellow-600 to-yellow-400', text: 'text-yellow-600', bg: 'bg-gray-900 text-yellow-500', bgCard: 'bg-gray-900', name: 'text-white' };
-          if (status.includes('襄理') || status.includes('主任')) return { topBar: 'bg-gray-800', text: 'text-gray-600', bg: 'bg-gray-100 text-gray-700', bgCard: 'bg-white', name: 'text-gray-900' };
-          if (status.includes('代表')) return { topBar: 'bg-gray-400', text: 'text-gray-500', bg: 'bg-gray-50 text-gray-600', bgCard: 'bg-white', name: 'text-gray-800' };
-          if (status.includes('登錄')) return { topBar: 'bg-gray-300', text: 'text-gray-400', bg: 'bg-gray-50 text-gray-500', bgCard: 'bg-white', name: 'text-gray-700' };
-          return { topBar: 'bg-gray-200', text: 'text-gray-400', bg: 'bg-gray-50 text-gray-500', bgCard: 'bg-white', name: 'text-gray-600' };
+          // 🌟 組織圖職階專屬跳色
+          if (status.includes('區經理')) return { topBar: 'bg-gradient-to-r from-yellow-600 to-yellow-400', text: 'text-yellow-500', bg: 'bg-gray-800 text-yellow-400', bgCard: 'bg-gray-900 border-gray-800', name: 'text-white' };
+          if (status.includes('襄理')) return { topBar: 'bg-indigo-500', text: 'text-indigo-600', bg: 'bg-indigo-50 text-indigo-700', bgCard: 'bg-white border-indigo-200', name: 'text-indigo-950' };
+          if (status.includes('主任')) return { topBar: 'bg-emerald-500', text: 'text-emerald-600', bg: 'bg-emerald-50 text-emerald-700', bgCard: 'bg-white border-emerald-200', name: 'text-emerald-950' };
+          if (status.includes('代表')) return { topBar: 'bg-blue-500', text: 'text-blue-600', bg: 'bg-blue-50 text-blue-700', bgCard: 'bg-white border-blue-200', name: 'text-blue-950' };
+          
+          // 未登錄/考試中/臨時帳號 - 保持灰色系
+          return { topBar: 'bg-gray-300', text: 'text-gray-400', bg: 'bg-gray-200/50 text-gray-600', bgCard: 'bg-gray-50 border-gray-200', name: 'text-gray-500' };
         };
         return { getColor };
       }
