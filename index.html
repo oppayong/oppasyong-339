@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-  <title>鎔安組 | 企業級戰情系統 4.7 實戰版</title>
+  <title>鎔安組 | 企業級戰情系統 4.8 絲滑版</title>
   
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
@@ -19,7 +19,7 @@
     @keyframes slideUp { from { transform: translateY(100%); opacity: 0;} to { transform: translateY(0); opacity: 1;} }
     .animate-slide-up { animation: slideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
     @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-    .animate-fade-in { animation: fadeIn 0.3s ease-out; }
+    .animate-fade-in { animation: fadeIn 0.2s ease-out; }
     input[type="date"]::-webkit-calendar-picker-indicator { position: absolute; top: 0; left: 0; right: 0; bottom: 0; width: auto; height: auto; color: transparent; background: transparent; cursor: pointer; }
     
     .org-tree-container { display: flex; justify-content: center; padding-top: 20px;}
@@ -40,13 +40,23 @@
 
   <div id="app" class="w-full min-h-screen relative overflow-x-hidden" v-cloak>
 
+    <div v-if="isProcessing" class="fixed inset-0 z-[200] flex items-center justify-center bg-gray-900/20 backdrop-blur-[2px] animate-fade-in transition-all">
+      <div class="bg-white/95 px-6 py-4 rounded-2xl shadow-[0_10px_40px_-10px_rgba(0,0,0,0.2)] flex items-center gap-4 border border-gray-100">
+        <svg class="animate-spin h-6 w-6 text-blue-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+          <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+          <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+        </svg>
+        <span class="text-sm font-bold text-gray-700 tracking-widest">系統處理中...</span>
+      </div>
+    </div>
+
     <div v-if="!currentUser" class="fixed inset-0 z-[100] bg-gray-900 flex flex-col justify-center items-center p-6 animate-fade-in">
       <div class="w-full max-w-sm bg-white/10 backdrop-blur-2xl rounded-[2rem] p-8 border border-white/20 shadow-2xl text-center">
         <div class="w-16 h-16 bg-blue-500/20 rounded-full flex items-center justify-center mx-auto mb-4 border border-blue-400/30">
           <svg class="w-8 h-8 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path></svg>
         </div>
         <h1 class="text-2xl font-black text-white tracking-widest mb-1">鎔安組戰情室</h1>
-        <p class="text-[11px] text-blue-200/70 mb-6 tracking-widest">軍規資安 4.7 實戰版</p>
+        <p class="text-[11px] text-blue-200/70 mb-6 tracking-widest">軍規資安 4.8 絲滑版</p>
         
         <input v-model="loginForm.empId" type="text" placeholder="請輸入您的員編" class="w-full bg-black/30 border border-white/10 rounded-xl px-4 py-3.5 text-base text-center text-white tracking-widest focus:outline-none focus:border-blue-400/50 transition-colors mb-3">
         <input v-model="loginForm.password" type="password" placeholder="請輸入密碼" class="w-full bg-black/30 border border-white/10 rounded-xl px-4 py-3.5 text-base text-center text-white tracking-widest focus:outline-none focus:border-blue-400/50 transition-colors mb-6" @keyup.enter="doLogin">
@@ -101,8 +111,8 @@
 
         <div v-if="viewingEmpId === 'ALL'" class="animate-fade-in space-y-4">
           <div class="flex justify-center gap-2 mb-4">
-            <button @click="groupViewMode = 'day'" class="px-6 py-2 rounded-full text-sm font-bold shadow-sm" :class="groupViewMode === 'day' ? 'bg-blue-600 text-white' : 'bg-white text-gray-500 border border-gray-200'">今日</button>
-            <button @click="groupViewMode = 'month'" class="px-6 py-2 rounded-full text-sm font-bold shadow-sm" :class="groupViewMode === 'month' ? 'bg-blue-600 text-white' : 'bg-white text-gray-500 border border-gray-200'">本月</button>
+            <button @click="groupViewMode = 'day'" class="px-6 py-2 rounded-full text-sm font-bold shadow-sm transition-colors" :class="groupViewMode === 'day' ? 'bg-blue-600 text-white' : 'bg-white text-gray-500 border border-gray-200'">今日</button>
+            <button @click="groupViewMode = 'month'" class="px-6 py-2 rounded-full text-sm font-bold shadow-sm transition-colors" :class="groupViewMode === 'month' ? 'bg-blue-600 text-white' : 'bg-white text-gray-500 border border-gray-200'">本月</button>
           </div>
 
           <div class="bg-gradient-to-br from-blue-600 to-indigo-700 rounded-[2rem] p-6 shadow-xl text-white">
@@ -249,7 +259,7 @@
           <button @click="isMemberModalOpen = false" class="p-2 bg-gray-100 text-gray-500 rounded-full active:scale-95"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg></button>
         </div>
         
-        <div class="overflow-y-auto p-6 space-y-4">
+        <div class="overflow-y-auto flex-1 p-6 space-y-4">
           <div><label class="block text-[11px] font-bold text-gray-500 mb-2">姓名</label><input v-model="memberForm.name" type="text" class="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-base" :disabled="currentUser.role !== 'admin' && memberForm.mode === 'edit'"></div>
           <div>
             <label class="block text-[11px] font-bold text-gray-500 mb-2">目前狀態 / 職級</label>
@@ -261,7 +271,6 @@
           
           <div v-if="currentUser.role === 'admin' && memberForm.mode === 'edit' && memberForm.nodeId !== 'root'" class="mt-6 pt-6 border-t border-gray-200">
             <p class="text-[11px] font-black text-gray-400 tracking-widest uppercase mb-3">系統帳號與專屬清單</p>
-            
             <template v-if="memberForm.empId">
               <div class="bg-blue-50 rounded-xl p-4 border border-blue-100 flex flex-col gap-3">
                 <div class="flex justify-between items-center">
@@ -280,7 +289,7 @@
                 <div class="space-y-2">
                    <div v-if="unboundUsers.length > 0" class="flex gap-2">
                       <select v-model="bindExistingEmpId" class="flex-1 bg-white border border-gray-200 rounded px-2 py-2 text-xs"><option disabled value="">選擇已開通之帳號</option><option v-for="u in unboundUsers" :key="u.emp_id" :value="u.emp_id">{{ u.name }} ({{ u.emp_id }})</option></select>
-                      <button @click="bindExistingAccountToNode" class="bg-gray-800 text-white px-3 py-2 rounded text-xs font-bold whitespace-nowrap">直接綁定</button>
+                      <button @click="bindExistingAccountToNode" class="bg-gray-800 text-white px-3 py-2 rounded text-xs font-bold whitespace-nowrap active:scale-95">直接綁定</button>
                    </div>
                    <button @click="openBindUserModal" class="w-full bg-emerald-500 text-white font-bold py-2.5 rounded-lg shadow-sm active:scale-95 transition-transform text-sm">+ 建立新帳號並綁定</button>
                 </div>
@@ -332,8 +341,7 @@
              <p class="text-xs font-bold text-indigo-600">請從上方選單選擇特定夥伴，即可新增或編輯名單。</p>
           </div>
           
-          <div v-if="isLoadingProspects" class="text-center text-xs text-gray-400 py-4">讀取中...</div>
-          <div v-else class="space-y-2">
+          <div class="space-y-2">
              <div v-for="p in currentProspects" :key="p.id" class="bg-white p-4 rounded-xl border border-gray-100 shadow-sm">
                 <div class="flex justify-between items-start mb-2">
                    <span class="text-sm font-black text-gray-900">
@@ -369,7 +377,7 @@
              <select v-model="newUserForm.bindMode" class="w-full bg-emerald-50 text-emerald-700 border border-emerald-200 rounded px-2 py-2 text-xs mb-2"><option value="none">僅開通帳號 (不連動)</option><option value="existing">綁定給組織圖上已存在之成員</option><option value="new">同時在組織圖建立新節點</option></select>
              <div v-if="newUserForm.bindMode === 'existing'" class="mb-2"><select v-model="newUserForm.targetNodeId" class="w-full bg-white border border-emerald-200 rounded px-2 py-1.5 text-xs"><option disabled value="">請選擇對象</option><option v-for="node in unboundNodes" :key="node.id" :value="node.id">{{ node.name }}</option></select></div>
              <div v-if="newUserForm.bindMode === 'new'" class="mb-2 space-y-2"><select v-model="newUserForm.parentNodeId" class="w-full bg-white border border-emerald-200 rounded px-2 py-1.5 text-xs"><option disabled value="">選擇直屬主管</option><option v-for="node in allNodes" :key="node.id" :value="node.id">{{ node.name }}</option></select></div>
-             <button @click="createUserAccountPro" class="w-full bg-emerald-600 text-white font-bold py-2.5 rounded-lg text-sm active:scale-95">✅ 建立帳號並執行連動</button>
+             <button @click="createUserAccountPro" class="w-full bg-emerald-600 text-white font-bold py-2.5 rounded-lg text-sm active:scale-95 transition-transform">✅ 建立帳號並執行連動</button>
           </div>
           <div v-for="user in teamMembers" :key="user.emp_id" class="bg-white p-4 rounded-xl border border-gray-100 shadow-sm">
             <div class="flex justify-between items-start mb-2">
@@ -486,20 +494,28 @@
         const loginError = ref('');
         const isLoading = ref(false);
 
-        // 🛡️ API 橋樑
-        const secureFetch = async (action, payload = {}) => {
-          const credentials = { empId: currentUser.value?.emp_id || loginForm.empId, password: currentUser.value?.password || loginForm.password };
-          const res = await fetch('/api/db', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ action, credentials, payload })
-          });
-          const result = await res.json();
-          if (!res.ok) throw new Error(result.error || '伺服器連線錯誤');
-          return result;
+        // 🌟 絲滑引擎：全局 Loading 狀態控制
+        const activeRequests = ref(0);
+        const isProcessing = computed(() => activeRequests.value > 0);
+
+        // 🛡️ API 橋樑 + 絲滑動畫
+        const secureFetch = async (action, payload = {}, showSpinner = true) => {
+          if (showSpinner) activeRequests.value++;
+          try {
+            const credentials = { empId: currentUser.value?.emp_id || loginForm.empId, password: currentUser.value?.password || loginForm.password };
+            const res = await fetch('/api/db', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ action, credentials, payload })
+            });
+            const result = await res.json();
+            if (!res.ok) throw new Error(result.error || '伺服器連線錯誤');
+            return result;
+          } finally {
+            if (showSpinner) activeRequests.value--;
+          }
         };
 
-        // 🌟 排序：Admin 永遠在最上面
         const sortTeam = (arr) => {
            if (!arr) return [];
            return arr.sort((a, b) => {
@@ -522,13 +538,14 @@
           if (!loginForm.empId || !loginForm.password) { loginError.value = '請輸入帳號與密碼'; return; }
           isLoading.value = true; loginError.value = '';
           try {
-            const userData = await secureFetch('login');
+            // 登入時已經有按鈕字樣提示，不需觸發全局毛玻璃
+            const userData = await secureFetch('login', {}, false);
             currentUser.value = userData; viewingEmpId.value = userData.emp_id; 
             if (userData.role === 'admin') {
-              const teamData = await secureFetch('get_team');
+              const teamData = await secureFetch('get_team', {}, false);
               teamMembers.value = sortTeam(teamData);
             }
-            await loadActivitiesData(); await loadOrgTree();
+            await loadActivitiesData(false); await loadOrgTree(false);
           } catch (e) { loginError.value = e.message; }
           isLoading.value = false;
         };
@@ -550,13 +567,14 @@
              await secureFetch('update_password', { newPassword: newPassword.value });
              currentUser.value.password = newPassword.value;
              loginForm.password = newPassword.value;
-             alert('✅ 密碼修改成功！下次登入請使用新密碼。'); newPassword.value = ''; isSettingsModalOpen.value = false;
+             isSettingsModalOpen.value = false;
+             newPassword.value = ''; 
           } catch(e) { alert('修改失敗'); }
         };
 
-        const loadActivitiesData = async () => {
+        const loadActivitiesData = async (showSpinner = true) => {
           try {
-             const data = await secureFetch('load_activities', { viewingEmpId: viewingEmpId.value });
+             const data = await secureFetch('load_activities', { viewingEmpId: viewingEmpId.value }, showSpinner);
              allActivitiesData.value = data || [];
              currentDayActivities.value = allActivitiesData.value.filter(a => a.activity_date === currentDate.value && a.activity_type !== '準增員名單');
           } catch(e) {}
@@ -564,9 +582,9 @@
 
         const refreshData = async () => { await loadActivitiesData(); await loadOrgTree(); };
 
-        const loadOrgTree = async () => {
+        const loadOrgTree = async (showSpinner = true) => {
           try {
-             const data = await secureFetch('load_org');
+             const data = await secureFetch('load_org', {}, showSpinner);
              if (data && data.length > 0) {
                const bytes = CryptoJS.AES.decrypt(data[0].notes, '123456');
                const vault = JSON.parse(bytes.toString(CryptoJS.enc.Utf8));
@@ -684,16 +702,15 @@
           if (formData.id) payload.id = formData.id;
           
           try {
-             // 🌟 這裡修正了：把 EMP ID 正確送出
              await secureFetch('save_activity', { activityPayload: payload });
-             await loadActivitiesData(); isActivityModalOpen.value = false;
-             alert('✅ 行程儲存成功！');
+             await loadActivitiesData(false); // 重抓資料不用再閃一次 spinner
+             isActivityModalOpen.value = false;
           } catch(e) { alert('儲存失敗'); }
         };
         
         const deleteActivity = async () => { 
            if(formData.id) { 
-              try { await secureFetch('delete_activity', { id: formData.id }); await loadActivitiesData(); alert('✅ 已刪除'); } catch(e) {}
+              try { await secureFetch('delete_activity', { id: formData.id }); await loadActivitiesData(false); } catch(e) {}
            } 
            isActivityModalOpen.value = false; 
         };
@@ -750,7 +767,6 @@
             if (prospectForm.id) payload.id = prospectForm.id;
             try {
                 await secureFetch('save_activity', { activityPayload: payload });
-                alert('✅ 準增員儲存成功！');
                 prospectForm.id = null; prospectForm.name = ''; prospectForm.notes = ''; prospectForm.status = '初步接觸';
                 await fetchProspects();
             } catch(e) { alert('儲存失敗'); }
@@ -763,7 +779,7 @@
 
         const deleteProspect = async (id) => {
             if(confirm('確定刪除此準增員名單？')) {
-                try { await secureFetch('delete_activity', { id }); alert('✅ 已刪除'); await fetchProspects(); } catch(e) {}
+                try { await secureFetch('delete_activity', { id }); await fetchProspects(); } catch(e) {}
             }
         };
 
@@ -784,9 +800,6 @@
         };
 
         const openMemberModal = (node) => {
-          if (currentUser.value.role !== 'admin' && node.name === currentUser.value.name) {
-             openProspectsModal(currentUser.value.emp_id, currentUser.value.name); return;
-          }
           if (!hasEditPermission(node)) return alert(`🔒 權限限制：您僅能修改自己轄下的直屬夥伴資料。`);
           memberForm.mode = 'edit'; memberForm.nodeId = node.id; memberForm.targetNode = node;
           memberForm.name = node.name; memberForm.status = node.status; memberForm.notes = node.notes || ''; memberForm.empId = node.emp_id || '';
@@ -811,21 +824,21 @@
             memberForm.targetNode.notes = memberForm.notes;
             if(currentUser.value.role === 'admin'){ memberForm.targetNode.name = memberForm.name; memberForm.targetNode.status = memberForm.status; }
           }
-          await saveOrgTree(); isMemberModalOpen.value = false; alert('✅ 節點儲存成功！');
+          await saveOrgTree(); isMemberModalOpen.value = false;
         };
 
         const deleteMember = async () => {
           if (memberForm.nodeId === 'root' || currentUser.value.role !== 'admin') return;
           if (confirm('確定要從組織圖移除此成員與其所有下屬嗎？\n(注意：此動作不會刪除對方的登入帳號)')) {
             const result = findNodeAndParent(orgTree.value, memberForm.nodeId);
-            if (result && result.parent) { result.parent.children = result.parent.children.filter(c => c.id !== memberForm.nodeId); await saveOrgTree(); isMemberModalOpen.value = false; alert('✅ 已從圖表移除');}
+            if (result && result.parent) { result.parent.children = result.parent.children.filter(c => c.id !== memberForm.nodeId); await saveOrgTree(); isMemberModalOpen.value = false; }
           }
         };
 
         const bindExistingAccountToNode = async () => {
            if(!bindExistingEmpId.value) return;
            memberForm.targetNode.emp_id = bindExistingEmpId.value; await saveOrgTree(); 
-           alert('✅ 已成功將帳號綁定至此節點！'); isMemberModalOpen.value = false;
+           isMemberModalOpen.value = false;
         };
 
         const isAccountManagerOpen = ref(false);
@@ -854,7 +867,6 @@
              const teamData = await secureFetch('get_team'); teamMembers.value = sortTeam(teamData);
              newUserForm.empId = ''; newUserForm.name = ''; newUserForm.password = ''; newUserForm.bindMode = 'none'; 
              isAddUserModalOpen.value = false;
-             alert('✅ 帳號開通且設定完成！');
           } catch(e) { alert(e.message); }
         };
 
@@ -878,10 +890,7 @@
 
         const resetUserPassword = async (user) => {
           if(confirm(`確定要重設 ${user.name} 的密碼為 000000 嗎？`)) {
-             try {
-                await secureFetch('update_user', { empId: user.emp_id, updateData: { password: '000000' } });
-                alert(`✅ 密碼已重設`);
-             } catch(e) { alert('重設失敗'); }
+             try { await secureFetch('update_user', { empId: user.emp_id, updateData: { password: '000000' } }); } catch(e) { alert('重設失敗'); }
           }
         };
 
@@ -894,7 +903,6 @@
                 if(linkedNode) { linkedNode.emp_id = ''; await saveOrgTree(); }
                 const teamData = await secureFetch('get_team'); teamMembers.value = sortTeam(teamData);
                 isSingleAccountManageOpen.value = false;
-                alert('✅ 帳號與行程皆已徹底刪除。');
              } catch(e) { alert('刪除失敗'); }
           }
         };
@@ -909,7 +917,7 @@
         };
 
         return { 
-          currentUser, viewingEmpId, teamMembers, loginForm, loginError, isLoading, doLogin, getViewingName, getUserStatus, loadActivitiesData, refreshData,
+          isProcessing, currentUser, viewingEmpId, teamMembers, loginForm, loginError, isLoading, doLogin, getViewingName, getUserStatus, loadActivitiesData, refreshData,
           isSettingsModalOpen, newPassword, changeMyPassword,
           isAccountManagerOpen, isSingleAccountManageOpen, managingUser, openSingleUserManage, toggleUserLock, resetUserPassword, deleteUserAccount,
           isAddUserModalOpen, newUserForm, openBindUserModal, createUserAccountPro, bindExistingEmpId, bindExistingAccountToNode,
