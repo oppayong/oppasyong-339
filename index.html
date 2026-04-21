@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-  <title>鎔安組 | 企業級戰情系統 4.6 流暢版</title>
+  <title>鎔安組 | 企業級戰情系統 4.6 終極版</title>
   
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
@@ -46,7 +46,7 @@
           <svg class="w-8 h-8 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path></svg>
         </div>
         <h1 class="text-2xl font-black text-white tracking-widest mb-1">鎔安組戰情室</h1>
-        <p class="text-[11px] text-blue-200/70 mb-6 tracking-widest">軍規資安 4.6 流暢版</p>
+        <p class="text-[11px] text-blue-200/70 mb-6 tracking-widest">軍規資安 4.6 終極版</p>
         
         <input v-model="loginForm.empId" type="text" placeholder="請輸入您的員編" class="w-full bg-black/30 border border-white/10 rounded-xl px-4 py-3.5 text-base text-center text-white tracking-widest focus:outline-none focus:border-blue-400/50 transition-colors mb-3">
         <input v-model="loginForm.password" type="password" placeholder="請輸入密碼" class="w-full bg-black/30 border border-white/10 rounded-xl px-4 py-3.5 text-base text-center text-white tracking-widest focus:outline-none focus:border-blue-400/50 transition-colors mb-6" @keyup.enter="doLogin">
@@ -59,12 +59,18 @@
     </div>
 
     <div v-else class="w-full h-full animate-fade-in">
+      
       <div class="fixed top-0 left-0 right-0 h-14 bg-white/90 backdrop-blur-md border-b border-gray-100 z-30 flex justify-between items-center px-4 shadow-sm">
         <div class="text-sm font-black text-gray-800 tracking-wider">鎔安組 CRM</div>
-        <button @click="isSettingsModalOpen = true" class="flex items-center gap-2 bg-gray-50 hover:bg-gray-100 px-3 py-1.5 rounded-lg border border-gray-200 transition-colors active:scale-95">
-          <span class="text-xs font-bold text-gray-600">{{ currentUser.name }}</span>
-          <svg class="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
-        </button>
+        <div class="flex gap-2">
+          <button @click="openProspectsModal(currentUser.emp_id, currentUser.name)" class="flex items-center gap-1 bg-indigo-50 hover:bg-indigo-100 px-3 py-1.5 rounded-lg border border-indigo-100 transition-colors active:scale-95">
+            <span class="text-xs font-bold text-indigo-600">📋 準增員</span>
+          </button>
+          <button @click="isSettingsModalOpen = true" class="flex items-center gap-2 bg-gray-50 hover:bg-gray-100 px-3 py-1.5 rounded-lg border border-gray-200 transition-colors active:scale-95">
+            <span class="text-xs font-bold text-gray-600">{{ currentUser.name }}</span>
+            <svg class="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
+          </button>
+        </div>
       </div>
 
       <div v-show="currentTab === '339'" class="p-5 pt-20 pb-20 max-w-md mx-auto">
@@ -239,7 +245,7 @@
           <button @click="isMemberModalOpen = false" class="p-2 bg-gray-100 text-gray-500 rounded-full active:scale-95"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg></button>
         </div>
         
-        <div class="overflow-y-auto p-6 space-y-4">
+        <div class="overflow-y-auto flex-1 p-6 space-y-4">
           <div><label class="block text-[11px] font-bold text-gray-500 mb-2">姓名</label><input v-model="memberForm.name" type="text" class="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-base" :disabled="currentUser.role !== 'admin' && memberForm.mode === 'edit'"></div>
           <div>
             <label class="block text-[11px] font-bold text-gray-500 mb-2">目前狀態 / 職級</label>
@@ -512,7 +518,7 @@
              await secureFetch('update_password', { newPassword: newPassword.value });
              currentUser.value.password = newPassword.value;
              loginForm.password = newPassword.value;
-             alert('密碼修改成功！下次登入請使用新密碼。'); newPassword.value = ''; isSettingsModalOpen.value = false;
+             alert('✅ 密碼修改成功！下次登入請使用新密碼。'); newPassword.value = ''; isSettingsModalOpen.value = false;
           } catch(e) { alert('修改失敗'); }
         };
 
@@ -654,7 +660,7 @@
         
         const deleteActivity = async () => { 
            if(formData.id) { 
-              try { await secureFetch('delete_activity', { id: formData.id }); await loadActivitiesData(); alert('已刪除'); } catch(e) {}
+              try { await secureFetch('delete_activity', { id: formData.id }); await loadActivitiesData(); alert('✅ 已刪除'); } catch(e) {}
            } 
            isActivityModalOpen.value = false; 
         };
@@ -741,12 +747,6 @@
         };
 
         const openMemberModal = (node) => {
-          // 若為一般夥伴點擊自己的節點：直接開啟專屬的「準增員名單」
-          if (currentUser.value.role !== 'admin' && node.name === currentUser.value.name) {
-             openProspectsModal(currentUser.value.emp_id, currentUser.value.name);
-             return;
-          }
-
           if (!hasEditPermission(node)) return alert(`🔒 權限限制：您僅能修改自己轄下的直屬夥伴資料。`);
           memberForm.mode = 'edit'; memberForm.nodeId = node.id; memberForm.targetNode = node;
           memberForm.name = node.name; memberForm.status = node.status; memberForm.notes = node.notes || ''; memberForm.empId = node.emp_id || '';
@@ -778,7 +778,7 @@
           if (memberForm.nodeId === 'root' || currentUser.value.role !== 'admin') return;
           if (confirm('確定要從組織圖移除此成員與其所有下屬嗎？\n(注意：此動作不會刪除對方的登入帳號)')) {
             const result = findNodeAndParent(orgTree.value, memberForm.nodeId);
-            if (result && result.parent) { result.parent.children = result.parent.children.filter(c => c.id !== memberForm.nodeId); await saveOrgTree(); isMemberModalOpen.value = false; alert('已從圖表移除');}
+            if (result && result.parent) { result.parent.children = result.parent.children.filter(c => c.id !== memberForm.nodeId); await saveOrgTree(); isMemberModalOpen.value = false; alert('✅ 已從圖表移除');}
           }
         };
 
