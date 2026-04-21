@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-  <title>鎔安組 | 企業級戰情系統 4.9 體驗版</title>
+  <title>鎔安組 | 企業級戰情系統 5.0 終極版</title>
   
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
@@ -67,7 +67,7 @@
           <svg class="w-8 h-8 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path></svg>
         </div>
         <h1 class="text-2xl font-black text-white tracking-widest mb-1">鎔安組戰情室</h1>
-        <p class="text-[11px] text-blue-200/70 mb-6 tracking-widest">軍規資安 4.9 體驗版</p>
+        <p class="text-[11px] text-blue-200/70 mb-6 tracking-widest">軍規資安 5.0 終極版</p>
         
         <input v-model="loginForm.empId" type="text" placeholder="請輸入您的員編" class="w-full bg-black/30 border border-white/10 rounded-xl px-4 py-3.5 text-base text-center text-white tracking-widest focus:outline-none focus:border-blue-400/50 transition-colors mb-3">
         <input v-model="loginForm.password" type="password" placeholder="請輸入密碼" class="w-full bg-black/30 border border-white/10 rounded-xl px-4 py-3.5 text-base text-center text-white tracking-widest focus:outline-none focus:border-blue-400/50 transition-colors mb-6" @keyup.enter="doLogin">
@@ -107,12 +107,12 @@
           </select>
         </div>
 
-        <div class="mb-5 relative">
-          <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none">
+        <div class="mb-5 relative px-1">
+          <div class="absolute inset-y-0 left-1 pl-3.5 flex items-center pointer-events-none">
             <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
           </div>
-          <input v-model="searchQuery" type="text" :placeholder="viewingEmpId === 'ALL' ? '全團隊跨庫搜尋客戶、備註...' : '搜尋我的客戶姓名、備註...'" class="w-full pl-10 pr-10 py-3 bg-white border border-gray-100 rounded-2xl shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500/50 text-sm font-bold transition-all">
-          <button v-if="searchQuery" @click="searchQuery = ''" class="absolute inset-y-0 right-0 pr-3.5 flex items-center text-gray-400 hover:text-gray-600 active:scale-90 transition-transform">
+          <input v-model="searchQuery" type="text" :placeholder="viewingEmpId === 'ALL' ? '全團隊跨庫搜尋客戶、備註...' : '搜尋客戶姓名、備註...'" class="w-full pl-10 pr-10 py-3 bg-white border border-gray-100 rounded-2xl shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500/50 text-sm font-bold transition-all">
+          <button v-if="searchQuery" @click="searchQuery = ''" class="absolute inset-y-0 right-1 pr-3.5 flex items-center text-gray-400 hover:text-gray-600 active:scale-90 transition-transform">
              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12"></path></svg>
           </button>
         </div>
@@ -779,7 +779,7 @@
             formData.notes = act.notes;
             formData.activity_date = act.activity_date;
             isActivityModalOpen.value = true;
-            searchQuery.value = ''; // 編輯時清空搜尋
+            searchQuery.value = ''; 
         };
 
         const saveActivity = async () => {
