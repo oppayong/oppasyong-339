@@ -1,6 +1,11 @@
 import { createClient } from '@supabase/supabase-js';
 
 export default async function handler(req, res) {
+  // 🔥 終極殺手鐧：強制所有手機瀏覽器不准快取，確保永遠拿到最新資料！
+  res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
+  res.setHeader('Pragma', 'no-cache');
+  res.setHeader('Expires', '0');
+
   if (req.method !== 'POST') return res.status(405).send('Method Not Allowed');
 
   const { action, credentials, payload } = req.body;
@@ -12,7 +17,6 @@ export default async function handler(req, res) {
   const SUPABASE_KEY = process.env.SUPABASE_KEY;
   const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
 
-  // 1. 終極身分驗證 (每做任何一件事都要核對密碼)
   const { data: user, error: authErr } = await supabase
     .from('team_users')
     .select('*')
@@ -24,7 +28,6 @@ export default async function handler(req, res) {
   if (user.is_active === false) return res.status(403).json({ error: '帳號已被停權' });
 
   try {
-    // 2. 根據前端請求執行資料庫動作
     switch (action) {
       case 'login':
         return res.status(200).json(user);
@@ -41,7 +44,6 @@ export default async function handler(req, res) {
       case 'load_activities':
         let q = supabase.from('team_activities').select('*');
         if (payload.viewingEmpId !== 'ALL') {
-          // 一般成員只能強制看自己，無法看別人
           const targetId = user.role === 'admin' ? payload.viewingEmpId : user.emp_id;
           q = q.eq('emp_id', targetId);
         } else {
@@ -51,8 +53,9 @@ export default async function handler(req, res) {
         return res.status(200).json(acts);
 
       case 'load_org':
-        const { data: orgData } = await supabase.from('activities').select('notes').eq('client_name', 'APP_VAULT_V1').limit(1);
-        return res.status(200).json(orgData);
+        // 🔥 終極修正：強制抓取絕對唯一 ID，解決舊版本重複產生的問題
+        const { data: orgData } = await supabase.from('activities').select('notes').eq('id', '00000000-0000-0000-0000-000000000001').single();
+        return res.status(200).json(orgData ? [orgData] : []);
 
       case 'save_org':
         if (user.role !== 'admin') return res.status(403).json({ error: '無權限' });
@@ -60,7 +63,6 @@ export default async function handler(req, res) {
         return res.status(200).json({ ok: true });
 
       case 'save_activity':
-        // 強制鎖定儲存的 emp_id
         const targetSaveId = user.role === 'admin' ? payload.activityPayload.emp_id : user.emp_id;
         payload.activityPayload.emp_id = targetSaveId;
         await supabase.from('team_activities').upsert(payload.activityPayload);
