@@ -6,7 +6,7 @@
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
   <meta http-equiv="Pragma" content="no-cache">
   <meta http-equiv="Expires" content="0">
-  <title>鎔安組 | 企業級戰情系統 5.2 沉浸版</title>
+  <title>純仁團隊 | 鎔安組業務系統</title>
   
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
@@ -15,79 +15,76 @@
 
   <style>
     [v-cloak] { display: none !important; }
-    body { background-color: #f8fafc; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; -webkit-tap-highlight-color: transparent; margin: 0; padding: 0; touch-action: manipulation; }
+    body { background-color: #fafafa; font-family: -apple-system, BlinkMacSystemFont, "Helvetica Neue", "Segoe UI", Arial, sans-serif; -webkit-tap-highlight-color: transparent; margin: 0; padding: 0; touch-action: manipulation; letter-spacing: 0.02em; }
     ::-webkit-scrollbar { display: none; }
-    .glass-nav { background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(20px); border-top: 1px solid rgba(255,255,255,0.8); }
-    .glass-card { background: rgba(255, 255, 255, 0.98); box-shadow: 0 8px 30px rgba(0,0,0,0.04); border: 1px solid rgba(255,255,255,1); }
+    .glass-nav { background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(25px); border-top: 1px solid rgba(0,0,0,0.03); }
+    .glass-card { background: rgba(255, 255, 255, 0.98); box-shadow: 0 10px 40px rgba(0,0,0,0.03); border: 1px solid rgba(0,0,0,0.02); }
     
     /* 動畫優化 */
     @keyframes slideUp { from { transform: translateY(100%); opacity: 0;} to { transform: translateY(0); opacity: 1;} }
-    .animate-slide-up { animation: slideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+    .animate-slide-up { animation: slideUp 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
     @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-    .animate-fade-in { animation: fadeIn 0.2s ease-out; }
+    .animate-fade-in { animation: fadeIn 0.3s ease-out; }
     @keyframes slideDownToast { 0% { transform: translate(-50%, -100%); opacity: 0; } 100% { transform: translate(-50%, 0); opacity: 1; } }
     .animate-toast { animation: slideDownToast 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
 
     /* 🌟 極致按鈕確認感 */
     .btn-press { transition: all 0.15s cubic-bezier(0.4, 0, 0.2, 1); }
-    .btn-press:active { transform: scale(0.92); filter: brightness(0.9); }
+    .btn-press:active { transform: scale(0.94); opacity: 0.8; }
 
     input[type="date"]::-webkit-calendar-picker-indicator { position: absolute; top: 0; left: 0; right: 0; bottom: 0; width: auto; height: auto; color: transparent; background: transparent; cursor: pointer; }
     
     .org-tree-container { display: flex; justify-content: center; padding-top: 20px;}
     .org-node { display: flex; flex-direction: column; align-items: center; position: relative; padding: 24px 6px 0 6px; }
-    .org-node::before, .org-node::after { content: ""; position: absolute; top: 0; width: 50%; height: 2px; background: #cbd5e1; }
+    .org-node::before, .org-node::after { content: ""; position: absolute; top: 0; width: 50%; height: 1.5px; background: #e2e8f0; }
     .org-node::before { right: 50%; } .org-node::after { left: 50%; }
     .org-node:only-child::before, .org-node:only-child::after { display: none; }
     .org-node:first-child::before { display: none; } .org-node:last-child::after { display: none; }
     .org-node-inner { position: relative; display: flex; flex-direction: column; align-items: center; }
-    .org-node-inner::before { content: ""; position: absolute; top: -24px; left: 50%; width: 2px; height: 24px; background: #cbd5e1; transform: translateX(-50%); }
+    .org-node-inner::before { content: ""; position: absolute; top: -24px; left: 50%; width: 1.5px; height: 24px; background: #e2e8f0; transform: translateX(-50%); }
     .org-tree-container > .org-node > .org-node-inner::before { display: none; }
     .org-tree-container > .org-node { padding-top: 0; }
     .org-children { display: flex; justify-content: center; position: relative; padding-top: 24px; }
-    .org-children::before { content: ""; position: absolute; top: 0; left: 50%; width: 2px; height: 24px; background: #cbd5e1; transform: translateX(-50%); }
+    .org-children::before { content: ""; position: absolute; top: 0; left: 50%; width: 1.5px; height: 24px; background: #e2e8f0; transform: translateX(-50%); }
   </style>
 </head>
 <body class="text-gray-800 pb-24 select-none antialiased">
 
   <div id="app" class="w-full min-h-screen relative overflow-x-hidden" v-cloak>
 
-    <div v-if="isWelcomeScreen" class="fixed inset-0 z-[400] bg-gray-900 flex flex-col justify-center items-center animate-fade-in">
-      <div class="w-24 h-24 bg-emerald-500/20 rounded-full flex items-center justify-center mx-auto mb-6 border border-emerald-400/50 shadow-[0_0_30px_rgba(16,185,129,0.3)] animate-bounce">
-        <svg class="w-12 h-12 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path></svg>
-      </div>
-      <h2 class="text-3xl font-black text-white mb-2 tracking-widest">歡迎回來</h2>
-      <p class="text-lg text-emerald-300 font-bold tracking-widest">{{ welcomeUser?.name }}</p>
+    <div v-if="isWelcomeScreen" class="fixed inset-0 z-[400] bg-white/95 backdrop-blur-xl flex flex-col justify-center items-center animate-fade-in">
+      <img src="./pure_logo-Photoroom.png" class="w-32 h-32 mx-auto mb-8 drop-shadow-lg animate-pulse" style="animation-duration: 2s; object-fit: contain;">
+      <h2 class="text-2xl font-black text-gray-900 mb-2 tracking-widest">歡迎回來</h2>
+      <p class="text-sm text-yellow-600 font-bold tracking-widest">{{ welcomeUser?.name }}</p>
     </div>
 
-    <div v-if="toast.show" class="fixed top-6 left-1/2 transform -translate-x-1/2 z-[300] animate-toast flex items-center gap-2 px-5 py-3 rounded-full shadow-2xl transition-all" :class="toast.type === 'success' ? 'bg-emerald-500 text-white' : 'bg-red-500 text-white'">
-      <svg v-if="toast.type === 'success'" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path></svg>
-      <svg v-else class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M6 18L18 6M6 6l12 12"></path></svg>
-      <span class="text-sm font-bold tracking-wide">{{ toast.message }}</span>
+    <div v-if="toast.show" class="fixed top-8 left-1/2 transform -translate-x-1/2 z-[300] animate-toast flex items-center gap-3 px-6 py-3.5 rounded-full shadow-[0_10px_40px_rgba(0,0,0,0.1)] transition-all bg-gray-900 text-white">
+      <span class="text-[13px] font-bold tracking-widest" :class="toast.type === 'success' ? 'text-yellow-500' : 'text-red-400'">{{ toast.type === 'success' ? '✓' : '✕' }} {{ toast.message }}</span>
     </div>
 
-    <div v-if="isProcessing" class="fixed inset-0 z-[200] flex items-center justify-center bg-gray-900/20 backdrop-blur-[2px] animate-fade-in transition-all">
-      <div class="bg-white/95 px-6 py-4 rounded-2xl shadow-[0_10px_40px_-10px_rgba(0,0,0,0.2)] flex items-center gap-4 border border-gray-100">
-        <svg class="animate-spin h-6 w-6 text-blue-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+    <div v-if="isProcessing" class="fixed inset-0 z-[200] flex items-center justify-center bg-gray-100/30 backdrop-blur-sm animate-fade-in transition-all">
+      <div class="bg-white/95 px-8 py-5 rounded-3xl shadow-[0_10px_40px_-10px_rgba(0,0,0,0.1)] flex items-center gap-4 border border-gray-100">
+        <svg class="animate-spin h-5 w-5 text-gray-800" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
           <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
           <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
         </svg>
-        <span class="text-sm font-bold text-gray-700 tracking-widest">資料處理中...</span>
+        <span class="text-[11px] font-bold text-gray-600 tracking-widest uppercase">處理中</span>
       </div>
     </div>
 
-    <div v-if="!currentUser && !isWelcomeScreen" class="fixed inset-0 z-[100] bg-gray-900 flex flex-col justify-center items-center p-6 animate-fade-in">
-      <div class="w-full max-w-sm bg-white/10 backdrop-blur-2xl rounded-[2rem] p-8 border border-white/20 shadow-2xl text-center">
-        <div class="w-16 h-16 bg-blue-500/20 rounded-full flex items-center justify-center mx-auto mb-4 border border-blue-400/30">
-          <svg class="w-8 h-8 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path></svg>
-        </div>
-        <h1 class="text-2xl font-black text-white tracking-widest mb-1">鎔安組戰情室</h1>
-        <p class="text-[11px] text-blue-200/70 mb-6 tracking-widest">軍規資安 5.2 沉浸版</p>
+    <div v-if="!currentUser && !isWelcomeScreen" class="fixed inset-0 z-[100] bg-[#fafafa] flex flex-col justify-center items-center p-6 animate-fade-in relative overflow-hidden">
+      <div class="absolute top-[-10%] left-[-10%] w-96 h-96 bg-yellow-200/20 rounded-full blur-3xl"></div>
+      <div class="absolute bottom-[-10%] right-[-10%] w-96 h-96 bg-gray-300/20 rounded-full blur-3xl"></div>
+
+      <div class="relative w-full max-w-sm bg-white/70 backdrop-blur-2xl rounded-[2.5rem] p-10 border border-white shadow-[0_20px_60px_-15px_rgba(0,0,0,0.05)] text-center">
+        <img src="./pure_logo-Photoroom.png" class="w-24 h-24 mx-auto mb-4 drop-shadow-md object-contain">
+        <h1 class="text-2xl font-black text-gray-800 tracking-widest mb-1">鎔安組業務系統</h1>
+        <p class="text-[10px] text-gray-400 mb-8 tracking-widest font-bold uppercase">資安升級 5.2 版</p>
         
-        <input v-model="loginForm.empId" type="text" placeholder="請輸入您的員編" class="w-full bg-black/30 border border-white/10 rounded-xl px-4 py-3.5 text-base text-center text-white tracking-widest focus:outline-none focus:border-blue-400/50 transition-colors mb-3">
-        <input v-model="loginForm.password" type="password" placeholder="請輸入密碼" class="w-full bg-black/30 border border-white/10 rounded-xl px-4 py-3.5 text-base text-center text-white tracking-widest focus:outline-none focus:border-blue-400/50 transition-colors mb-6" @keyup.enter="doLogin">
+        <input v-model="loginForm.empId" type="text" placeholder="輸入員編" class="w-full bg-gray-50/80 border border-gray-100 rounded-2xl px-4 py-4 text-sm text-center text-gray-800 tracking-widest focus:outline-none focus:ring-2 focus:ring-yellow-500/30 transition-all mb-3 shadow-sm">
+        <input v-model="loginForm.password" type="password" placeholder="輸入密碼" class="w-full bg-gray-50/80 border border-gray-100 rounded-2xl px-4 py-4 text-sm text-center text-gray-800 tracking-widest focus:outline-none focus:ring-2 focus:ring-yellow-500/30 transition-all mb-8 shadow-sm" @keyup.enter="doLogin">
         
-        <button @click="doLogin" :disabled="isLoading" class="w-full bg-blue-600 text-white font-bold py-3.5 rounded-xl shadow-lg btn-press disabled:opacity-50">
+        <button @click="doLogin" :disabled="isLoading" class="w-full bg-gray-900 text-yellow-500 font-bold tracking-widest py-4 rounded-2xl shadow-xl hover:shadow-2xl active:scale-95 transition-all duration-300 disabled:opacity-50 btn-press">
           {{ isLoading ? '資料同步中...' : '安全登入' }}
         </button>
       </div>
@@ -95,106 +92,116 @@
 
     <div v-else-if="currentUser" class="w-full h-full animate-fade-in">
       
-      <div class="fixed top-0 left-0 right-0 h-14 bg-white/90 backdrop-blur-md border-b border-gray-100 z-30 flex justify-between items-center px-4 shadow-sm">
-        <div class="text-sm font-black text-gray-800 tracking-wider">鎔安組 CRM</div>
+      <div class="fixed top-0 left-0 right-0 h-16 bg-white/90 backdrop-blur-xl border-b border-gray-100 z-30 flex justify-between items-center px-5 shadow-sm">
+        <div class="flex items-center gap-2">
+          <img src="./pure_logo-Photoroom.png" alt="Logo" class="w-7 h-7 object-contain drop-shadow-sm">
+          <div class="text-sm font-black text-gray-900 tracking-widest">純仁團隊</div>
+        </div>
         <div class="flex gap-2">
-          <button v-if="currentUser.role === 'admin'" @click="openProspectsModal('ALL', '全組')" class="flex items-center gap-1 bg-indigo-50 text-indigo-600 px-3 py-1.5 rounded-lg border border-indigo-100 btn-press">
-            <span class="text-xs font-bold">📋 全組準增</span>
+          <button v-if="currentUser.role === 'admin'" @click="openProspectsModal('ALL', '全組')" class="flex items-center gap-1.5 bg-gray-50 hover:bg-gray-100 px-3.5 py-2 rounded-xl border border-gray-200 transition-all btn-press">
+            <span class="text-[11px] font-bold text-gray-700 tracking-wider">📋 全組準增</span>
           </button>
-          <button v-else @click="openProspectsModal(currentUser.emp_id, currentUser.name)" class="flex items-center gap-1 bg-indigo-50 text-indigo-600 px-3 py-1.5 rounded-lg border border-indigo-100 btn-press">
-            <span class="text-xs font-bold">📋 準增員</span>
+          <button v-else @click="openProspectsModal(currentUser.emp_id, currentUser.name)" class="flex items-center gap-1.5 bg-gray-50 hover:bg-gray-100 px-3.5 py-2 rounded-xl border border-gray-200 transition-all btn-press">
+            <span class="text-[11px] font-bold text-gray-700 tracking-wider">📋 準增員</span>
           </button>
 
-          <button @click="isSettingsModalOpen = true" class="flex items-center gap-2 bg-gray-50 text-gray-600 px-3 py-1.5 rounded-lg border border-gray-200 btn-press">
-            <span class="text-xs font-bold">{{ currentUser.name }}</span>
-            <svg class="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
+          <button @click="isSettingsModalOpen = true" class="flex items-center gap-2 bg-gray-900 px-3.5 py-2 rounded-xl transition-all btn-press shadow-md">
+            <span class="text-[11px] font-bold text-yellow-500 tracking-wider">{{ currentUser.name }}</span>
+            <svg class="w-3.5 h-3.5 text-yellow-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
           </button>
         </div>
       </div>
 
-      <div v-show="currentTab === '339'" class="p-5 pt-20 pb-20 max-w-md mx-auto">
+      <div v-show="currentTab === '339'" class="p-5 pt-24 pb-24 max-w-md mx-auto">
         
-        <div v-if="currentUser.role === 'admin'" class="mb-4 flex items-center justify-between bg-gray-900 text-white p-3 rounded-xl shadow-md">
-          <span class="text-xs font-bold tracking-widest text-amber-400">🛡️ 主管透視</span>
-          <select v-model="viewingEmpId" @change="loadActivitiesData" class="bg-gray-800 border border-gray-700 text-white text-sm rounded-lg px-2 py-1 outline-none">
+        <div v-if="currentUser.role === 'admin'" class="mb-5 flex items-center justify-between bg-white border border-gray-100 p-3 rounded-2xl shadow-sm">
+          <span class="text-[11px] font-bold tracking-widest text-gray-500 uppercase ml-2">🛡️ 主管透視</span>
+          <select v-model="viewingEmpId" @change="loadActivitiesData" class="bg-gray-50 border border-gray-200 text-gray-800 text-xs font-bold rounded-xl px-3 py-2 outline-none">
             <option value="ALL">🌍 全組戰績總覽</option>
             <option v-for="user in teamMembers" :key="user.emp_id" :value="user.emp_id">{{ user.name }} ({{ user.emp_id }})</option>
           </select>
         </div>
 
-        <div class="mb-5 relative px-1">
-          <div class="absolute inset-y-0 left-1 pl-3.5 flex items-center pointer-events-none">
+        <div class="mb-6 relative">
+          <div class="absolute inset-y-0 left-1 pl-4 flex items-center pointer-events-none">
             <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
           </div>
-          <input v-model="searchQuery" type="text" :placeholder="viewingEmpId === 'ALL' ? '跨庫搜尋全組客戶、備註...' : '搜尋我的客戶姓名、備註...'" class="w-full pl-10 pr-10 py-3 bg-white border border-gray-100 rounded-2xl shadow-sm focus:outline-none focus:border-blue-300 text-sm font-bold transition-all">
-          <button v-if="searchQuery" @click="searchQuery = ''" class="absolute inset-y-0 right-1 pr-3.5 flex items-center text-gray-400 hover:text-gray-600 btn-press">
+          <input v-model="searchQuery" type="text" :placeholder="viewingEmpId === 'ALL' ? '跨庫搜尋全組客戶、備註...' : '搜尋我的客戶姓名、備註...'" class="w-full pl-11 pr-10 py-3.5 bg-white border border-gray-200 rounded-2xl shadow-sm focus:outline-none focus:ring-2 focus:ring-gray-900/10 text-sm font-bold transition-all">
+          <button v-if="searchQuery" @click="searchQuery = ''" class="absolute inset-y-0 right-1 pr-4 flex items-center text-gray-400 hover:text-gray-900 btn-press">
              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12"></path></svg>
           </button>
         </div>
 
         <div v-if="searchQuery" class="animate-fade-in space-y-3">
-           <p class="text-xs font-bold text-gray-500 px-1">🔍 搜尋結果 ({{ searchResults.length }} 筆)</p>
-           <div v-for="act in searchResults" :key="act.id" @click="openActivityModalForEdit(act)" class="bg-white p-4 rounded-2xl shadow-sm border border-gray-100 btn-press cursor-pointer">
-              <div class="flex justify-between items-start mb-1.5">
+           <p class="text-[11px] font-bold text-gray-400 px-2 tracking-widest uppercase">🔍 搜尋結果 ({{ searchResults.length }} 筆)</p>
+           <div v-for="act in searchResults" :key="act.id" @click="openActivityModalForEdit(act)" class="glass-card p-5 rounded-2xl btn-press cursor-pointer relative overflow-hidden">
+              <div class="absolute left-0 top-0 bottom-0 w-1" :class="getTypeColor(act.activity_type)"></div>
+              <div class="flex justify-between items-start mb-2 pl-2">
                  <div>
-                    <span class="inline-block px-2 py-0.5 text-[10px] font-black rounded text-white mr-2 shadow-sm" :class="getTypeStyle(act.activity_type)">{{ act.activity_type }}</span>
-                    <span class="text-sm font-bold text-gray-900">{{ act.client_name }}</span>
+                    <span class="text-sm font-black text-gray-900">{{ act.client_name }}</span>
+                    <span class="inline-block ml-2 text-[10px] font-bold text-gray-500">{{ act.activity_type }}</span>
                  </div>
-                 <span class="text-[10px] font-bold text-gray-400">{{ act.activity_date }} {{ act.start_time }}</span>
+                 <span class="text-[10px] font-bold text-gray-400">{{ act.activity_date }}</span>
               </div>
-              <p v-if="act.notes" class="text-xs text-gray-500 mt-1 line-clamp-2 leading-relaxed">{{ act.notes }}</p>
-              <div v-if="viewingEmpId === 'ALL'" class="mt-2 pt-2 border-t border-gray-50 text-right">
-                 <span class="text-[10px] text-blue-600 font-bold bg-blue-50 px-2 py-1 rounded-lg">👤 {{ getProspectOwnerName(act.emp_id) }}</span>
+              <p v-if="act.notes" class="text-xs text-gray-500 mt-1 line-clamp-2 leading-relaxed pl-2">{{ act.notes }}</p>
+              <div v-if="viewingEmpId === 'ALL'" class="mt-3 pt-3 border-t border-gray-50 text-right">
+                 <span class="text-[10px] text-gray-600 font-bold bg-gray-100 px-2.5 py-1 rounded-lg">👤 {{ getProspectOwnerName(act.emp_id) }}</span>
               </div>
            </div>
-           <div v-if="searchResults.length === 0" class="text-center py-10 bg-white rounded-2xl border border-gray-100 border-dashed">
-              <p class="text-gray-400 text-xs font-bold">找不到符合的紀錄</p>
+           <div v-if="searchResults.length === 0" class="text-center py-12 bg-white rounded-2xl border border-gray-200 border-dashed">
+              <p class="text-gray-400 text-xs font-bold tracking-widest">找不到符合的紀錄</p>
            </div>
         </div>
 
         <div v-else>
-          <div class="flex justify-between items-center mb-6 px-1">
-            <button @click="changeDate(-1)" class="p-2 text-gray-400 hover:text-blue-600 btn-press"><svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15 19l-7-7 7-7"></path></svg></button>
+          <div class="flex justify-between items-center mb-8 px-2">
+            <button @click="changeDate(-1)" class="p-2.5 bg-white border border-gray-100 rounded-full text-gray-400 hover:text-gray-900 shadow-sm btn-press"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15 19l-7-7 7-7"></path></svg></button>
             <div class="text-center relative flex flex-col items-center justify-center">
-              <input type="date" v-model="currentDate" @change="loadActivitiesData" class="absolute inset-0 opacity-0 w-full h-full z-10 cursor-pointer text-base">
-              <p class="text-xl font-black text-gray-900 tracking-tight">{{ formattedDate }}</p>
-              <div class="flex items-center gap-1 text-blue-500 mt-0.5">
-                <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
-                <p class="text-[9px] font-bold uppercase tracking-widest">點擊直選</p>
+              <input type="date" v-model="currentDate" @change="loadActivitiesData" class="absolute inset-0 opacity-0 w-full h-full z-10 cursor-pointer">
+              <p class="text-2xl font-black text-gray-900 tracking-tight">{{ formattedDate }}</p>
+              <div class="flex items-center gap-1 text-gray-400 mt-1">
+                <p class="text-[9px] font-bold uppercase tracking-widest">點擊直選日期</p>
               </div>
             </div>
-            <button @click="changeDate(1)" class="p-2 text-gray-400 hover:text-blue-600 btn-press"><svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7"></path></svg></button>
+            <button @click="changeDate(1)" class="p-2.5 bg-white border border-gray-100 rounded-full text-gray-400 hover:text-gray-900 shadow-sm btn-press"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7"></path></svg></button>
           </div>
 
-          <div v-if="viewingEmpId === 'ALL'" class="animate-fade-in space-y-4">
-            <div class="flex justify-center gap-2 mb-4">
-              <button @click="groupViewMode = 'day'" class="px-6 py-2 rounded-full text-sm font-bold shadow-sm btn-press" :class="groupViewMode === 'day' ? 'bg-blue-600 text-white' : 'bg-white text-gray-500 border border-gray-200'">今日</button>
-              <button @click="groupViewMode = 'month'" class="px-6 py-2 rounded-full text-sm font-bold shadow-sm btn-press" :class="groupViewMode === 'month' ? 'bg-blue-600 text-white' : 'bg-white text-gray-500 border border-gray-200'">本月</button>
+          <div v-if="viewingEmpId === 'ALL'" class="animate-fade-in space-y-5">
+            <div class="flex justify-center gap-3 mb-2">
+              <button @click="groupViewMode = 'day'" class="px-6 py-2.5 rounded-full text-[11px] font-black tracking-widest shadow-sm transition-colors btn-press uppercase" :class="groupViewMode === 'day' ? 'bg-gray-900 text-yellow-500' : 'bg-white text-gray-500 border border-gray-200'">今日動能</button>
+              <button @click="groupViewMode = 'month'" class="px-6 py-2.5 rounded-full text-[11px] font-black tracking-widest shadow-sm transition-colors btn-press uppercase" :class="groupViewMode === 'month' ? 'bg-gray-900 text-yellow-500' : 'bg-white text-gray-500 border border-gray-200'">本月累積</button>
             </div>
-            <div class="bg-gradient-to-br from-blue-600 to-indigo-700 rounded-[2rem] p-6 shadow-xl text-white">
-              <p class="text-[11px] font-bold text-blue-200 uppercase tracking-widest mb-4">全組{{ groupViewMode === 'day' ? '今日' : '本月' }}戰力</p>
-              <div class="flex justify-between items-end">
-                <div><span class="text-xs text-blue-200 mr-2">總銷售</span><span class="text-4xl font-black">{{ allGroupStats.sales }}</span></div>
-                <div><span class="text-xs text-blue-200 mr-2">總增員</span><span class="text-4xl font-black text-emerald-300">{{ allGroupStats.recruit }}</span></div>
+            
+            <div class="bg-gray-900 rounded-[2rem] p-7 shadow-xl text-white relative overflow-hidden">
+              <div class="absolute top-[-50%] right-[-20%] w-64 h-64 bg-yellow-500/10 rounded-full blur-3xl"></div>
+              <p class="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-4">全組綜合戰力</p>
+              <div class="flex justify-between items-end relative z-10">
+                <div><span class="text-[11px] text-gray-400 mr-2 font-bold">總銷售分</span><span class="text-5xl font-black text-white">{{ allGroupStats.sales }}</span></div>
+                <div><span class="text-[11px] text-gray-400 mr-2 font-bold">總增員分</span><span class="text-5xl font-black text-yellow-500">{{ allGroupStats.recruit }}</span></div>
               </div>
             </div>
-            <div class="bg-white rounded-[2rem] p-6 shadow-sm border border-gray-100">
-               <p class="text-[10px] font-bold text-amber-500 mb-2 tracking-widest uppercase">💡 AI 洞察</p>
-               <p class="text-sm text-gray-700 font-bold leading-relaxed whitespace-pre-line">{{ groupAiSuggestion }}</p>
+            
+            <div class="glass-card rounded-[2rem] p-6">
+               <p class="text-[10px] font-black text-gray-900 mb-2 tracking-widest uppercase flex items-center gap-1.5">
+                  <svg class="w-3.5 h-3.5 text-yellow-500" fill="currentColor" viewBox="0 0 20 20"><path d="M10 2a6 6 0 00-6 6c0 3.314 2.686 6 6 6s6-2.686 6-6a6 6 0 00-6-6zm0 10a4 4 0 110-8 4 4 0 010 8z"/></svg>
+                  AI 總管洞察
+               </p>
+               <p class="text-xs text-gray-600 font-bold leading-relaxed whitespace-pre-line">{{ groupAiSuggestion }}</p>
             </div>
-            <div class="bg-white rounded-2xl border border-gray-100 overflow-hidden shadow-sm">
-               <div class="bg-gray-50 px-4 py-3 border-b border-gray-100 flex justify-between items-center">
-                  <span class="text-xs font-black text-gray-600 tracking-widest">👑 排行榜</span>
+
+            <div class="glass-card rounded-3xl overflow-hidden">
+               <div class="bg-gray-50/80 px-5 py-4 border-b border-gray-100 flex justify-between items-center">
+                  <span class="text-[11px] font-black text-gray-800 tracking-widest uppercase">👑 戰績排行榜</span>
                </div>
-               <div class="divide-y divide-gray-50">
-                  <div v-for="(stat, index) in memberStatsList" :key="stat.emp_id" class="px-4 py-3 flex justify-between items-center">
+               <div class="divide-y divide-gray-100">
+                  <div v-for="(stat, index) in memberStatsList" :key="stat.emp_id" class="px-5 py-3.5 flex justify-between items-center">
                      <div class="flex items-center gap-3">
-                        <span class="text-sm font-black w-4 text-center" :class="index===0 ? 'text-amber-500' : (index===1 ? 'text-gray-400' : (index===2 ? 'text-orange-400' : 'text-gray-300'))">{{ index + 1 }}</span>
-                        <span class="text-sm font-bold text-gray-800">{{ stat.name }}</span>
+                        <span class="text-sm font-black w-5 text-center" :class="index===0 ? 'text-yellow-500' : (index===1 ? 'text-gray-400' : (index===2 ? 'text-orange-400' : 'text-gray-300'))">{{ index + 1 }}</span>
+                        <span class="text-[13px] font-black text-gray-800">{{ stat.name }}</span>
                      </div>
-                     <div class="text-xs font-bold text-gray-500 flex gap-3">
-                        <span>銷售 <span class="text-blue-600 font-black text-sm">{{ stat.sales }}</span></span>
-                        <span>增員 <span class="text-emerald-500 font-black text-sm">{{ stat.recruit }}</span></span>
+                     <div class="text-[10px] font-bold text-gray-400 flex gap-4">
+                        <span>銷售 <span class="text-gray-900 font-black text-sm">{{ stat.sales }}</span></span>
+                        <span>增員 <span class="text-yellow-600 font-black text-sm">{{ stat.recruit }}</span></span>
                      </div>
                   </div>
                </div>
@@ -202,30 +209,33 @@
           </div>
 
           <div v-else class="animate-fade-in">
-            <div class="flex justify-between items-end mb-6 px-1">
+            <div class="flex justify-between items-end mb-6 px-2">
               <div>
                 <h1 class="text-2xl font-black text-gray-900 tracking-tight">{{ getViewingName() }}</h1>
-                <p class="text-[10px] font-bold text-gray-400 mt-1 uppercase tracking-widest">339 活動量紀錄</p>
+                <p class="text-[10px] font-bold text-gray-400 mt-1 uppercase tracking-widest">339 行程紀錄</p>
               </div>
-              <button @click="isStatsModalOpen = true" class="flex items-center gap-1.5 bg-blue-50 text-blue-600 px-3.5 py-2 rounded-xl shadow-sm btn-press">
-                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path></svg>
-                <span class="text-xs font-bold tracking-wide">分析</span>
+              <button @click="isStatsModalOpen = true" class="flex items-center gap-1.5 bg-gray-900 text-yellow-500 px-4 py-2.5 rounded-xl shadow-md btn-press">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path></svg>
+                <span class="text-[11px] font-black tracking-widest uppercase">戰力分析</span>
               </button>
             </div>
 
-            <div class="space-y-3 relative pb-8">
-              <div class="absolute left-[3.25rem] top-4 bottom-4 w-[2px] bg-gray-200/50 -z-10 rounded-full"></div>
-              <div v-for="time in timeSlots" :key="time" @click="openActivityModal(time)" class="flex bg-white rounded-2xl shadow-sm border border-gray-100 btn-press cursor-pointer overflow-hidden group">
-                <div class="w-20 flex justify-center py-4"><span class="text-[13px] font-bold text-gray-400">{{ time }}</span></div>
-                <div class="flex-1 p-4 border-l border-gray-50 flex flex-col justify-center min-h-[4.5rem]">
+            <div class="space-y-4 relative pb-8">
+              <div class="absolute left-[3.5rem] top-4 bottom-4 w-[1px] bg-gray-200 -z-10"></div>
+              <div v-for="time in timeSlots" :key="time" @click="openActivityModal(time)" class="flex glass-card rounded-2xl btn-press cursor-pointer overflow-hidden group">
+                <div class="w-24 flex justify-center py-5"><span class="text-xs font-black text-gray-400">{{ time }}</span></div>
+                <div class="flex-1 p-4 flex flex-col justify-center min-h-[5rem] relative">
                   <template v-if="getActivity(time)">
-                    <div>
-                      <span class="inline-block px-2 py-0.5 text-[10px] font-black rounded text-white mb-1.5 shadow-sm" :class="getTypeStyle(getActivity(time).activity_type)">{{ getActivity(time).activity_type }}</span>
-                      <p class="text-sm font-bold text-gray-900 break-words">{{ getActivity(time).client_name }}</p>
-                      <p v-if="getActivity(time).notes" class="text-xs text-gray-400 mt-1 break-words line-clamp-2">{{ getActivity(time).notes }}</p>
+                    <div class="absolute left-0 top-0 bottom-0 w-1" :class="getTypeColor(getActivity(time).activity_type)"></div>
+                    <div class="pl-2">
+                      <p class="text-sm font-black text-gray-900 break-words mb-0.5">{{ getActivity(time).client_name }}</p>
+                      <span class="inline-block text-[10px] font-bold text-gray-500">{{ getActivity(time).activity_type }}</span>
+                      <p v-if="getActivity(time).notes" class="text-[11px] text-gray-400 mt-1.5 break-words line-clamp-2 leading-relaxed">{{ getActivity(time).notes }}</p>
                     </div>
                   </template>
-                  <template v-else><span class="text-[11px] text-gray-300 font-bold tracking-wider">+ 新增行程</span></template>
+                  <template v-else>
+                    <span class="text-[11px] text-gray-300 font-bold tracking-widest uppercase">+ 新增行程</span>
+                  </template>
                 </div>
               </div>
             </div>
@@ -234,28 +244,28 @@
       </div>
 
       <div v-show="currentTab === 'org'" class="p-5 pt-20 pb-24 flex flex-col min-h-screen w-full max-w-7xl mx-auto">
-        <header class="mb-4 mt-2 flex justify-between items-end">
+        <header class="mb-4 mt-2 flex justify-between items-end px-2">
           <div>
             <h1 class="text-2xl font-black text-gray-900 tracking-tight">組織發展</h1>
-            <p class="text-[10px] font-bold text-gray-400 mt-1 uppercase tracking-widest">點擊節點進行管理</p>
+            <p class="text-[10px] font-bold text-gray-400 mt-1 uppercase tracking-widest">團隊架構總覽</p>
           </div>
           <div class="flex gap-2">
-            <button v-if="currentUser.role === 'admin'" @click="isAccountManagerOpen = true" class="flex items-center gap-1.5 bg-emerald-500 text-white px-3 py-2 rounded-xl shadow-md btn-press">
-              <span class="text-[10px] font-bold tracking-wide">👥 帳號大廳</span>
+            <button v-if="currentUser.role === 'admin'" @click="isAccountManagerOpen = true" class="flex items-center gap-1.5 bg-gray-900 text-yellow-500 px-3.5 py-2.5 rounded-xl shadow-md btn-press">
+              <span class="text-[11px] font-black tracking-widest uppercase">👥 帳號大廳</span>
             </button>
-            <button @click="exportOrgChart" class="flex items-center gap-1.5 bg-gray-900 text-white px-3 py-2 rounded-xl shadow-md btn-press">
-              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
+            <button @click="exportOrgChart" class="flex items-center gap-1.5 bg-white border border-gray-200 text-gray-800 px-3.5 py-2.5 rounded-xl shadow-sm btn-press">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
             </button>
           </div>
         </header>
 
-        <div class="flex justify-center items-center gap-3 mb-6 bg-white py-2 px-4 rounded-full shadow-sm border border-gray-100 w-fit mx-auto">
-          <button @click="zoomOutOrg" class="w-6 h-6 flex items-center justify-center bg-gray-100 rounded-full text-gray-600 btn-press">➖</button>
-          <span class="text-xs font-bold text-blue-600 w-10 text-center">{{ Math.round(orgZoom * 100) }}%</span>
-          <button @click="zoomInOrg" class="w-6 h-6 flex items-center justify-center bg-gray-100 rounded-full text-gray-600 btn-press">➕</button>
+        <div class="flex justify-center items-center gap-4 mb-6 bg-white py-2 px-5 rounded-full shadow-sm border border-gray-100 w-fit mx-auto">
+          <button @click="zoomOutOrg" class="w-7 h-7 flex items-center justify-center bg-gray-50 rounded-full text-gray-600 btn-press font-black">-</button>
+          <span class="text-[11px] font-black text-gray-900 w-10 text-center tracking-wider">{{ Math.round(orgZoom * 100) }}%</span>
+          <button @click="zoomInOrg" class="w-7 h-7 flex items-center justify-center bg-gray-50 rounded-full text-gray-600 btn-press font-black">+</button>
         </div>
 
-        <div id="org-chart-wrapper" class="flex-1 bg-[#f8fafc] p-2 -mx-4 sm:mx-0 overflow-auto rounded-xl border-y sm:border border-gray-100/50 cursor-grab active:cursor-grabbing">
+        <div id="org-chart-wrapper" class="flex-1 bg-transparent p-2 -mx-4 sm:mx-0 overflow-auto cursor-grab active:cursor-grabbing">
           <div id="org-chart-content" class="min-w-max flex justify-center pb-16 pt-8 px-4 sm:px-12 transition-transform duration-200" :style="{ transform: `scale(${orgZoom})`, transformOrigin: 'top center' }">
             <div class="org-tree-container">
               <org-node :node="orgTree" @edit="openMemberModal" @add="openAddSubordinateModal" :is-admin="currentUser.role === 'admin'"></org-node>
@@ -265,90 +275,91 @@
       </div>
     </div> 
     
-    <nav v-if="currentUser" class="fixed bottom-0 left-0 right-0 glass-nav pb-safe pt-2 px-6 z-40 shadow-[0_-5px_20px_rgba(0,0,0,0.03)]">
+    <nav v-if="currentUser" class="fixed bottom-0 left-0 right-0 glass-nav pb-safe pt-2 px-6 z-40 shadow-[0_-10px_40px_rgba(0,0,0,0.02)]">
       <div class="max-w-md mx-auto flex justify-around items-center h-16">
-        <div @click="currentTab = '339'; searchQuery = ''" class="flex flex-col items-center justify-center w-20 h-full cursor-pointer transition-colors" :class="currentTab === '339' ? 'text-blue-600' : 'text-gray-400'">
-          <svg class="w-6 h-6 mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
-          <span class="text-[10px] font-bold tracking-widest">339 戰情</span>
+        <div @click="currentTab = '339'; searchQuery = ''" class="flex flex-col items-center justify-center w-20 h-full cursor-pointer transition-colors btn-press" :class="currentTab === '339' ? 'text-gray-900' : 'text-gray-300'">
+          <svg class="w-6 h-6 mb-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
+          <span class="text-[9px] font-black tracking-widest uppercase">339 戰情</span>
         </div>
-        <div @click="refreshData" class="relative group cursor-pointer btn-press">
-          <div class="w-10 h-10 bg-white border border-gray-100 rounded-full flex items-center justify-center shadow-sm">
-            <div class="w-2.5 h-2.5 rounded-full transition-colors bg-blue-500 shadow-[0_0_8px_rgba(59,130,246,0.6)]"></div>
-          </div>
+        
+        <div @click="refreshData" class="flex flex-col items-center justify-center w-20 h-full cursor-pointer transition-colors text-gray-300 hover:text-yellow-600 btn-press group">
+          <svg class="w-6 h-6 mb-1.5 transition-transform duration-500 group-active:rotate-180" :class="{'animate-spin text-yellow-500': isProcessing}" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
+          <span class="text-[9px] font-black tracking-widest uppercase">重新整理</span>
         </div>
-        <div @click="currentTab = 'org'" class="flex flex-col items-center justify-center w-20 h-full cursor-pointer transition-colors" :class="currentTab === 'org' ? 'text-blue-600' : 'text-gray-400'">
-          <svg class="w-6 h-6 mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path></svg>
-          <span class="text-[10px] font-bold tracking-widest">組織發展</span>
+
+        <div @click="currentTab = 'org'" class="flex flex-col items-center justify-center w-20 h-full cursor-pointer transition-colors btn-press" :class="currentTab === 'org' ? 'text-gray-900' : 'text-gray-300'">
+          <svg class="w-6 h-6 mb-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path></svg>
+          <span class="text-[9px] font-black tracking-widest uppercase">組織發展</span>
         </div>
       </div>
     </nav>
 
     <div v-if="isActivityModalOpen" class="fixed inset-0 z-[60] flex items-end justify-center">
-      <div class="absolute inset-0 bg-gray-900/60 backdrop-blur-sm" @click="isActivityModalOpen = false"></div>
+      <div class="absolute inset-0 bg-gray-900/40 backdrop-blur-sm" @click="isActivityModalOpen = false"></div>
       <div class="relative w-full max-w-md bg-white rounded-t-[2rem] shadow-2xl animate-slide-up flex flex-col max-h-[90vh]">
-        <div class="shrink-0 p-6 pb-4 flex justify-between items-center border-b border-gray-100">
-          <div><h2 class="text-xl font-black text-gray-900 mb-1">記錄活動</h2><p class="text-xs font-bold text-blue-600">{{ formData.activity_date || formattedDate }} | {{ selectedTime }}</p></div>
-          <button @click="isActivityModalOpen = false" class="p-2 bg-gray-100 text-gray-500 rounded-full btn-press"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg></button>
+        <div class="shrink-0 p-6 pb-4 flex justify-between items-center border-b border-gray-50">
+          <div><h2 class="text-xl font-black text-gray-900 mb-1">記錄活動</h2><p class="text-[11px] font-bold text-gray-400 tracking-widest">{{ formData.activity_date || formattedDate }} | {{ selectedTime }}</p></div>
+          <button @click="isActivityModalOpen = false" class="p-2 bg-gray-50 text-gray-400 rounded-full btn-press"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12"></path></svg></button>
         </div>
-        <div class="overflow-y-auto p-6 space-y-4">
-          <div><label class="block text-[11px] font-bold text-gray-500 mb-2">對象姓名</label><input v-model="formData.clientName" type="text" placeholder="輸入客戶..." class="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-base focus:outline-none focus:border-blue-500 transition-colors"></div>
-          <div><label class="block text-[11px] font-bold text-gray-500 mb-2">活動類型 (自動雲端計分)</label>
+        <div class="overflow-y-auto p-6 space-y-5">
+          <div><label class="block text-[10px] font-bold text-gray-400 mb-2 uppercase tracking-widest">對象姓名</label><input v-model="formData.clientName" type="text" placeholder="輸入客戶..." class="w-full bg-gray-50 border border-gray-100 rounded-xl px-4 py-3.5 text-sm font-bold focus:outline-none focus:border-gray-300 transition-colors"></div>
+          <div><label class="block text-[10px] font-bold text-gray-400 mb-2 uppercase tracking-widest">活動類型</label>
             <div class="flex flex-wrap gap-2">
-              <button v-for="type in activityTypes" :key="type" @click="formData.type = type" class="px-3 py-1.5 rounded-lg text-xs font-bold transition-all border btn-press" :class="formData.type === type ? 'bg-gray-900 text-white border-gray-900 shadow-md' : 'bg-white border-gray-200 text-gray-600 hover:border-gray-300'">{{ type }}</button>
+              <button v-for="type in activityTypes" :key="type" @click="formData.type = type" class="px-3.5 py-2 rounded-xl text-[11px] font-black tracking-wider transition-all border btn-press" :class="formData.type === type ? 'bg-gray-900 text-yellow-500 border-gray-900 shadow-md' : 'bg-white border-gray-200 text-gray-500 hover:border-gray-300'">{{ type }}</button>
             </div>
           </div>
-          <div><label class="block text-[11px] font-bold text-gray-500 mb-2">備註事項</label><textarea v-model="formData.notes" rows="2" class="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-base focus:outline-none focus:border-blue-500 transition-colors"></textarea></div>
+          <div><label class="block text-[10px] font-bold text-gray-400 mb-2 uppercase tracking-widest">備註事項</label><textarea v-model="formData.notes" rows="2" class="w-full bg-gray-50 border border-gray-100 rounded-xl px-4 py-3.5 text-sm focus:outline-none focus:border-gray-300 transition-colors"></textarea></div>
         </div>
         <div class="shrink-0 p-6 pt-2 bg-white rounded-b-[2rem] flex gap-3">
-          <button v-if="formData.id" @click="deleteActivity" :disabled="isProcessing" class="bg-red-50 text-red-500 font-bold px-4 rounded-xl text-sm disabled:opacity-50 btn-press">刪除</button>
-          <button @click="saveActivity" :disabled="isProcessing" class="flex-1 bg-blue-600 text-white font-bold py-3.5 rounded-xl shadow-lg disabled:opacity-50 disabled:bg-blue-400 btn-press">
-            {{ isProcessing ? '⏳ 儲存中...' : '✅ 儲存行程' }}
+          <button v-if="formData.id" @click="deleteActivity" :disabled="isProcessing" class="bg-gray-50 text-red-500 font-bold px-5 rounded-xl text-xs disabled:opacity-50 btn-press">刪除</button>
+          <button @click="saveActivity" :disabled="isProcessing" class="flex-1 bg-gray-900 text-white font-black tracking-widest py-4 rounded-xl shadow-lg disabled:opacity-50 btn-press">
+            {{ isProcessing ? '儲存中...' : '確認儲存' }}
           </button>
         </div>
       </div>
     </div>
 
     <div v-if="isMemberModalOpen" class="fixed inset-0 z-[60] flex items-end justify-center">
-      <div class="absolute inset-0 bg-gray-900/60 backdrop-blur-sm" @click="isMemberModalOpen = false"></div>
+      <div class="absolute inset-0 bg-gray-900/40 backdrop-blur-sm" @click="isMemberModalOpen = false"></div>
       <div class="relative w-full max-w-md bg-white rounded-t-[2rem] shadow-2xl animate-slide-up flex flex-col max-h-[90vh]">
-        <div class="shrink-0 p-6 pb-4 flex justify-between items-center border-b border-gray-100">
-          <div><h2 class="text-xl font-black text-gray-900 mb-1">{{ memberForm.mode === 'add' ? '新增未開通之成員' : '編輯組織資料' }}</h2><p class="text-[10px] text-gray-400">{{ memberForm.mode === 'add' ? '僅顯示於圖表，日後可綁定帳號' : '修改架構與備註' }}</p></div>
-          <button @click="isMemberModalOpen = false" class="p-2 bg-gray-100 text-gray-500 rounded-full btn-press"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg></button>
+        <div class="shrink-0 p-6 pb-4 flex justify-between items-center border-b border-gray-50">
+          <div><h2 class="text-xl font-black text-gray-900 mb-1">{{ memberForm.mode === 'add' ? '新增組織成員' : '編輯成員資料' }}</h2><p class="text-[10px] font-bold text-gray-400 tracking-widest">{{ memberForm.mode === 'add' ? '建立架構節點' : '修改狀態與權限' }}</p></div>
+          <button @click="isMemberModalOpen = false" class="p-2 bg-gray-50 text-gray-400 rounded-full btn-press"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12"></path></svg></button>
         </div>
         
-        <div class="overflow-y-auto flex-1 p-6 space-y-4">
-          <div><label class="block text-[11px] font-bold text-gray-500 mb-2">姓名</label><input v-model="memberForm.name" type="text" class="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-base" :disabled="currentUser.role !== 'admin' && memberForm.mode === 'edit'"></div>
+        <div class="overflow-y-auto flex-1 p-6 space-y-5">
+          <div><label class="block text-[10px] font-bold text-gray-400 mb-2 uppercase tracking-widest">姓名</label><input v-model="memberForm.name" type="text" class="w-full bg-gray-50 border border-gray-100 rounded-xl px-4 py-3.5 text-sm font-bold" :disabled="currentUser.role !== 'admin' && memberForm.mode === 'edit'"></div>
           <div>
-            <label class="block text-[11px] font-bold text-gray-500 mb-2">目前狀態 / 職級</label>
-            <select v-model="memberForm.status" class="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-base appearance-none" :disabled="currentUser.role !== 'admin' && memberForm.mode === 'edit'">
+            <label class="block text-[10px] font-bold text-gray-400 mb-2 uppercase tracking-widest">目前職級 / 狀態</label>
+            <select v-model="memberForm.status" class="w-full bg-gray-50 border border-gray-100 rounded-xl px-4 py-3.5 text-sm font-bold appearance-none" :disabled="currentUser.role !== 'admin' && memberForm.mode === 'edit'">
               <option v-for="status in memberStatuses" :key="status" :value="status">{{ status }}</option>
             </select>
           </div>
-          <div v-if="memberForm.nodeId !== 'root'"><label class="block text-[11px] font-bold text-gray-500 mb-2">重要活動/備註提醒</label><textarea v-model="memberForm.notes" rows="2" class="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-base"></textarea></div>
+          <div v-if="memberForm.nodeId !== 'root'"><label class="block text-[10px] font-bold text-gray-400 mb-2 uppercase tracking-widest">備註提醒</label><textarea v-model="memberForm.notes" rows="2" class="w-full bg-gray-50 border border-gray-100 rounded-xl px-4 py-3.5 text-sm"></textarea></div>
           
-          <div v-if="currentUser.role === 'admin' && memberForm.mode === 'edit' && memberForm.nodeId !== 'root'" class="mt-6 pt-6 border-t border-gray-200">
-            <p class="text-[11px] font-black text-gray-400 tracking-widest uppercase mb-3">系統帳號與專屬清單</p>
+          <div v-if="currentUser.role === 'admin' && memberForm.mode === 'edit' && memberForm.nodeId !== 'root'" class="mt-2 pt-6 border-t border-gray-100">
+            <p class="text-[10px] font-black text-gray-400 tracking-widest uppercase mb-3">系統權限管理</p>
             <template v-if="memberForm.empId">
-              <div class="bg-blue-50 rounded-xl p-4 border border-blue-100 flex flex-col gap-3">
+              <div class="bg-gray-50 rounded-2xl p-5 border border-gray-100 flex flex-col gap-4">
                 <div class="flex justify-between items-center">
-                  <div><p class="text-xs font-bold text-blue-700">已綁定登入員編</p><p class="text-xl font-black text-blue-600">{{ memberForm.empId }}</p></div>
-                  <div class="px-2 py-1 rounded text-[10px] font-bold" :class="getUserStatus(memberForm.empId) ? 'bg-emerald-100 text-emerald-600' : 'bg-red-100 text-red-600'">{{ getUserStatus(memberForm.empId) ? '✅ 正常使用中' : '❌ 已停權' }}</div>
+                  <div><p class="text-[10px] font-bold text-gray-500 uppercase tracking-widest">綁定員編</p><p class="text-xl font-black text-gray-900 mt-1">{{ memberForm.empId }}</p></div>
+                  <div class="px-2.5 py-1 rounded-lg text-[10px] font-black tracking-widest uppercase" :class="getUserStatus(memberForm.empId) ? 'bg-gray-900 text-yellow-500' : 'bg-red-50 text-red-500'">{{ getUserStatus(memberForm.empId) ? '正常啟用' : '已停權' }}</div>
                 </div>
-                <div class="flex gap-2 mt-1">
-                  <button @click="openSingleUserManage(memberForm.empId)" class="flex-1 bg-white text-blue-600 border border-blue-200 py-2 rounded-lg text-xs font-bold shadow-sm btn-press">設定 (停權/密碼)</button>
-                  <button @click="openProspectsModal(memberForm.empId, memberForm.name)" class="flex-1 bg-indigo-600 text-white py-2 rounded-lg text-xs font-bold shadow-sm btn-press">📋 看準增員名單</button>
+                <div class="flex gap-2">
+                  <button @click="openSingleUserManage(memberForm.empId)" class="flex-1 bg-white border border-gray-200 text-gray-700 py-2.5 rounded-xl text-[11px] font-black tracking-widest shadow-sm btn-press">設定權限</button>
+                  <button @click="openProspectsModal(memberForm.empId, memberForm.name)" class="flex-1 bg-gray-900 text-white py-2.5 rounded-xl text-[11px] font-black tracking-widest shadow-sm btn-press">準增員庫</button>
                 </div>
               </div>
             </template>
             <template v-else>
-              <div class="bg-gray-50 rounded-xl p-4 border border-dashed border-gray-300">
-                <p class="text-xs font-bold text-gray-500 mb-3 text-center">尚未綁定登入帳號</p>
-                <div class="space-y-2">
+              <div class="bg-gray-50 rounded-2xl p-5 border border-dashed border-gray-200">
+                <p class="text-[11px] font-bold text-gray-500 mb-4 text-center">尚未配置登入帳號</p>
+                <div class="space-y-3">
                    <div v-if="unboundUsers.length > 0" class="flex gap-2">
-                      <select v-model="bindExistingEmpId" class="flex-1 bg-white border border-gray-200 rounded px-2 py-2 text-xs"><option disabled value="">選擇已開通之帳號</option><option v-for="u in unboundUsers" :key="u.emp_id" :value="u.emp_id">{{ u.name }} ({{ u.emp_id }})</option></select>
-                      <button @click="bindExistingAccountToNode" :disabled="isProcessing" class="bg-gray-800 text-white px-3 py-2 rounded text-xs font-bold whitespace-nowrap btn-press disabled:opacity-50">直接綁定</button>
+                      <select v-model="bindExistingEmpId" class="flex-1 bg-white border border-gray-200 rounded-xl px-3 py-2 text-xs font-bold"><option disabled value="">選擇已開通帳號</option><option v-for="u in unboundUsers" :key="u.emp_id" :value="u.emp_id">{{ u.name }} ({{ u.emp_id }})</option></select>
+                      <button @click="bindExistingAccountToNode" :disabled="isProcessing" class="bg-gray-900 text-white px-4 py-2 rounded-xl text-[11px] font-black tracking-widest whitespace-nowrap btn-press disabled:opacity-50">綁定</button>
                    </div>
-                   <button @click="openBindUserModal" class="w-full bg-emerald-500 text-white font-bold py-2.5 rounded-lg shadow-sm btn-press text-sm">+ 建立新帳號並綁定</button>
+                   <button @click="openBindUserModal" class="w-full bg-gray-200 text-gray-700 font-black tracking-widest py-3 rounded-xl btn-press text-[11px]">+ 建立並綁定新帳號</button>
                 </div>
               </div>
             </template>
@@ -356,180 +367,183 @@
         </div>
         
         <div class="shrink-0 p-6 pt-2 bg-white rounded-b-[2rem] flex gap-3">
-           <button v-if="memberForm.mode === 'edit' && memberForm.nodeId !== 'root' && currentUser.role === 'admin'" @click="deleteMember" :disabled="isProcessing" class="bg-red-50 text-red-500 font-bold px-4 rounded-xl btn-press text-sm disabled:opacity-50">從圖表移除</button>
-           <button @click="saveMember" :disabled="isProcessing" class="flex-1 bg-gray-900 text-white font-bold py-3.5 rounded-xl shadow-md btn-press disabled:opacity-50">
-             {{ isProcessing ? '⏳ 儲存中...' : '✅ 儲存變更' }}
+           <button v-if="memberForm.mode === 'edit' && memberForm.nodeId !== 'root' && currentUser.role === 'admin'" @click="deleteMember" :disabled="isProcessing" class="bg-red-50 text-red-500 font-bold px-5 rounded-xl btn-press text-xs disabled:opacity-50">移除</button>
+           <button @click="saveMember" :disabled="isProcessing" class="flex-1 bg-gray-900 text-white font-black tracking-widest py-4 rounded-xl shadow-lg btn-press disabled:opacity-50">
+             {{ isProcessing ? '儲存中...' : '確認儲存' }}
            </button>
         </div>
       </div>
     </div>
 
     <div v-if="isProspectsModalOpen" class="fixed inset-0 z-[80] flex items-end justify-center">
-      <div class="absolute inset-0 bg-gray-900/60 backdrop-blur-sm" @click="isProspectsModalOpen = false"></div>
-      <div class="relative w-full max-w-md bg-[#f8fafc] rounded-t-[2rem] shadow-2xl animate-slide-up flex flex-col max-h-[90vh]">
-        <div class="shrink-0 p-6 pb-4 flex flex-col border-b border-gray-200 bg-white rounded-t-[2rem]">
-          <div class="flex justify-between items-center mb-3">
-             <h2 class="text-xl font-black text-gray-900 mb-1">準增員私密清單</h2>
-             <button @click="isProspectsModalOpen = false" class="p-2 bg-gray-100 text-gray-500 rounded-full btn-press"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg></button>
+      <div class="absolute inset-0 bg-gray-900/40 backdrop-blur-sm" @click="isProspectsModalOpen = false"></div>
+      <div class="relative w-full max-w-md bg-[#fafafa] rounded-t-[2rem] shadow-2xl animate-slide-up flex flex-col max-h-[90vh]">
+        <div class="shrink-0 p-6 pb-5 flex flex-col border-b border-gray-100 bg-white rounded-t-[2rem]">
+          <div class="flex justify-between items-center mb-4">
+             <h2 class="text-xl font-black text-gray-900 mb-1">準增員資料庫</h2>
+             <button @click="isProspectsModalOpen = false" class="p-2 bg-gray-50 text-gray-400 rounded-full btn-press"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12"></path></svg></button>
           </div>
           <div v-if="currentUser.role === 'admin'">
-             <select v-model="prospectViewEmpId" @change="fetchProspects" class="w-full bg-indigo-50 border border-indigo-200 text-indigo-700 rounded-lg px-3 py-2 text-sm font-bold outline-none cursor-pointer">
-                <option value="ALL">🌍 全組準增員總覽</option>
-                <option v-for="user in teamMembers" :key="user.emp_id" :value="user.emp_id">{{ user.name }} ({{ user.emp_id }})</option>
+             <select v-model="prospectViewEmpId" @change="fetchProspects" class="w-full bg-gray-50 border border-gray-200 text-gray-800 rounded-xl px-4 py-3 text-sm font-bold outline-none cursor-pointer shadow-sm">
+                <option value="ALL">🌍 檢視全組名單</option>
+                <option v-for="user in teamMembers" :key="user.emp_id" :value="user.emp_id">{{ user.name }} 的私密清單</option>
              </select>
           </div>
-          <p v-else class="text-xs font-bold text-indigo-600">{{ prospectViewName }} 的專屬資料庫</p>
+          <p v-else class="text-[11px] font-black text-gray-500 tracking-widest uppercase">{{ prospectViewName }} 的專屬資料庫</p>
         </div>
         
-        <div class="overflow-y-auto flex-1 p-4 space-y-4">
-          <div v-if="prospectViewEmpId !== 'ALL'" class="bg-white p-4 rounded-xl shadow-sm border border-gray-100">
-             <p class="text-[11px] font-bold text-gray-500 mb-3">+ 新增或編輯名單</p>
-             <div class="grid grid-cols-2 gap-2 mb-2">
-               <input v-model="prospectForm.name" type="text" placeholder="名單姓名" class="bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 text-sm focus:border-indigo-500">
-               <select v-model="prospectForm.status" class="bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 text-sm focus:border-indigo-500">
+        <div class="overflow-y-auto flex-1 p-5 space-y-4">
+          <div v-if="prospectViewEmpId !== 'ALL'" class="glass-card p-5 rounded-2xl">
+             <p class="text-[10px] font-black text-gray-400 mb-3 uppercase tracking-widest">+ 新增名單</p>
+             <div class="grid grid-cols-2 gap-3 mb-3">
+               <input v-model="prospectForm.name" type="text" placeholder="姓名" class="bg-gray-50 border border-gray-100 rounded-xl px-3 py-2.5 text-sm font-bold focus:border-gray-300 outline-none">
+               <select v-model="prospectForm.status" class="bg-gray-50 border border-gray-100 rounded-xl px-3 py-2.5 text-sm font-bold focus:border-gray-300 outline-none">
                   <option v-for="s in prospectStatuses" :key="s" :value="s">{{ s }}</option>
                </select>
              </div>
-             <textarea v-model="prospectForm.notes" rows="2" placeholder="追蹤進度與備註..." class="w-full bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 text-sm mb-2 focus:border-indigo-500"></textarea>
+             <textarea v-model="prospectForm.notes" rows="2" placeholder="追蹤進度..." class="w-full bg-gray-50 border border-gray-100 rounded-xl px-3 py-2.5 text-sm mb-3 focus:border-gray-300 outline-none"></textarea>
              <div class="flex gap-2">
-                <button v-if="prospectForm.id" @click="prospectForm.id = null; prospectForm.name=''" class="px-3 py-2 text-xs font-bold text-gray-500 bg-gray-100 rounded-lg btn-press">取消</button>
-                <button @click="saveProspect" :disabled="isProcessing" class="flex-1 bg-indigo-600 text-white font-bold py-2 rounded-lg text-sm btn-press disabled:opacity-50">
-                  {{ isProcessing ? '⏳ 儲存中...' : '✅ 儲存至私密清單' }}
+                <button v-if="prospectForm.id" @click="prospectForm.id = null; prospectForm.name=''" class="px-4 py-2.5 text-xs font-black tracking-widest text-gray-500 bg-gray-100 rounded-xl btn-press">取消</button>
+                <button @click="saveProspect" :disabled="isProcessing" class="flex-1 bg-gray-900 text-white font-black tracking-widest py-2.5 rounded-xl text-xs btn-press disabled:opacity-50">
+                  {{ isProcessing ? '儲存中...' : '確認儲存' }}
                 </button>
              </div>
           </div>
-          <div v-else class="bg-indigo-50 p-3 rounded-xl border border-indigo-100 text-center">
-             <p class="text-xs font-bold text-indigo-600">請從上方選單選擇特定夥伴，即可新增或編輯名單。</p>
+          <div v-else class="bg-gray-100 p-4 rounded-2xl text-center border border-gray-200 border-dashed">
+             <p class="text-[11px] font-black text-gray-500 tracking-widest">請從上方選擇特定夥伴，以進行編輯。</p>
           </div>
           
-          <div class="space-y-2">
-             <div v-for="p in currentProspects" :key="p.id" class="bg-white p-4 rounded-xl border border-gray-100 shadow-sm">
-                <div class="flex justify-between items-start mb-2">
-                   <span class="text-sm font-black text-gray-900">
+          <div class="space-y-3 mt-4">
+             <div v-for="p in currentProspects" :key="p.id" class="glass-card p-4 rounded-2xl">
+                <div class="flex justify-between items-start mb-2.5">
+                   <span class="text-[15px] font-black text-gray-900">
                       {{ p.client_name }}
-                      <span v-if="prospectViewEmpId === 'ALL'" class="text-[10px] bg-gray-100 text-gray-500 px-1.5 py-0.5 rounded ml-1">{{ getProspectOwnerName(p.emp_id) }}</span>
+                      <span v-if="prospectViewEmpId === 'ALL'" class="text-[9px] bg-gray-100 text-gray-500 px-2 py-0.5 rounded-md ml-1 tracking-widest">{{ getProspectOwnerName(p.emp_id) }}</span>
                    </span>
-                   <span class="text-[10px] bg-indigo-50 text-indigo-600 px-2 py-0.5 rounded font-bold">{{ parseProspectNotes(p.notes).status }}</span>
+                   <span class="text-[10px] bg-gray-900 text-yellow-500 px-2.5 py-1 rounded-lg font-black tracking-widest">{{ parseProspectNotes(p.notes).status }}</span>
                 </div>
-                <p class="text-xs text-gray-500 mb-3 whitespace-pre-line">{{ parseProspectNotes(p.notes).notes }}</p>
-                <div v-if="prospectViewEmpId !== 'ALL'" class="flex gap-2 border-t border-gray-50 pt-2">
-                   <button @click="editProspect(p)" class="flex-1 text-[10px] font-bold text-gray-500 bg-gray-50 py-1.5 rounded btn-press">編輯</button>
-                   <button @click="deleteProspect(p.id)" :disabled="isProcessing" class="flex-1 text-[10px] font-bold text-red-500 bg-red-50 py-1.5 rounded btn-press disabled:opacity-50">刪除</button>
+                <p class="text-[13px] text-gray-500 mb-3 whitespace-pre-line leading-relaxed">{{ parseProspectNotes(p.notes).notes }}</p>
+                <div v-if="prospectViewEmpId !== 'ALL'" class="flex gap-2 border-t border-gray-50 pt-3">
+                   <button @click="editProspect(p)" class="flex-1 text-[10px] font-black tracking-widest text-gray-600 bg-gray-50 py-2 rounded-xl btn-press">編輯</button>
+                   <button @click="deleteProspect(p.id)" :disabled="isProcessing" class="flex-1 text-[10px] font-black tracking-widest text-red-500 bg-red-50 py-2 rounded-xl btn-press disabled:opacity-50">刪除</button>
                 </div>
              </div>
-             <p v-if="currentProspects.length === 0" class="text-center text-xs text-gray-400 py-4">目前尚無準增員名單</p>
+             <p v-if="currentProspects.length === 0" class="text-center text-[11px] font-black text-gray-400 py-6 tracking-widest">目前尚無資料</p>
           </div>
         </div>
       </div>
     </div>
 
     <div v-if="isAccountManagerOpen" class="fixed inset-0 z-[60] flex items-end justify-center">
-      <div class="absolute inset-0 bg-gray-900/60 backdrop-blur-sm" @click="isAccountManagerOpen = false"></div>
-      <div class="relative w-full max-w-lg bg-[#f8fafc] rounded-t-[2rem] shadow-2xl animate-slide-up flex flex-col max-h-[90vh]">
-        <div class="shrink-0 p-6 pb-4 flex justify-between items-center border-b border-gray-200 bg-white rounded-t-[2rem]">
-          <div><h2 class="text-xl font-black text-gray-900 mb-1">帳號管理中心</h2><p class="text-xs font-bold text-emerald-600">總管權限</p></div>
-          <button @click="isAccountManagerOpen = false" class="p-2 bg-gray-100 text-gray-500 rounded-full btn-press"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg></button>
+      <div class="absolute inset-0 bg-gray-900/40 backdrop-blur-sm" @click="isAccountManagerOpen = false"></div>
+      <div class="relative w-full max-w-lg bg-[#fafafa] rounded-t-[2rem] shadow-2xl animate-slide-up flex flex-col max-h-[90vh]">
+        <div class="shrink-0 p-6 pb-4 flex justify-between items-center border-b border-gray-100 bg-white rounded-t-[2rem]">
+          <div><h2 class="text-xl font-black text-gray-900 mb-1">帳號大廳</h2><p class="text-[10px] font-bold text-gray-400 tracking-widest uppercase">總管專屬</p></div>
+          <button @click="isAccountManagerOpen = false" class="p-2 bg-gray-50 text-gray-400 rounded-full btn-press"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12"></path></svg></button>
         </div>
-        <div class="overflow-y-auto flex-1 p-4 space-y-4">
-          <div class="bg-white p-4 rounded-xl border border-gray-200 shadow-sm">
-             <p class="text-[11px] font-bold text-gray-500 mb-3">+ 建立全新夥伴帳號</p>
-             <div class="grid grid-cols-2 gap-2 mb-2"><input v-model="newUserForm.empId" type="text" placeholder="登入員編" class="bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-emerald-400"><input v-model="newUserForm.name" type="text" placeholder="真實姓名" class="bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-emerald-400"></div>
-             <input v-model="newUserForm.password" type="text" placeholder="預設密碼" class="w-full bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 text-sm mb-2 focus:outline-none focus:border-emerald-400">
-             <select v-model="newUserForm.bindMode" class="w-full bg-emerald-50 text-emerald-700 border border-emerald-200 rounded px-2 py-2 text-xs mb-2 focus:outline-none"><option value="none">僅開通帳號 (不連動)</option><option value="existing">綁定給組織圖上已存在之成員</option><option value="new">同時在組織圖建立新節點</option></select>
-             <div v-if="newUserForm.bindMode === 'existing'" class="mb-2"><select v-model="newUserForm.targetNodeId" class="w-full bg-white border border-emerald-200 rounded px-2 py-1.5 text-xs"><option disabled value="">請選擇對象</option><option v-for="node in unboundNodes" :key="node.id" :value="node.id">{{ node.name }}</option></select></div>
-             <div v-if="newUserForm.bindMode === 'new'" class="mb-2 space-y-2"><select v-model="newUserForm.parentNodeId" class="w-full bg-white border border-emerald-200 rounded px-2 py-1.5 text-xs"><option disabled value="">選擇直屬主管</option><option v-for="node in allNodes" :key="node.id" :value="node.id">{{ node.name }}</option></select></div>
-             <button @click="createUserAccountPro" :disabled="isProcessing" class="w-full bg-emerald-600 text-white font-bold py-2.5 rounded-lg text-sm btn-press disabled:opacity-50">
-               {{ isProcessing ? '⏳ 建立中...' : '✅ 建立帳號並執行連動' }}
+        <div class="overflow-y-auto flex-1 p-5 space-y-5">
+          <div class="glass-card p-5 rounded-2xl">
+             <p class="text-[10px] font-black text-gray-400 mb-4 tracking-widest uppercase">+ 建立新帳號</p>
+             <div class="grid grid-cols-2 gap-3 mb-3"><input v-model="newUserForm.empId" type="text" placeholder="登入員編" class="bg-gray-50 border border-gray-100 rounded-xl px-3 py-3 text-sm focus:outline-none focus:border-gray-300 font-bold"><input v-model="newUserForm.name" type="text" placeholder="真實姓名" class="bg-gray-50 border border-gray-100 rounded-xl px-3 py-3 text-sm focus:outline-none focus:border-gray-300 font-bold"></div>
+             <input v-model="newUserForm.password" type="text" placeholder="預設密碼" class="w-full bg-gray-50 border border-gray-100 rounded-xl px-3 py-3 text-sm mb-3 focus:outline-none focus:border-gray-300 font-bold">
+             <select v-model="newUserForm.bindMode" class="w-full bg-gray-900 text-white border border-gray-800 rounded-xl px-3 py-3 text-xs mb-3 focus:outline-none font-bold tracking-widest"><option value="none">僅開通帳號 (不連動)</option><option value="existing">綁定給組織圖現有成員</option><option value="new">同時在組織圖建立新節點</option></select>
+             <div v-if="newUserForm.bindMode === 'existing'" class="mb-3"><select v-model="newUserForm.targetNodeId" class="w-full bg-white border border-gray-200 rounded-xl px-3 py-2.5 text-xs font-bold"><option disabled value="">請選擇對象</option><option v-for="node in unboundNodes" :key="node.id" :value="node.id">{{ node.name }}</option></select></div>
+             <div v-if="newUserForm.bindMode === 'new'" class="mb-3 space-y-3"><select v-model="newUserForm.parentNodeId" class="w-full bg-white border border-gray-200 rounded-xl px-3 py-2.5 text-xs font-bold"><option disabled value="">選擇直屬主管</option><option v-for="node in allNodes" :key="node.id" :value="node.id">{{ node.name }}</option></select></div>
+             <button @click="createUserAccountPro" :disabled="isProcessing" class="w-full bg-gray-200 text-gray-800 font-black tracking-widest py-3.5 rounded-xl text-[11px] btn-press disabled:opacity-50 mt-1">
+               {{ isProcessing ? '建立中...' : '確認建立' }}
              </button>
           </div>
-          <div v-for="user in teamMembers" :key="user.emp_id" class="bg-white p-4 rounded-xl border border-gray-100 shadow-sm">
-            <div class="flex justify-between items-start mb-2">
-               <div><p class="text-sm font-black text-gray-900">{{ user.name }} <span v-if="user.role==='admin'" class="text-[10px] bg-amber-100 text-amber-700 px-1 py-0.5 rounded">Admin</span></p><p class="text-xs text-gray-400">{{ user.emp_id }}</p></div>
-               <span class="text-[10px] px-2 py-0.5 rounded font-bold" :class="user.is_active?'bg-emerald-100 text-emerald-600':'bg-red-100 text-red-600'">{{ user.is_active?'正常':'已停權' }}</span>
+          <div v-for="user in teamMembers" :key="user.emp_id" class="glass-card p-5 rounded-2xl">
+            <div class="flex justify-between items-start mb-3">
+               <div><p class="text-[15px] font-black text-gray-900">{{ user.name }} <span v-if="user.role==='admin'" class="text-[9px] bg-gray-900 text-yellow-500 px-1.5 py-0.5 rounded-md align-top ml-1 tracking-widest">ADMIN</span></p><p class="text-xs text-gray-400 font-bold mt-0.5">{{ user.emp_id }}</p></div>
+               <span class="text-[10px] px-2.5 py-1 rounded-lg font-black tracking-widest uppercase" :class="user.is_active?'bg-gray-100 text-gray-600':'bg-red-50 text-red-500'">{{ user.is_active?'正常':'已停權' }}</span>
             </div>
-            <div v-if="user.role !== 'admin'" class="flex gap-2 border-t border-gray-50 pt-2 mt-2">
-              <button @click="toggleUserLock(user)" :disabled="isProcessing" class="flex-1 py-1.5 rounded text-[10px] font-bold btn-press disabled:opacity-50" :class="user.is_active?'bg-gray-100 text-gray-600 hover:text-orange-500':'bg-orange-500 text-white'">{{ user.is_active?'鎖定':'解鎖' }}</button>
-              <button @click="resetUserPassword(user)" :disabled="isProcessing" class="flex-1 bg-blue-50 text-blue-600 rounded text-[10px] font-bold btn-press disabled:opacity-50">重設密碼</button>
-              <button @click="deleteUserAccount(user)" :disabled="isProcessing" class="flex-1 bg-red-50 text-red-600 rounded text-[10px] font-bold btn-press disabled:opacity-50">🗑️ 徹底刪除</button>
+            <div v-if="user.role !== 'admin'" class="flex gap-2 border-t border-gray-50 pt-3 mt-1">
+              <button @click="toggleUserLock(user)" :disabled="isProcessing" class="flex-1 py-2 rounded-xl text-[10px] font-black tracking-widest btn-press disabled:opacity-50" :class="user.is_active?'bg-gray-50 text-gray-600 hover:text-gray-900':'bg-gray-900 text-white'">{{ user.is_active?'停權':'解除停權' }}</button>
+              <button @click="resetUserPassword(user)" :disabled="isProcessing" class="flex-1 bg-white border border-gray-200 text-gray-600 rounded-xl text-[10px] font-black tracking-widest btn-press disabled:opacity-50 shadow-sm">重設密碼</button>
+              <button @click="deleteUserAccount(user)" :disabled="isProcessing" class="flex-1 bg-red-50 text-red-500 rounded-xl text-[10px] font-black tracking-widest btn-press disabled:opacity-50">刪除</button>
             </div>
           </div>
         </div>
       </div>
     </div>
     
-    <div v-if="isSettingsModalOpen" class="fixed inset-0 z-[80] flex items-center justify-center p-4">
-      <div class="absolute inset-0 bg-gray-900/60 backdrop-blur-sm" @click="isSettingsModalOpen = false"></div>
-      <div class="relative w-full max-w-sm bg-white rounded-[2rem] p-6 shadow-2xl text-center animate-fade-in">
-        <h2 class="text-xl font-black text-gray-900 mb-1">修改密碼</h2>
-        <input v-model="newPassword" type="password" placeholder="請輸入新密碼" class="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-base my-4 focus:border-blue-500 focus:outline-none">
-        <div class="flex gap-2">
-           <button @click="isSettingsModalOpen=false" class="flex-1 bg-gray-100 text-gray-600 font-bold py-3 rounded-xl btn-press">取消</button>
-           <button @click="changeMyPassword" :disabled="isProcessing" class="flex-1 bg-blue-600 text-white font-bold py-3 rounded-xl btn-press disabled:opacity-50">
-             {{ isProcessing ? '處理中...' : '✅ 確認修改' }}
+    <div v-if="isSettingsModalOpen" class="fixed inset-0 z-[80] flex items-center justify-center p-5">
+      <div class="absolute inset-0 bg-gray-900/40 backdrop-blur-sm" @click="isSettingsModalOpen = false"></div>
+      <div class="relative w-full max-w-sm bg-white rounded-[2rem] p-8 shadow-2xl text-center animate-fade-in">
+        <h2 class="text-xl font-black text-gray-900 mb-2">修改密碼</h2>
+        <input v-model="newPassword" type="password" placeholder="請輸入新密碼" class="w-full bg-gray-50 border border-gray-100 rounded-xl px-4 py-3.5 text-sm font-bold my-5 focus:border-gray-300 focus:outline-none text-center tracking-widest">
+        <div class="flex gap-3">
+           <button @click="isSettingsModalOpen=false" class="flex-1 bg-gray-100 text-gray-500 font-black tracking-widest py-3.5 rounded-xl btn-press text-xs">取消</button>
+           <button @click="changeMyPassword" :disabled="isProcessing" class="flex-1 bg-gray-900 text-white font-black tracking-widest py-3.5 rounded-xl btn-press disabled:opacity-50 text-xs shadow-lg">
+             {{ isProcessing ? '處理中...' : '確認修改' }}
            </button>
         </div>
       </div>
     </div>
     
-    <div v-if="isSingleAccountManageOpen" class="fixed inset-0 z-[80] flex items-center justify-center p-4">
-      <div class="absolute inset-0 bg-gray-900/60 backdrop-blur-sm" @click="isSingleAccountManageOpen = false"></div>
-      <div class="relative w-full max-w-xs bg-white rounded-[2rem] p-6 shadow-2xl text-center animate-fade-in">
-        <h2 class="text-lg font-black text-gray-900 mb-1" v-if="managingUser">{{ managingUser.name }}</h2>
-        <p class="text-xs font-bold text-gray-400 mb-4" v-if="managingUser">{{ managingUser.emp_id }}</p>
+    <div v-if="isSingleAccountManageOpen" class="fixed inset-0 z-[80] flex items-center justify-center p-5">
+      <div class="absolute inset-0 bg-gray-900/40 backdrop-blur-sm" @click="isSingleAccountManageOpen = false"></div>
+      <div class="relative w-full max-w-xs bg-white rounded-[2rem] p-8 shadow-2xl text-center animate-fade-in">
+        <h2 class="text-xl font-black text-gray-900 mb-1" v-if="managingUser">{{ managingUser.name }}</h2>
+        <p class="text-xs font-bold text-gray-400 mb-6" v-if="managingUser">{{ managingUser.emp_id }}</p>
         <div class="space-y-3" v-if="managingUser">
-          <button @click="toggleUserLock(managingUser)" :disabled="isProcessing" class="w-full font-bold py-3 rounded-xl btn-press disabled:opacity-50" :class="managingUser.is_active ? 'bg-orange-50 text-orange-600' : 'bg-emerald-500 text-white'">{{ managingUser.is_active ? '🚫 鎖定並停權此帳號' : '✅ 解除鎖定，恢復權限' }}</button>
-          <button @click="resetUserPassword(managingUser)" :disabled="isProcessing" class="w-full bg-blue-50 text-blue-600 font-bold py-3 rounded-xl btn-press disabled:opacity-50">🔄 強制重設密碼為 000000</button>
-          <button @click="isSingleAccountManageOpen=false" class="w-full bg-gray-100 text-gray-500 font-bold py-3 rounded-xl btn-press">關閉</button>
+          <button @click="toggleUserLock(managingUser)" :disabled="isProcessing" class="w-full font-black tracking-widest py-3.5 rounded-xl btn-press disabled:opacity-50 text-xs" :class="managingUser.is_active ? 'bg-gray-100 text-gray-600' : 'bg-gray-900 text-yellow-500 shadow-lg'">{{ managingUser.is_active ? '停權此帳號' : '恢復權限' }}</button>
+          <button @click="resetUserPassword(managingUser)" :disabled="isProcessing" class="w-full bg-white border border-gray-200 text-gray-800 font-black tracking-widest py-3.5 rounded-xl btn-press disabled:opacity-50 text-xs shadow-sm">重設密碼 000000</button>
+          <button @click="isSingleAccountManageOpen=false" class="w-full text-gray-400 font-black tracking-widest py-2 btn-press text-xs mt-2">關閉</button>
         </div>
       </div>
     </div>
     
-    <div v-if="isAddUserModalOpen" class="fixed inset-0 z-[80] flex items-center justify-center p-4">
-      <div class="absolute inset-0 bg-gray-900/60 backdrop-blur-sm" @click="isAddUserModalOpen = false"></div>
-      <div class="relative w-full max-w-sm bg-white rounded-[2rem] p-6 shadow-2xl animate-fade-in">
-        <h2 class="text-xl font-black text-gray-900 mb-4">開通並綁定帳號</h2>
-        <input v-model="newUserForm.empId" type="text" placeholder="登入員編" class="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 mb-3 focus:outline-none focus:border-emerald-500">
-        <input v-model="newUserForm.password" type="text" placeholder="預設密碼" class="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 mb-4 focus:outline-none focus:border-emerald-500">
-        <div class="flex gap-2">
-           <button @click="isAddUserModalOpen=false" class="flex-1 bg-gray-100 text-gray-600 font-bold py-3 rounded-xl btn-press">取消</button>
-           <button @click="createUserAccountPro" :disabled="isProcessing" class="flex-1 bg-emerald-600 text-white font-bold py-3 rounded-xl btn-press disabled:opacity-50">
-             {{ isProcessing ? '處理中...' : '✅ 開通綁定' }}
+    <div v-if="isAddUserModalOpen" class="fixed inset-0 z-[80] flex items-center justify-center p-5">
+      <div class="absolute inset-0 bg-gray-900/40 backdrop-blur-sm" @click="isAddUserModalOpen = false"></div>
+      <div class="relative w-full max-w-sm bg-white rounded-[2rem] p-8 shadow-2xl animate-fade-in text-center">
+        <h2 class="text-xl font-black text-gray-900 mb-6">開通並綁定帳號</h2>
+        <input v-model="newUserForm.empId" type="text" placeholder="登入員編" class="w-full bg-gray-50 border border-gray-100 rounded-xl px-4 py-3.5 mb-3 focus:outline-none focus:border-gray-300 font-bold text-center tracking-widest text-sm">
+        <input v-model="newUserForm.password" type="text" placeholder="預設密碼" class="w-full bg-gray-50 border border-gray-100 rounded-xl px-4 py-3.5 mb-6 focus:outline-none focus:border-gray-300 font-bold text-center tracking-widest text-sm">
+        <div class="flex gap-3">
+           <button @click="isAddUserModalOpen=false" class="flex-1 bg-gray-100 text-gray-500 font-black tracking-widest py-3.5 rounded-xl btn-press text-xs">取消</button>
+           <button @click="createUserAccountPro" :disabled="isProcessing" class="flex-1 bg-gray-900 text-yellow-500 font-black tracking-widest py-3.5 rounded-xl btn-press disabled:opacity-50 text-xs shadow-lg">
+             {{ isProcessing ? '處理中...' : '確認開通' }}
            </button>
         </div>
       </div>
     </div>
     
-    <div v-if="isStatsModalOpen" class="fixed inset-0 z-50 flex items-center justify-center p-4">
+    <div v-if="isStatsModalOpen" class="fixed inset-0 z-50 flex items-center justify-center p-5">
       <div class="absolute inset-0 bg-gray-900/40 backdrop-blur-sm" @click="isStatsModalOpen = false"></div>
-      <div class="relative w-full max-w-sm glass-card bg-white/95 rounded-[2rem] p-8 shadow-2xl animate-fade-in">
-        <button @click="isStatsModalOpen = false" class="absolute top-5 right-5 text-gray-400 hover:text-gray-600 btn-press"><svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg></button>
-        <h2 class="text-2xl font-black text-gray-900 mb-1">{{ getViewingName() }} 的分析</h2>
-        <p class="text-[11px] font-bold text-gray-400 uppercase tracking-widest mb-6">AI 數據評分系統</p>
-        <div class="mb-4 p-5 bg-blue-50/50 rounded-2xl border border-blue-100/50">
-          <p class="text-xs font-bold text-blue-800 mb-2">{{ formattedDate }} 當日戰力</p>
-          <div class="flex justify-between items-end"><div><span class="text-[10px] text-gray-500 mr-2">銷售</span><span class="text-3xl font-black text-blue-600">{{ dailySales }}</span></div><div><span class="text-[10px] text-gray-500 mr-2">增員</span><span class="text-3xl font-black text-emerald-500">{{ dailyRecruit }}</span></div></div>
+      <div class="relative w-full max-w-sm glass-card rounded-[2rem] p-8 shadow-2xl animate-fade-in">
+        <button @click="isStatsModalOpen = false" class="absolute top-6 right-6 text-gray-400 hover:text-gray-900 btn-press"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12"></path></svg></button>
+        <h2 class="text-2xl font-black text-gray-900 mb-1">{{ getViewingName() }}</h2>
+        <p class="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-6">AI 戰力分析</p>
+        <div class="mb-4 p-6 bg-gray-900 rounded-3xl relative overflow-hidden">
+          <div class="absolute top-[-30%] right-[-20%] w-32 h-32 bg-yellow-500/20 rounded-full blur-2xl"></div>
+          <p class="text-[11px] font-bold text-gray-400 mb-3 tracking-widest uppercase relative z-10">{{ formattedDate }} 當日戰力</p>
+          <div class="flex justify-between items-end relative z-10"><div><span class="text-[10px] text-gray-500 mr-2 font-bold">銷售</span><span class="text-4xl font-black text-white">{{ dailySales }}</span></div><div><span class="text-[10px] text-gray-500 mr-2 font-bold">增員</span><span class="text-4xl font-black text-yellow-500">{{ dailyRecruit }}</span></div></div>
         </div>
-        <div class="grid grid-cols-2 gap-4 mb-4">
-          <div class="p-4 bg-white rounded-2xl border border-gray-100 shadow-sm"><p class="text-[10px] text-gray-400 font-bold tracking-widest mb-2">本週累積</p><div class="flex justify-between items-end mb-1"><span class="text-xs text-gray-500">銷售</span><span class="text-lg font-black text-blue-500">{{ weeklyStats.sales }}</span></div><div class="flex justify-between items-end"><span class="text-xs text-gray-500">增員</span><span class="text-lg font-black text-emerald-500">{{ weeklyStats.recruit }}</span></div></div>
-          <div class="p-4 bg-white rounded-2xl border border-gray-100 shadow-sm"><p class="text-[10px] text-gray-400 font-bold tracking-widest mb-2">本月累積</p><div class="flex justify-between items-end mb-1"><span class="text-xs text-gray-500">銷售</span><span class="text-lg font-black text-blue-600">{{ monthlyStats.sales }}</span></div><div class="flex justify-between items-end"><span class="text-xs text-gray-500">增員</span><span class="text-lg font-black text-emerald-600">{{ monthlyStats.recruit }}</span></div></div>
+        <div class="grid grid-cols-2 gap-4 mb-5">
+          <div class="p-5 bg-gray-50 rounded-2xl border border-gray-100"><p class="text-[10px] text-gray-400 font-black tracking-widest mb-2 uppercase">本週累積</p><div class="flex justify-between items-end mb-1"><span class="text-[11px] font-bold text-gray-500">銷售</span><span class="text-xl font-black text-gray-900">{{ weeklyStats.sales }}</span></div><div class="flex justify-between items-end"><span class="text-[11px] font-bold text-gray-500">增員</span><span class="text-xl font-black text-yellow-600">{{ weeklyStats.recruit }}</span></div></div>
+          <div class="p-5 bg-gray-50 rounded-2xl border border-gray-100"><p class="text-[10px] text-gray-400 font-black tracking-widest mb-2 uppercase">本月累積</p><div class="flex justify-between items-end mb-1"><span class="text-[11px] font-bold text-gray-500">銷售</span><span class="text-xl font-black text-gray-900">{{ monthlyStats.sales }}</span></div><div class="flex justify-between items-end"><span class="text-[11px] font-bold text-gray-500">增員</span><span class="text-xl font-black text-yellow-600">{{ monthlyStats.recruit }}</span></div></div>
         </div>
-        <div class="pt-4 border-t border-gray-100"><p class="text-[10px] font-bold text-amber-500 mb-1 tracking-widest uppercase">系統教練建議</p><p class="text-xs text-gray-600 leading-relaxed font-medium">{{ personalAiSuggestion }}</p></div>
+        <div class="pt-5 border-t border-gray-100"><p class="text-[10px] font-black text-gray-900 mb-1 tracking-widest uppercase flex items-center gap-1"><svg class="w-3 h-3 text-yellow-500" fill="currentColor" viewBox="0 0 20 20"><path d="M10 2a6 6 0 00-6 6c0 3.314 2.686 6 6 6s6-2.686 6-6a6 6 0 00-6-6zm0 10a4 4 0 110-8 4 4 0 010 8z"/></svg> 系統建議</p><p class="text-xs text-gray-500 leading-relaxed font-bold mt-2">{{ personalAiSuggestion }}</p></div>
       </div>
     </div>
 
-  </div> <script type="text/x-template" id="org-node-template">
+  </div> 
+
+  <script type="text/x-template" id="org-node-template">
     <div class="org-node">
       <div class="org-node-inner">
-        <div class="relative z-10 w-36 sm:w-40 bg-white rounded-2xl border border-gray-200 shadow-md cursor-pointer transition-transform hover:-translate-y-1 text-center overflow-hidden" @click="$emit('edit', node)">
+        <div class="relative z-10 w-36 sm:w-44 glass-card rounded-2xl cursor-pointer transition-transform hover:-translate-y-1 text-center overflow-hidden btn-press" @click="$emit('edit', node)">
           <div class="absolute top-0 left-0 w-full h-1.5" :class="getColor(node.status).topBar"></div>
-          <div class="p-3 pt-4 pb-4" :class="getColor(node.status).bgCard">
-            <p class="text-[10px] font-bold mb-1" :class="getColor(node.status).text">{{ node.status }}</p>
-            <p class="text-base font-black tracking-wide" :class="getColor(node.status).name">{{ node.name }}</p>
-            <div v-if="node.notes" class="org-notes mt-2 inline-block px-1.5 py-1 rounded-lg text-[10px] font-bold w-full break-words line-clamp-3" :class="getColor(node.status).bg">{{ node.notes }}</div>
+          <div class="p-4 pt-5 pb-5" :class="getColor(node.status).bgCard">
+            <p class="text-[9px] font-black mb-1.5 tracking-widest uppercase" :class="getColor(node.status).text">{{ node.status }}</p>
+            <p class="text-base font-black tracking-widest" :class="getColor(node.status).name">{{ node.name }}</p>
+            <div v-if="node.notes" class="org-notes mt-2 inline-block px-2 py-1 rounded-lg text-[10px] font-bold w-full break-words line-clamp-3 leading-relaxed" :class="getColor(node.status).bg">{{ node.notes }}</div>
           </div>
-          <div v-if="isAdmin && node.emp_id" class="absolute top-2 right-2 w-2 h-2 rounded-full bg-blue-500 shadow-[0_0_4px_rgba(59,130,246,0.8)]" title="已綁定帳號"></div>
-          <button @click.stop="$emit('add', node)" class="absolute bottom-1 right-1 w-6 h-6 bg-white/90 backdrop-blur rounded-full flex items-center justify-center text-gray-400 hover:text-blue-600 hover:bg-blue-50 shadow-sm border border-gray-100 z-20 btn-press">
-            <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M12 4v16m8-8H4"></path></svg>
+          <div v-if="isAdmin && node.emp_id" class="absolute top-2.5 right-2.5 w-2 h-2 rounded-full bg-gray-900 shadow-[0_0_4px_rgba(0,0,0,0.3)]"></div>
+          <button @click.stop="$emit('add', node)" class="absolute bottom-1.5 right-1.5 w-7 h-7 bg-white/90 backdrop-blur rounded-full flex items-center justify-center text-gray-400 hover:text-gray-900 shadow-sm border border-gray-100 z-20 btn-press">
+            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M12 4v16m8-8H4"></path></svg>
           </button>
         </div>
         <div v-if="node.children && node.children.length > 0" class="org-children">
@@ -548,11 +562,11 @@
       props: ['node', 'isAdmin'],
       setup() {
         const getColor = (status) => {
-          if (status.includes('區經理')) return { topBar: 'bg-gradient-to-r from-yellow-400 to-amber-500', text: 'text-amber-500', bg: 'bg-gray-800 text-amber-400 border border-gray-600', bgCard: 'bg-gray-900', name: 'text-white' };
-          if (status.includes('襄理') || status.includes('主任')) return { topBar: 'bg-indigo-500', text: 'text-indigo-600', bg: 'bg-indigo-50 text-indigo-700', bgCard: 'bg-white', name: 'text-gray-900' };
-          if (status.includes('代表')) return { topBar: 'bg-blue-500', text: 'text-blue-500', bg: 'bg-blue-50 text-blue-700', bgCard: 'bg-white', name: 'text-gray-900' };
-          if (status.includes('登錄')) return { topBar: 'bg-emerald-400', text: 'text-emerald-600', bg: 'bg-emerald-50 text-emerald-700', bgCard: 'bg-white', name: 'text-gray-900' };
-          return { topBar: 'bg-gray-400', text: 'text-gray-500', bg: 'bg-gray-100 text-gray-600', bgCard: 'bg-white', name: 'text-gray-900' };
+          if (status.includes('區經理')) return { topBar: 'bg-gradient-to-r from-yellow-600 to-yellow-400', text: 'text-yellow-600', bg: 'bg-gray-900 text-yellow-500', bgCard: 'bg-gray-900', name: 'text-white' };
+          if (status.includes('襄理') || status.includes('主任')) return { topBar: 'bg-gray-800', text: 'text-gray-600', bg: 'bg-gray-100 text-gray-700', bgCard: 'bg-white', name: 'text-gray-900' };
+          if (status.includes('代表')) return { topBar: 'bg-gray-400', text: 'text-gray-500', bg: 'bg-gray-50 text-gray-600', bgCard: 'bg-white', name: 'text-gray-800' };
+          if (status.includes('登錄')) return { topBar: 'bg-gray-300', text: 'text-gray-400', bg: 'bg-gray-50 text-gray-500', bgCard: 'bg-white', name: 'text-gray-700' };
+          return { topBar: 'bg-gray-200', text: 'text-gray-400', bg: 'bg-gray-50 text-gray-500', bgCard: 'bg-white', name: 'text-gray-600' };
         };
         return { getColor };
       }
@@ -567,7 +581,6 @@
         const loginError = ref('');
         const isLoading = ref(false);
 
-        // 🌟 絲滑引擎：全局 Loading, Toast, 與迎賓動畫
         const activeRequests = ref(0);
         const isProcessing = computed(() => activeRequests.value > 0);
         
@@ -584,7 +597,6 @@
             toastTimeout = setTimeout(() => { toast.show = false; }, 2500);
         };
 
-        // 🛡️ API 橋樑 + 絲滑動畫
         const secureFetch = async (action, payload = {}, showSpinner = true) => {
           if (showSpinner) activeRequests.value++;
           try {
@@ -616,11 +628,10 @@
 
         const allActivitiesData = ref([]); 
         const currentDayActivities = ref([]); 
-        const orgTree = ref({ id: 'root', name: '鎔安', status: '區經理', notes: '', children: [] });
+        const orgTree = ref({ id: 'root', name: '純仁', status: '區經理', notes: '', children: [] });
         const orgZoom = ref(1.0);
         const groupViewMode = ref('day'); 
 
-        // 🔍 搜尋引擎變數
         const searchQuery = ref('');
 
         const doLogin = async () => {
@@ -628,11 +639,8 @@
           isLoading.value = true; loginError.value = '';
           try {
             const userData = await secureFetch('login', {}, false);
-            
-            // 🌟 啟動迎賓動畫
             welcomeUser.value = userData;
             isWelcomeScreen.value = true;
-            
             viewingEmpId.value = userData.emp_id; 
             if (userData.role === 'admin') {
               const teamData = await secureFetch('get_team', {}, false);
@@ -644,7 +652,7 @@
                isWelcomeScreen.value = false;
                currentUser.value = userData;
                showToast('登入成功', 'success');
-            }, 1800); // 動畫顯示 1.8 秒
+            }, 1800);
             
           } catch (e) { loginError.value = e.message; }
           isLoading.value = false;
@@ -662,7 +670,7 @@
         };
 
         const changeMyPassword = async () => {
-          if (newPassword.value.length < 4) return showToast('密碼至少需要4個字元', 'error');
+          if (newPassword.value.length < 4) return showToast('密碼至少需4個字元', 'error');
           try {
              await secureFetch('update_password', { newPassword: newPassword.value });
              currentUser.value.password = newPassword.value;
@@ -713,20 +721,13 @@
         
         const changeDate = (days) => { const d = new Date(currentDate.value); d.setDate(d.getDate() + days); currentDate.value = d.toISOString().split('T')[0]; loadActivitiesData(); };
         
-        // 🔍 搜尋結果過濾 (完全排除了刪除的幽靈帳號資料)
         const searchResults = computed(() => {
             if (!searchQuery.value) return [];
             const q = searchQuery.value.toLowerCase();
-            
-            // 取得現任團隊成員清單的 emp_id
             const activeEmpIds = teamMembers.value.map(m => m.emp_id);
-            
             return allActivitiesData.value.filter(a => {
                 if (a.activity_type === '準增員名單') return false;
-                
-                // 【核心修正】如果不是在自己個人的頁面，強制排除那些「已經被刪除的帳號」的行程
                 if (viewingEmpId.value === 'ALL' && !activeEmpIds.includes(a.emp_id)) return false;
-
                 const matchName = a.client_name && a.client_name.toLowerCase().includes(q);
                 const matchNotes = a.notes && a.notes.toLowerCase().includes(q);
                 const matchType = a.activity_type && a.activity_type.toLowerCase().includes(q);
@@ -760,10 +761,10 @@
         });
 
         const personalAiSuggestion = computed(() => {
-          if (dailySales.value === 0 && dailyRecruit.value === 0) return '今日尚未有活動紀錄，立刻展開行動！';
-          if (dailySales.value > dailyRecruit.value * 2) return '銷售動能強勁！建議搭配增員約訪平衡發展。';
-          if (dailyRecruit.value > 0) return '增員能量注入中！趁熱打鐵推進準增員進度。';
-          return '持續累積活動量，量大是致勝的關鍵！';
+          if (dailySales.value === 0 && dailyRecruit.value === 0) return '今日尚未有活動，立刻展開行動！';
+          if (dailySales.value > dailyRecruit.value * 2) return '推銷動能強勁！建議搭配增員約訪。';
+          if (dailyRecruit.value > 0) return '增員能量注入中！趁熱打鐵推進進度。';
+          return '量大是致勝關鍵，繼續保持！';
         });
 
         const filteredGroupActivities = computed(() => {
@@ -795,15 +796,16 @@
            const zeros = list.filter(u => u.total === 0 && u.emp_id !== currentUser.value.emp_id).map(u => u.name); 
            const period = groupViewMode.value === 'day' ? '今日' : '本月';
            let msg = `${period}全組總推銷動能為 ${allGroupStats.value.sales} 分，增員動能 ${allGroupStats.value.recruit} 分。\n\n`;
-           if(list.length > 0 && list[0].total > 0) msg += `🔥 ${period} MVP：${list[0].name} (表現優異！)\n`;
-           if(zeros.length > 0) msg += `🚨 注意：${zeros.join('、')} ${period}尚無活動產出，建議主動關心。`;
-           else msg += `✨ 恭喜！全組${period}皆有活動產出，請繼續保持！`;
+           if(list.length > 0 && list[0].total > 0) msg += `🔥 ${period} MVP：${list[0].name}\n`;
+           if(zeros.length > 0) msg += `🚨 注意：${zeros.join('、')} 尚無產出，建議關心。`;
+           else msg += `✨ 恭喜！全組皆有活動產出！`;
            return msg;
         });
 
         const timeSlots = Array.from({ length: 16 }, (_, i) => `${(i + 8).toString().padStart(2, '0')}:00`);
         const activityTypes = ['約訪', '面談', '談建議書', '簽約', '客戶服務', '增員活動', '增員約訪', '增員面談', '其他'];
-        const getTypeStyle = (type) => { const styles = { '約訪': 'bg-blue-400', '面談': 'bg-blue-600', '談建議書': 'bg-indigo-500', '簽約': 'bg-purple-600', '客戶服務': 'bg-gray-400', '增員活動': 'bg-emerald-400', '增員約訪': 'bg-emerald-500', '增員面談': 'bg-emerald-600', '其他': 'bg-orange-400' }; return styles[type] || 'bg-gray-400'; };
+        const getTypeStyle = (type) => { const styles = { '約訪': 'bg-gray-100 text-gray-600', '面談': 'bg-gray-200 text-gray-700', '談建議書': 'bg-gray-700 text-white', '簽約': 'bg-gray-900 text-yellow-500', '客戶服務': 'bg-gray-100 text-gray-500', '增員活動': 'bg-yellow-50 text-yellow-600', '增員約訪': 'bg-yellow-100 text-yellow-700', '增員面談': 'bg-yellow-500 text-white', '其他': 'bg-gray-50 text-gray-400' }; return styles[type] || 'bg-gray-100'; };
+        const getTypeColor = (type) => { const styles = { '約訪': 'bg-gray-300', '面談': 'bg-gray-400', '談建議書': 'bg-gray-700', '簽約': 'bg-yellow-500', '客戶服務': 'bg-gray-200', '增員活動': 'bg-yellow-300', '增員約訪': 'bg-yellow-400', '增員面談': 'bg-yellow-600', '其他': 'bg-gray-100' }; return styles[type] || 'bg-gray-200'; };
 
         const isActivityModalOpen = ref(false);
         const selectedTime = ref('');
@@ -840,7 +842,7 @@
           let sScore = 0; let rScore = 0;
           if (formData.type === '約訪') sScore = 1; if (formData.type === '面談') sScore = 2; if (formData.type === '談建議書') sScore = 3; if (formData.type === '簽約') sScore = 5; if (formData.type === '客戶服務') sScore = 1;
           if (formData.type === '增員活動') rScore = 1; if (formData.type === '增員約訪') rScore = 2; if (formData.type === '增員面談') rScore = 4; 
-          if (formData.type === '其他') { sScore = 0; rScore = 0; } // 🌟 強制其他選項為 0 分
+          if (formData.type === '其他') { sScore = 0; rScore = 0; }
 
           const payload = { emp_id: viewingEmpId.value, activity_date: formData.activity_date || currentDate.value, start_time: selectedTime.value, activity_type: formData.type, client_name: formData.clientName, notes: formData.notes, sales_score: sScore, recruit_score: rScore };
           if (formData.id) payload.id = formData.id;
@@ -849,18 +851,17 @@
              await secureFetch('save_activity', { activityPayload: payload });
              await loadActivitiesData(false);
              isActivityModalOpen.value = false;
-             showToast('✅ 行程已儲存', 'success');
+             showToast('行程已儲存', 'success');
           } catch(e) { showToast('儲存失敗', 'error'); }
         };
         
         const deleteActivity = async () => { 
            if(formData.id) { 
-              try { await secureFetch('delete_activity', { id: formData.id }); await loadActivitiesData(false); showToast('✅ 行程已刪除', 'success'); } catch(e) {}
+              try { await secureFetch('delete_activity', { id: formData.id }); await loadActivitiesData(false); showToast('已刪除', 'success'); } catch(e) {}
            } 
            isActivityModalOpen.value = false; 
         };
 
-        // 📋 獨立：準增員名單 (Prospects) 系統
         const isProspectsModalOpen = ref(false);
         const prospectViewEmpId = ref('');
         const prospectViewName = ref('');
@@ -890,7 +891,7 @@
         };
 
         const openProspectsModal = async (empId, name) => {
-            if(empId !== 'ALL' && !empId) return showToast('此夥伴尚未綁定系統帳號，無法使用準增員清單。', 'error');
+            if(empId !== 'ALL' && !empId) return showToast('此夥伴尚未綁定帳號', 'error');
             isMemberModalOpen.value = false; 
             prospectViewEmpId.value = empId; prospectViewName.value = name;
             isProspectsModalOpen.value = true;
@@ -899,7 +900,7 @@
         };
 
         const saveProspect = async () => {
-            if(!prospectForm.name) return showToast('請輸入名單姓名', 'error');
+            if(!prospectForm.name) return showToast('請輸入姓名', 'error');
             const payload = {
                 emp_id: prospectViewEmpId.value === 'ALL' ? currentUser.value.emp_id : prospectViewEmpId.value,
                 activity_date: new Date().toISOString().split('T')[0],
@@ -912,7 +913,7 @@
             if (prospectForm.id) payload.id = prospectForm.id;
             try {
                 await secureFetch('save_activity', { activityPayload: payload });
-                showToast('✅ 準增員名單已更新', 'success');
+                showToast('名單已更新', 'success');
                 prospectForm.id = null; prospectForm.name = ''; prospectForm.notes = ''; prospectForm.status = '初步接觸';
                 await fetchProspects();
             } catch(e) { showToast('儲存失敗', 'error'); }
@@ -924,12 +925,11 @@
         };
 
         const deleteProspect = async (id) => {
-            if(confirm('確定刪除此準增員名單？')) {
-                try { await secureFetch('delete_activity', { id }); showToast('✅ 已刪除', 'success'); await fetchProspects(); } catch(e) {}
+            if(confirm('確定刪除此名單？')) {
+                try { await secureFetch('delete_activity', { id }); showToast('已刪除', 'success'); await fetchProspects(); } catch(e) {}
             }
         };
 
-        // 組織圖與節點管理
         const zoomInOrg = () => { orgZoom.value = Math.min(1.5, orgZoom.value + 0.1); };
         const zoomOutOrg = () => { orgZoom.value = Math.max(0.4, orgZoom.value - 0.1); };
         const memberStatuses = ['臨時帳號申請中', '準備公會考試', '等待登錄中', '業務代表', '業務主任', '業務襄理', '區經理'];
@@ -949,14 +949,14 @@
           if (currentUser.value.role !== 'admin' && node.name === currentUser.value.name) {
              openProspectsModal(currentUser.value.emp_id, currentUser.value.name); return;
           }
-          if (!hasEditPermission(node)) return showToast('權限不足，您僅能修改自己轄下的資料', 'error');
+          if (!hasEditPermission(node)) return showToast('權限不足', 'error');
           memberForm.mode = 'edit'; memberForm.nodeId = node.id; memberForm.targetNode = node;
           memberForm.name = node.name; memberForm.status = node.status; memberForm.notes = node.notes || ''; memberForm.empId = node.emp_id || '';
           bindExistingEmpId.value = ''; isMemberModalOpen.value = true;
         };
 
         const openAddSubordinateModal = (parentNode) => {
-          if (!hasEditPermission(parentNode)) return showToast('權限不足，您只能在自己的分支下新增成員', 'error');
+          if (!hasEditPermission(parentNode)) return showToast('權限不足', 'error');
           memberForm.mode = 'add'; memberForm.targetNode = parentNode;
           memberForm.name = ''; memberForm.status = '準備公會考試'; memberForm.notes = ''; memberForm.empId = '';
           isMemberModalOpen.value = true;
@@ -973,21 +973,21 @@
             memberForm.targetNode.notes = memberForm.notes;
             if(currentUser.value.role === 'admin'){ memberForm.targetNode.name = memberForm.name; memberForm.targetNode.status = memberForm.status; }
           }
-          await saveOrgTree(); isMemberModalOpen.value = false; showToast('✅ 組織圖已更新', 'success');
+          await saveOrgTree(); isMemberModalOpen.value = false; showToast('組織圖已更新', 'success');
         };
 
         const deleteMember = async () => {
           if (memberForm.nodeId === 'root' || currentUser.value.role !== 'admin') return;
-          if (confirm('確定要從組織圖移除此成員與其所有下屬嗎？\n(注意：此動作不會刪除對方的登入帳號)')) {
+          if (confirm('確定移除此成員？(不會刪除登入帳號)')) {
             const result = findNodeAndParent(orgTree.value, memberForm.nodeId);
-            if (result && result.parent) { result.parent.children = result.parent.children.filter(c => c.id !== memberForm.nodeId); await saveOrgTree(); isMemberModalOpen.value = false; showToast('✅ 已從組織圖移除', 'success');}
+            if (result && result.parent) { result.parent.children = result.parent.children.filter(c => c.id !== memberForm.nodeId); await saveOrgTree(); isMemberModalOpen.value = false; showToast('已移除', 'success');}
           }
         };
 
         const bindExistingAccountToNode = async () => {
            if(!bindExistingEmpId.value) return;
            memberForm.targetNode.emp_id = bindExistingEmpId.value; await saveOrgTree(); 
-           showToast('✅ 帳號綁定成功', 'success'); isMemberModalOpen.value = false;
+           showToast('帳號綁定成功', 'success'); isMemberModalOpen.value = false;
         };
 
         const isAccountManagerOpen = ref(false);
@@ -1000,7 +1000,7 @@
         };
 
         const createUserAccountPro = async () => {
-          if(!newUserForm.empId || !newUserForm.name || !newUserForm.password) return showToast('請填寫完整資料', 'error');
+          if(!newUserForm.empId || !newUserForm.name || !newUserForm.password) return showToast('請填寫完整', 'error');
           try {
              await secureFetch('create_user', { empId: newUserForm.empId, password: newUserForm.password, name: newUserForm.name });
              if (newUserForm.bindMode === 'existing' && newUserForm.targetNodeId) {
@@ -1016,7 +1016,7 @@
              const teamData = await secureFetch('get_team'); teamMembers.value = sortTeam(teamData);
              newUserForm.empId = ''; newUserForm.name = ''; newUserForm.password = ''; newUserForm.bindMode = 'none'; 
              isAddUserModalOpen.value = false;
-             showToast('✅ 帳號開通成功', 'success');
+             showToast('帳號開通成功', 'success');
           } catch(e) { showToast(e.message, 'error'); }
         };
 
@@ -1029,45 +1029,43 @@
         };
 
         const toggleUserLock = async (user) => {
-          if (user.role === 'admin') return showToast('無法停權總管帳號', 'error');
+          if (user.role === 'admin') return showToast('無法停權總管', 'error');
           try {
              const newStatus = !user.is_active; 
              await secureFetch('update_user', { empId: user.emp_id, updateData: { is_active: newStatus } });
              user.is_active = newStatus;
              const teamData = await secureFetch('get_team'); teamMembers.value = sortTeam(teamData);
-             showToast(newStatus ? '✅ 帳號已解鎖' : '🚫 帳號已停權', 'success');
+             showToast(newStatus ? '已解鎖' : '已停權', 'success');
           } catch(e) { showToast('更新失敗', 'error'); }
         };
 
         const resetUserPassword = async (user) => {
-          if(confirm(`確定要重設 ${user.name} 的密碼為 000000 嗎？`)) {
-             try { await secureFetch('update_user', { empId: user.emp_id, updateData: { password: '000000' } }); showToast('✅ 密碼已重設', 'success'); } catch(e) { showToast('重設失敗', 'error'); }
+          if(confirm(`確定重設 ${user.name} 的密碼？`)) {
+             try { await secureFetch('update_user', { empId: user.emp_id, updateData: { password: '000000' } }); showToast('密碼已重設', 'success'); } catch(e) { showToast('重設失敗', 'error'); }
           }
         };
 
         const deleteUserAccount = async (user) => {
-          if (user.role === 'admin') return showToast('系統拒絕刪除總管帳號', 'error');
-          if (confirm(`【極度危險】\n確定要徹底刪除 ${user.name} 的帳號嗎？\n此動作會刪除該員編的所有行程紀錄，且完全無法復原！`)) {
+          if (user.role === 'admin') return showToast('無法刪除總管', 'error');
+          if (confirm(`【危險】確定徹底刪除 ${user.name} 的帳號與所有行程嗎？`)) {
              try {
                 await secureFetch('delete_user', { empId: user.emp_id });
                 const linkedNode = allNodes.value.find(n => n.emp_id === user.emp_id);
                 if(linkedNode) { linkedNode.emp_id = ''; await saveOrgTree(); }
                 const teamData = await secureFetch('get_team'); teamMembers.value = sortTeam(teamData);
                 isSingleAccountManageOpen.value = false;
-                
-                // 🌟 強制重新讀取行程，徹底清除幽靈帳號的紀錄
                 await loadActivitiesData(false);
-                showToast('✅ 帳號與行程皆已徹底刪除', 'success');
+                showToast('已徹底刪除', 'success');
              } catch(e) { showToast('刪除失敗', 'error'); }
           }
         };
 
         const exportOrgChart = () => {
           const content = document.getElementById('org-chart-content'); const originalZoom = orgZoom.value; orgZoom.value = 1; 
-          setTimeout(() => { html2canvas(content, { backgroundColor: '#f8fafc', scale: 2, windowWidth: Math.max(1400, content.scrollWidth),
+          setTimeout(() => { html2canvas(content, { backgroundColor: '#fafafa', scale: 2, windowWidth: Math.max(1400, content.scrollWidth),
               onclone: (doc) => { const el = doc.getElementById('org-chart-content'); el.style.transform = 'none'; el.style.width = 'max-content';
                  const notes = el.querySelectorAll('.org-notes'); notes.forEach(n => { n.classList.remove('line-clamp-3', 'truncate'); n.style.whiteSpace = 'normal'; }); }
-            }).then(canvas => { orgZoom.value = originalZoom; const link = document.createElement('a'); link.download = `鎔安組_組織架構圖.png`; link.href = canvas.toDataURL('image/png'); link.click(); });
+            }).then(canvas => { orgZoom.value = originalZoom; const link = document.createElement('a'); link.download = `純仁團隊_組織架構圖.png`; link.href = canvas.toDataURL('image/png'); link.click(); });
           }, 300); 
         };
 
@@ -1078,7 +1076,7 @@
           isAddUserModalOpen, newUserForm, openBindUserModal, createUserAccountPro, bindExistingEmpId, bindExistingAccountToNode,
           allNodes, unboundNodes, unboundUsers, groupViewMode, searchQuery, searchResults,
           currentTab, currentDate, formattedDate, changeDate, isStatsModalOpen,
-          timeSlots, dailySales, dailyRecruit, weeklyStats, monthlyStats, personalAiSuggestion, allGroupStats, memberStatsList, groupAiSuggestion, getActivity, getTypeStyle, 
+          timeSlots, dailySales, dailyRecruit, weeklyStats, monthlyStats, personalAiSuggestion, allGroupStats, memberStatsList, groupAiSuggestion, getActivity, getTypeStyle, getTypeColor,
           isActivityModalOpen, selectedTime, activityTypes, formData, openActivityModal, openActivityModalForEdit, saveActivity, deleteActivity,
           orgTree, orgZoom, zoomInOrg, zoomOutOrg, memberStatuses, isMemberModalOpen, memberForm, openMemberModal, openAddSubordinateModal, saveMember, deleteMember, exportOrgChart,
           isProspectsModalOpen, prospectViewName, prospectForm, prospectStatuses, currentProspects, isLoadingProspects, openProspectsModal, saveProspect, deleteProspect, editProspect, parseProspectNotes, getProspectOwnerName
@@ -1091,4 +1089,3 @@
   </script>
 </body>
 </html>
- 
