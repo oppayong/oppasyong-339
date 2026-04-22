@@ -14,6 +14,7 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="default">
   <meta name="apple-mobile-web-app-title" content="純仁團隊">
   <link rel="apple-touch-icon" href="./pure_logo-Photoroom.png">
+
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -101,7 +102,7 @@
           <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
           <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
         </svg>
-        <span class="text-[11px] font-bold text-gray-600 tracking-widest uppercase">處理中</span>
+        <span class="text-[11px] font-bold text-gray-600 tracking-widest uppercase">系統同步中</span>
       </div>
     </div>
 
@@ -112,10 +113,10 @@
       <div class="relative w-full max-w-sm bg-white/70 backdrop-blur-2xl rounded-[2.5rem] p-10 border border-white shadow-[0_20px_60px_-15px_rgba(0,0,0,0.05)] text-center">
         <img src="./pure_logo-Photoroom.png" class="w-24 h-24 mx-auto mb-4 drop-shadow-md object-contain">
         <h1 class="text-2xl font-black text-gray-800 tracking-widest mb-1">鎔安組業務系統</h1>
-        <p class="text-[10px] text-gray-400 mb-8 tracking-widest font-bold uppercase">資安升級 6.0 版</p>
+        <p class="text-[10px] text-gray-400 mb-8 tracking-widest font-bold uppercase">資安升級 6.1 防呆版</p>
         
-        <input v-model="loginForm.empId" type="text" placeholder="輸入員編" class="w-full bg-gray-50/80 border border-gray-100 rounded-2xl px-4 py-4 text-sm text-center text-gray-800 tracking-widest focus:outline-none focus:ring-2 focus:ring-yellow-500/30 transition-all mb-3 shadow-sm">
-        <input v-model="loginForm.password" type="password" placeholder="輸入密碼" class="w-full bg-gray-50/80 border border-gray-100 rounded-2xl px-4 py-4 text-sm text-center text-gray-800 tracking-widest focus:outline-none focus:ring-2 focus:ring-yellow-500/30 transition-all mb-8 shadow-sm" @keyup.enter="doLogin">
+        <input v-model.trim="loginForm.empId" type="text" placeholder="輸入員編" class="w-full bg-gray-50/80 border border-gray-100 rounded-2xl px-4 py-4 text-sm text-center text-gray-800 tracking-widest focus:outline-none focus:ring-2 focus:ring-yellow-500/30 transition-all mb-3 shadow-sm">
+        <input v-model.trim="loginForm.password" type="password" placeholder="輸入密碼" class="w-full bg-gray-50/80 border border-gray-100 rounded-2xl px-4 py-4 text-sm text-center text-gray-800 tracking-widest focus:outline-none focus:ring-2 focus:ring-yellow-500/30 transition-all mb-8 shadow-sm" @keyup.enter="doLogin">
         
         <button @click="doLogin" :disabled="isLoading" class="w-full bg-gray-900 text-yellow-500 font-bold tracking-widest py-4 rounded-2xl shadow-xl hover:shadow-2xl active:scale-95 transition-all duration-300 disabled:opacity-50 btn-press">
           {{ isLoading ? '資料同步中...' : '安全登入' }}
@@ -158,7 +159,7 @@
           <div class="absolute inset-y-0 left-1 pl-4 flex items-center pointer-events-none">
             <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
           </div>
-          <input v-model="searchQuery" type="text" :placeholder="viewingEmpId === 'ALL' ? '跨庫搜尋全組客戶、備註...' : '搜尋我的客戶姓名、備註...'" class="w-full pl-11 pr-10 py-3.5 bg-white border border-gray-200 rounded-2xl shadow-sm focus:outline-none focus:ring-2 focus:ring-gray-900/10 text-sm font-bold transition-all">
+          <input v-model.trim="searchQuery" type="text" :placeholder="viewingEmpId === 'ALL' ? '跨庫搜尋全組客戶、備註...' : '搜尋我的客戶姓名、備註...'" class="w-full pl-11 pr-10 py-3.5 bg-white border border-gray-200 rounded-2xl shadow-sm focus:outline-none focus:ring-2 focus:ring-gray-900/10 text-sm font-bold transition-all">
           <button v-if="searchQuery" @click="searchQuery = ''" class="absolute inset-y-0 right-1 pr-4 flex items-center text-gray-400 hover:text-gray-900 btn-press">
              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12"></path></svg>
           </button>
@@ -349,7 +350,7 @@
           <div class="flex gap-3">
              <div class="flex-1">
                 <label class="block text-[10px] font-bold text-gray-400 mb-2 uppercase tracking-widest">對象姓名</label>
-                <input v-model="formData.clientName" type="text" placeholder="輸入客戶..." class="w-full bg-gray-50 border border-gray-100 rounded-xl px-4 py-3.5 text-sm font-bold focus:outline-none focus:border-gray-300 transition-colors">
+                <input v-model.trim="formData.clientName" type="text" placeholder="輸入客戶..." class="w-full bg-gray-50 border border-gray-100 rounded-xl px-4 py-3.5 text-sm font-bold focus:outline-none focus:border-gray-300 transition-colors">
              </div>
              <div class="w-24">
                 <label class="block text-[10px] font-bold text-gray-400 mb-2 uppercase tracking-widest">佔用時數</label>
@@ -386,7 +387,7 @@
         </div>
         
         <div class="overflow-y-auto flex-1 p-6 space-y-5">
-          <div><label class="block text-[10px] font-bold text-gray-400 mb-2 uppercase tracking-widest">姓名</label><input v-model="memberForm.name" type="text" class="w-full bg-gray-50 border border-gray-100 rounded-xl px-4 py-3.5 text-sm font-bold" :disabled="currentUser.role !== 'admin' && memberForm.mode === 'edit'"></div>
+          <div><label class="block text-[10px] font-bold text-gray-400 mb-2 uppercase tracking-widest">姓名</label><input v-model.trim="memberForm.name" type="text" class="w-full bg-gray-50 border border-gray-100 rounded-xl px-4 py-3.5 text-sm font-bold" :disabled="currentUser.role !== 'admin' && memberForm.mode === 'edit'"></div>
           <div>
             <label class="block text-[10px] font-bold text-gray-400 mb-2 uppercase tracking-widest">目前職級 / 狀態</label>
             <select v-model="memberForm.status" class="w-full bg-gray-50 border border-gray-100 rounded-xl px-4 py-3.5 text-sm font-bold appearance-none" :disabled="currentUser.role !== 'admin' && memberForm.mode === 'edit'">
@@ -454,7 +455,7 @@
           <div v-if="prospectViewEmpId !== 'ALL'" class="glass-card p-5 rounded-2xl">
              <p class="text-[10px] font-black text-gray-400 mb-3 uppercase tracking-widest">+ 新增名單</p>
              <div class="grid grid-cols-2 gap-3 mb-3">
-               <input v-model="prospectForm.name" type="text" placeholder="姓名" class="bg-gray-50 border border-gray-100 rounded-xl px-3 py-2.5 text-sm font-bold focus:border-gray-300 outline-none">
+               <input v-model.trim="prospectForm.name" type="text" placeholder="姓名" class="bg-gray-50 border border-gray-100 rounded-xl px-3 py-2.5 text-sm font-bold focus:border-gray-300 outline-none">
                <select v-model="prospectForm.status" class="bg-gray-50 border border-gray-100 rounded-xl px-3 py-2.5 text-sm font-bold focus:border-gray-300 outline-none">
                   <option v-for="s in prospectStatuses" :key="s" :value="s">{{ s }}</option>
                </select>
@@ -502,8 +503,8 @@
         <div class="overflow-y-auto flex-1 p-5 space-y-5">
           <div class="glass-card p-5 rounded-2xl">
              <p class="text-[10px] font-black text-gray-400 mb-4 tracking-widest uppercase">+ 建立新帳號</p>
-             <div class="grid grid-cols-2 gap-3 mb-3"><input v-model="newUserForm.empId" type="text" placeholder="登入員編" class="bg-gray-50 border border-gray-100 rounded-xl px-3 py-3 text-sm focus:outline-none focus:border-gray-300 font-bold"><input v-model="newUserForm.name" type="text" placeholder="真實姓名" class="bg-gray-50 border border-gray-100 rounded-xl px-3 py-3 text-sm focus:outline-none focus:border-gray-300 font-bold"></div>
-             <input v-model="newUserForm.password" type="text" placeholder="預設密碼" class="w-full bg-gray-50 border border-gray-100 rounded-xl px-3 py-3 text-sm mb-3 focus:outline-none focus:border-gray-300 font-bold">
+             <div class="grid grid-cols-2 gap-3 mb-3"><input v-model.trim="newUserForm.empId" type="text" placeholder="登入員編" class="bg-gray-50 border border-gray-100 rounded-xl px-3 py-3 text-sm focus:outline-none focus:border-gray-300 font-bold"><input v-model.trim="newUserForm.name" type="text" placeholder="真實姓名" class="bg-gray-50 border border-gray-100 rounded-xl px-3 py-3 text-sm focus:outline-none focus:border-gray-300 font-bold"></div>
+             <input v-model.trim="newUserForm.password" type="text" placeholder="預設密碼" class="w-full bg-gray-50 border border-gray-100 rounded-xl px-3 py-3 text-sm mb-3 focus:outline-none focus:border-gray-300 font-bold">
              <select v-model="newUserForm.bindMode" class="w-full bg-gray-900 text-white border border-gray-800 rounded-xl px-3 py-3 text-xs mb-3 focus:outline-none font-bold tracking-widest"><option value="none">僅開通帳號 (不連動)</option><option value="existing">綁定給組織圖現有成員</option><option value="new">同時在組織圖建立新節點</option></select>
              <div v-if="newUserForm.bindMode === 'existing'" class="mb-3"><select v-model="newUserForm.targetNodeId" class="w-full bg-white border border-gray-200 rounded-xl px-3 py-2.5 text-xs font-bold"><option disabled value="">請選擇對象</option><option v-for="node in unboundNodes" :key="node.id" :value="node.id">{{ node.name }}</option></select></div>
              <div v-if="newUserForm.bindMode === 'new'" class="mb-3 space-y-3"><select v-model="newUserForm.parentNodeId" class="w-full bg-white border border-gray-200 rounded-xl px-3 py-2.5 text-xs font-bold"><option disabled value="">選擇直屬主管</option><option v-for="node in allNodes" :key="node.id" :value="node.id">{{ node.name }}</option></select></div>
@@ -530,7 +531,7 @@
       <div class="absolute inset-0 bg-gray-900/40 backdrop-blur-sm" @click="isSettingsModalOpen = false"></div>
       <div class="relative w-full max-w-sm bg-white rounded-[2rem] p-8 shadow-2xl text-center animate-fade-in">
         <h2 class="text-xl font-black text-gray-900 mb-2">修改密碼</h2>
-        <input v-model="newPassword" type="password" placeholder="請輸入新密碼" class="w-full bg-gray-50 border border-gray-100 rounded-xl px-4 py-3.5 text-sm font-bold my-5 focus:border-gray-300 focus:outline-none text-center tracking-widest">
+        <input v-model.trim="newPassword" type="password" placeholder="請輸入新密碼" class="w-full bg-gray-50 border border-gray-100 rounded-xl px-4 py-3.5 text-sm font-bold my-5 focus:border-gray-300 focus:outline-none text-center tracking-widest">
         <div class="flex gap-3">
            <button @click="isSettingsModalOpen=false" class="flex-1 bg-gray-100 text-gray-500 font-black tracking-widest py-3.5 rounded-xl btn-press text-xs">取消</button>
            <button @click="changeMyPassword" :disabled="isProcessing" class="flex-1 bg-gray-900 text-white font-black tracking-widest py-3.5 rounded-xl btn-press disabled:opacity-50 text-xs shadow-lg">
@@ -557,8 +558,8 @@
       <div class="absolute inset-0 bg-gray-900/40 backdrop-blur-sm" @click="isAddUserModalOpen = false"></div>
       <div class="relative w-full max-w-sm bg-white rounded-[2rem] p-8 shadow-2xl animate-fade-in text-center">
         <h2 class="text-xl font-black text-gray-900 mb-6">開通並綁定帳號</h2>
-        <input v-model="newUserForm.empId" type="text" placeholder="登入員編" class="w-full bg-gray-50 border border-gray-100 rounded-xl px-4 py-3.5 mb-3 focus:outline-none focus:border-gray-300 font-bold text-center tracking-widest text-sm">
-        <input v-model="newUserForm.password" type="text" placeholder="預設密碼" class="w-full bg-gray-50 border border-gray-100 rounded-xl px-4 py-3.5 mb-6 focus:outline-none focus:border-gray-300 font-bold text-center tracking-widest text-sm">
+        <input v-model.trim="newUserForm.empId" type="text" placeholder="登入員編" class="w-full bg-gray-50 border border-gray-100 rounded-xl px-4 py-3.5 mb-3 focus:outline-none focus:border-gray-300 font-bold text-center tracking-widest text-sm">
+        <input v-model.trim="newUserForm.password" type="text" placeholder="預設密碼" class="w-full bg-gray-50 border border-gray-100 rounded-xl px-4 py-3.5 mb-6 focus:outline-none focus:border-gray-300 font-bold text-center tracking-widest text-sm">
         <div class="flex gap-3">
            <button @click="isAddUserModalOpen=false" class="flex-1 bg-gray-100 text-gray-500 font-black tracking-widest py-3.5 rounded-xl btn-press text-xs">取消</button>
            <button @click="createUserAccountPro" :disabled="isProcessing" class="flex-1 bg-gray-900 text-yellow-500 font-black tracking-widest py-3.5 rounded-xl btn-press disabled:opacity-50 text-xs shadow-lg">
@@ -660,7 +661,7 @@
   </script>
 
   <script>
-    const { createApp, ref, reactive, computed, nextTick } = Vue;
+    const { createApp, ref, reactive, computed, nextTick, onMounted } = Vue;
 
     const OrgNode = {
       name: 'OrgNode',
@@ -1271,8 +1272,7 @@
            return '潛在客戶';
         };
 
-        // 🌟 新增：讓 PWA 載入時觸發 Service Worker 註冊
-        Vue.onMounted(() => {
+        onMounted(() => {
           if ('serviceWorker' in navigator) {
             navigator.serviceWorker.register('./sw.js').then(reg => {
               console.log('SW registered:', reg);
