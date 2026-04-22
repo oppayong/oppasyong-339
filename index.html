@@ -8,6 +8,12 @@
   <meta http-equiv="Expires" content="0">
   <title>純仁團隊 | 鎔安組業務系統</title>
   
+  <link rel="manifest" href="./manifest.json">
+  <meta name="theme-color" content="#fafafa">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="apple-mobile-web-app-title" content="純仁團隊">
+  <link rel="apple-touch-icon" href="./pure_logo-Photoroom.png">
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -49,7 +55,6 @@
     }
     .premium-gold-border:hover::after { opacity: 1; }
 
-    /* 🌟 新增：時間軸線條樣式 */
     .timeline-line::before {
       content: "";
       position: absolute;
@@ -161,8 +166,8 @@
 
         <div v-if="searchQuery" class="animate-fade-in space-y-3">
            <p class="text-[11px] font-bold text-gray-400 px-2 tracking-widest uppercase">🔍 搜尋結果 ({{ searchResults.length }} 筆)</p>
-           <div v-for="act in searchResults" :key="act.id" @click="openActivityModalForEdit(act)" class="glass-card p-5 rounded-2xl btn-press cursor-pointer relative overflow-hidden">
-              <div class="absolute left-0 top-0 bottom-0 w-1" :class="getTypeColor(act.activity_type)"></div>
+           <div v-for="act in searchResults" :key="act.id" @click="openActivityModalForEdit(act)" class="bg-white p-5 rounded-2xl shadow-sm border border-gray-200 btn-press cursor-pointer relative overflow-hidden">
+              <div class="absolute left-0 top-0 bottom-0 w-1.5" :class="getTypeColor(act.activity_type)"></div>
               <div class="flex justify-between items-start mb-2 pl-2">
                  <div>
                     <span class="text-sm font-black text-gray-900">{{ act.client_name }}</span>
@@ -261,6 +266,7 @@
                     <div class="absolute left-0 top-0 bottom-0 w-1.5" :class="getTypeColor(getActivity(time).activity_type)"></div>
                     <div class="pl-2.5">
                       <p class="text-[15px] font-black text-gray-900 break-words mb-0.5">{{ getActivity(time).client_name }}</p>
+                      
                       <div class="flex gap-2 items-center">
                          <span class="text-[10px] font-bold text-gray-500">{{ getActivity(time).activity_type }}</span>
                          <button @click.stop="openCustomerProfile(getActivity(time).client_name)" class="text-[9px] font-black text-yellow-600 z-20 relative">看履歷 ➜</button>
@@ -698,7 +704,6 @@
             toastTimeout = setTimeout(() => { toast.show = false; }, 2500);
         };
 
-        // 🌟 客戶 360 相關變數
         const isCustomerProfileOpen = ref(false);
         const profileData = reactive({ name: '', history: [] });
         let chartInstance = null;
@@ -922,7 +927,6 @@
 
         const isActivityModalOpen = ref(false);
         const selectedTime = ref('');
-        // 🌟 這裡完美保留了你的 duration 屬性！
         const formData = reactive({ id: null, clientName: '', type: '約訪', notes: '', activity_date: '', duration: 1 });
         
         const getActivity = (time) => currentDayActivities.value.find(a => a.start_time === time);
@@ -962,13 +966,11 @@
           if (formData.type === '增員活動') rScore = 1; if (formData.type === '增員約訪') rScore = 2; if (formData.type === '增員面談') rScore = 4; 
           if (formData.type === '其他') { sScore = 0; rScore = 0; } 
 
-          // 🌟 這裡也完美保留了多時段填充邏輯！
           const startHour = parseInt(selectedTime.value.split(':')[0]);
           const duration = parseInt(formData.duration || 1);
-          const maxHour = Math.min(startHour + duration - 1, 23); // 最多只到 23:00
+          const maxHour = Math.min(startHour + duration - 1, 23); 
 
           try {
-             // 迴圈寫入所選的時數
              for (let h = startHour; h <= maxHour; h++) {
                 const timeStr = `${h.toString().padStart(2, '0')}:00`;
                 let currentId = null;
@@ -1215,17 +1217,14 @@
           }, 300); 
         };
 
-        // 🌟 360 度履歷核心邏輯
         const openCustomerProfile = (name) => {
            profileData.name = name;
-           // 從跨庫資料中抓出所有該客戶的歷史紀錄，並依日期排序 (近到遠)
            profileData.history = allActivitiesData.value
               .filter(a => a.client_name === name)
               .sort((a, b) => new Date(b.activity_date) - new Date(a.activity_date));
            
            isCustomerProfileOpen.value = true;
            
-           // 確保 Modal 渲染完成後再畫圖表
            nextTick(() => {
               renderCustomerChart();
            });
@@ -1236,7 +1235,6 @@
            if (!ctx) return;
            if (chartInstance) chartInstance.destroy();
 
-           // 統計各類型次數
            const stats = {};
            profileData.history.forEach(h => {
               stats[h.activity_type] = (stats[h.activity_type] || 0) + 1;
@@ -1248,7 +1246,6 @@
                  labels: Object.keys(stats),
                  datasets: [{
                     data: Object.values(stats),
-                    // 使用尊爵配色
                     backgroundColor: ['#111827', '#D4AF37', '#9CA3AF', '#3B82F6', '#10B981', '#F59E0B'],
                     borderWidth: 0,
                     hoverOffset: 10
@@ -1273,6 +1270,15 @@
            if (types.includes('增員面談')) return '準增員對象';
            return '潛在客戶';
         };
+
+        // 🌟 新增：讓 PWA 載入時觸發 Service Worker 註冊
+        Vue.onMounted(() => {
+          if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('./sw.js').then(reg => {
+              console.log('SW registered:', reg);
+            }).catch(err => console.log('SW registration failed:', err));
+          }
+        });
 
         return { 
           isProcessing, toast, isWelcomeScreen, welcomeUser, currentUser, viewingEmpId, teamMembers, loginForm, loginError, isLoading, doLogin, getViewingName, getUserStatus, loadActivitiesData, refreshData,
