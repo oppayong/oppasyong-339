@@ -1,9 +1,7 @@
 import { createClient } from '@supabase/supabase-js';
 
 export default async function handler(req, res) {
-  if (req.method === 'GET') {
-    return res.status(200).send('鎔安組 LINE Bot 正常運作中！');
-  }
+  if (req.method === 'GET') return res.status(200).send('鎔安組 LINE Bot 正常運作中！');
 
   const SUPABASE_URL = process.env.SUPABASE_URL;
   const SUPABASE_KEY = process.env.SUPABASE_KEY;
@@ -23,29 +21,65 @@ export default async function handler(req, res) {
         if (userMessage.startsWith('綁定')) {
           const parts = userMessage.split(/\s+/);
           if (parts.length < 3) {
-            replyText = `⚠️ 格式錯誤！\n基於資安防護，綁定時需驗證您的密碼。\n請輸入：「綁定 您的員編 您的密碼」\n（中間請用空格隔開）`;
+            replyText = `⚠️ 格式錯誤！\n請輸入：「綁定 您的員編 您的密碼」\n（中間請用空格隔開）`;
           } else {
             const empId = parts[1];
             const password = parts[2];
-            
             const { data: user } = await supabase.from('team_users').select('*').eq('emp_id', empId).single();
             if (!user) {
-              replyText = `❌ 找不到此員編。請確認輸入是否正確。`;
+              replyText = `❌ 找不到此員編。`;
             } else if (user.password !== password) {
-              replyText = `❌ 密碼錯誤！請確認您輸入的密碼是否正確，以保護客戶資料安全。`;
+              replyText = `❌ 密碼錯誤！`;
             } else if (user.password === '000000') {
-              replyText = `🔒 【資安阻擋】\n您目前使用的是「預設密碼(000000)」。\n為了保護客戶名單不被盜用，請先至 339 戰情室網頁版「修改個人密碼」後，再回 LINE 進行綁定！`;
+              replyText = `🔒 【資安阻擋】\n您使用的是預設密碼，請先至網頁版修改密碼後再綁定！`;
             } else {
               await supabase.from('team_users').update({ line_user_id: lineUserId }).eq('emp_id', empId);
-              replyText = `🎉 綁定成功！歡迎回來，${user.name} ${user.role === 'admin' ? '主管' : '夥伴'}。\n未來的行程與追蹤提醒將會發送到這裡。`;
+              replyText = `🎉 綁定成功！歡迎回來，${user.name} ${user.role === 'admin' ? '主管' : '夥伴'}。`;
             }
           }
         } 
         else if (userMessage.startsWith('更新進度：')) {
-          replyText = `✅ 收到！已為您記錄此進度。鎔安組系統會持續與您一起追蹤！💪`;
+          // 🎯 擷取按鈕回傳的狀態，並寫入資料庫
+          const match = userMessage.match(/^更新進度：(.*?) (已增加臨時帳號|確認不增加|需要繼續追蹤)$/);
+          
+          if (match) {
+            const clientName = match[1].trim();
+            const status = match[2];
+            
+            // 查出這個 LINE ID 是誰的
+            const { data: userRecord } = await supabase.from('team_users').select('emp_id').eq('line_user_id', lineUserId).single();
+            
+            if (userRecord) {
+              const now = new Date();
+              const taipeiTime = new Date(now.getTime() + (8 * 60 * 60 * 1000));
+              const todayStr = taipeiTime.toISOString().split('T')[0];
+              const timeStr = taipeiTime.toISOString().split('T')[1].substring(0, 5);
+              
+              // 在資料庫留下一筆「增員追蹤」紀錄
+              await supabase.from('team_activities').insert({
+                emp_id: userRecord.emp_id,
+                activity_date: todayStr,
+                start_time: timeStr,
+                activity_type: '增員追蹤',
+                client_name: clientName,
+                notes: status,
+                sales_score: 0,
+                recruit_score: 0
+              });
+            }
+            
+            replyText = `✅ 已為您記錄「${clientName}」的進度為：${status}！`;
+            if (status === '需要繼續追蹤') {
+               replyText += `\n系統將在30天內持續為您溫馨提醒。💪`;
+            } else {
+               replyText += `\n此名單已結案，不再跳出每日提醒。🎉`;
+            }
+          } else {
+            replyText = `✅ 收到！已為您記錄此進度。`;
+          }
         }
         else {
-          replyText = '您好！我是鎔安組戰情管家。\n若尚未綁定，請輸入：「綁定 您的員編 您的密碼」（中間需有空格）來啟用自動化提醒服務。';
+          replyText = '您好！我是鎔安組戰情管家。\n若尚未綁定，請輸入：「綁定 您的員編 您的密碼」。';
         }
 
         await fetch('https://api.line.me/v2/bot/message/reply', {
