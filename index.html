@@ -20,7 +20,6 @@
     .glass-nav { background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(25px); border-top: 1px solid rgba(0,0,0,0.03); }
     .glass-card { background: rgba(255, 255, 255, 0.98); box-shadow: 0 10px 40px rgba(0,0,0,0.03); border: 1px solid rgba(0,0,0,0.02); }
     
-    /* 動畫優化 */
     @keyframes slideUp { from { transform: translateY(100%); opacity: 0;} to { transform: translateY(0); opacity: 1;} }
     .animate-slide-up { animation: slideUp 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
     @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
@@ -28,9 +27,26 @@
     @keyframes slideDownToast { 0% { transform: translate(-50%, -100%); opacity: 0; } 100% { transform: translate(-50%, 0); opacity: 1; } }
     .animate-toast { animation: slideDownToast 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
 
-    /* 🌟 極致按鈕確認感 */
     .btn-press { transition: all 0.15s cubic-bezier(0.4, 0, 0.2, 1); }
     .btn-press:active { transform: scale(0.94); opacity: 0.8; }
+
+    .premium-gold-border { position: relative; }
+    .premium-gold-border::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      border-radius: 1rem;
+      padding: 1.5px;
+      background: linear-gradient(135deg, #FBE18D 0%, #D4AF37 40%, #FFF2CD 60%, #D4AF37 100%);
+      -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+      -webkit-mask-composite: xor;
+      mask-composite: exclude;
+      pointer-events: none;
+      opacity: 0.85;
+      transition: opacity 0.3s ease;
+      z-index: 10;
+    }
+    .premium-gold-border:hover::after { opacity: 1; }
 
     input[type="date"]::-webkit-calendar-picker-indicator { position: absolute; top: 0; left: 0; right: 0; bottom: 0; width: auto; height: auto; color: transparent; background: transparent; cursor: pointer; }
     
@@ -113,7 +129,6 @@
       </div>
 
       <div v-show="currentTab === '339'" class="p-5 pt-24 pb-24 max-w-md mx-auto">
-        
         <div v-if="currentUser.role === 'admin'" class="mb-5 flex items-center justify-between bg-white border border-gray-100 p-3 rounded-2xl shadow-sm">
           <span class="text-[11px] font-bold tracking-widest text-gray-500 uppercase ml-2">🛡️ 主管透視</span>
           <select v-model="viewingEmpId" @change="loadActivitiesData" class="bg-gray-50 border border-gray-200 text-gray-800 text-xs font-bold rounded-xl px-3 py-2 outline-none">
@@ -134,8 +149,8 @@
 
         <div v-if="searchQuery" class="animate-fade-in space-y-3">
            <p class="text-[11px] font-bold text-gray-400 px-2 tracking-widest uppercase">🔍 搜尋結果 ({{ searchResults.length }} 筆)</p>
-           <div v-for="act in searchResults" :key="act.id" @click="openActivityModalForEdit(act)" class="bg-white p-5 rounded-2xl shadow-sm border border-gray-200 btn-press cursor-pointer relative overflow-hidden">
-              <div class="absolute left-0 top-0 bottom-0 w-1.5" :class="getTypeColor(act.activity_type)"></div>
+           <div v-for="act in searchResults" :key="act.id" @click="openActivityModalForEdit(act)" class="glass-card p-5 rounded-2xl btn-press cursor-pointer relative overflow-hidden">
+              <div class="absolute left-0 top-0 bottom-0 w-1" :class="getTypeColor(act.activity_type)"></div>
               <div class="flex justify-between items-start mb-2 pl-2">
                  <div>
                     <span class="text-sm font-black text-gray-900">{{ act.client_name }}</span>
@@ -223,11 +238,11 @@
             <div class="space-y-4 relative pb-8">
               <div class="absolute left-[3.5rem] top-4 bottom-4 w-[1px] bg-gray-200 -z-10"></div>
               
-              <div v-for="time in timeSlots" :key="time" @click="openActivityModal(time)" class="flex bg-white rounded-2xl shadow-[0_3px_12px_-4px_rgba(0,0,0,0.06)] border border-gray-200 btn-press cursor-pointer overflow-hidden group">
-                <div class="w-24 flex items-center justify-center py-5 bg-gray-50/80 border-r border-gray-100">
+              <div v-for="time in timeSlots" :key="time" @click="openActivityModal(time)" class="flex bg-white rounded-2xl shadow-[0_4px_20px_-5px_rgba(212,175,55,0.15)] btn-press cursor-pointer overflow-hidden group premium-gold-border">
+                <div class="w-24 flex items-center justify-center py-5 bg-gray-50/80 border-r border-gray-100 relative z-10">
                   <span class="text-[13px] font-black text-gray-800">{{ time }}</span>
                 </div>
-                <div class="flex-1 p-4 flex flex-col justify-center min-h-[5.5rem] relative">
+                <div class="flex-1 p-4 flex flex-col justify-center min-h-[5.5rem] relative z-10">
                   <template v-if="getActivity(time)">
                     <div class="absolute left-0 top-0 bottom-0 w-1.5" :class="getTypeColor(getActivity(time).activity_type)"></div>
                     <div class="pl-2.5">
@@ -257,7 +272,7 @@
           </div>
           <div class="flex gap-2">
             <button v-if="currentUser.role === 'admin'" @click="isAccountManagerOpen = true" class="flex items-center gap-1.5 bg-gray-900 text-yellow-500 px-3.5 py-2.5 rounded-xl shadow-md btn-press">
-              <span class="text-[11px] font-black tracking-widest uppercase">👥 帳號大廳</span>
+              <span class="text-[10px] font-bold tracking-wide">👥 帳號大廳</span>
             </button>
             <button @click="exportOrgChart" class="flex items-center gap-1.5 bg-white border border-gray-200 text-gray-800 px-3.5 py-2.5 rounded-xl shadow-sm btn-press">
               <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
@@ -308,8 +323,22 @@
           <button @click="isActivityModalOpen = false" class="p-2 bg-gray-50 text-gray-400 rounded-full btn-press"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12"></path></svg></button>
         </div>
         <div class="overflow-y-auto p-6 space-y-5">
-          <div><label class="block text-[10px] font-bold text-gray-400 mb-2 uppercase tracking-widest">對象姓名</label><input v-model="formData.clientName" type="text" placeholder="輸入客戶..." class="w-full bg-gray-50 border border-gray-100 rounded-xl px-4 py-3.5 text-sm font-bold focus:outline-none focus:border-gray-300 transition-colors"></div>
-          <div><label class="block text-[10px] font-bold text-gray-400 mb-2 uppercase tracking-widest">活動類型</label>
+          <div class="flex gap-3">
+             <div class="flex-1">
+                <label class="block text-[10px] font-bold text-gray-400 mb-2 uppercase tracking-widest">對象姓名</label>
+                <input v-model="formData.clientName" type="text" placeholder="輸入客戶..." class="w-full bg-gray-50 border border-gray-100 rounded-xl px-4 py-3.5 text-sm font-bold focus:outline-none focus:border-gray-300 transition-colors">
+             </div>
+             <div class="w-24">
+                <label class="block text-[10px] font-bold text-gray-400 mb-2 uppercase tracking-widest">佔用時數</label>
+                <select v-model="formData.duration" class="w-full bg-gray-50 border border-gray-100 rounded-xl px-3 py-3.5 text-sm font-bold focus:outline-none focus:border-gray-300 transition-colors appearance-none text-center">
+                   <option value="1">1 小時</option>
+                   <option value="2">2 小時</option>
+                   <option value="3">3 小時</option>
+                   <option value="4">4 小時</option>
+                </select>
+             </div>
+          </div>
+          <div><label class="block text-[10px] font-bold text-gray-400 mb-2 uppercase tracking-widest">活動類型 (自動雲端計分)</label>
             <div class="flex flex-wrap gap-2">
               <button v-for="type in activityTypes" :key="type" @click="formData.type = type" class="px-3.5 py-2 rounded-xl text-[11px] font-black tracking-wider transition-all border btn-press" :class="formData.type === type ? 'bg-gray-900 text-yellow-500 border-gray-900 shadow-md' : 'bg-white border-gray-200 text-gray-500 hover:border-gray-300'">{{ type }}</button>
             </div>
@@ -568,13 +597,11 @@
       props: ['node', 'isAdmin'],
       setup() {
         const getColor = (status) => {
-          // 🌟 組織圖職階專屬跳色
           if (status.includes('區經理')) return { topBar: 'bg-gradient-to-r from-yellow-600 to-yellow-400', text: 'text-yellow-500', bg: 'bg-gray-800 text-yellow-400', bgCard: 'bg-gray-900 border-gray-800', name: 'text-white' };
           if (status.includes('襄理')) return { topBar: 'bg-indigo-500', text: 'text-indigo-600', bg: 'bg-indigo-50 text-indigo-700', bgCard: 'bg-white border-indigo-200', name: 'text-indigo-950' };
           if (status.includes('主任')) return { topBar: 'bg-emerald-500', text: 'text-emerald-600', bg: 'bg-emerald-50 text-emerald-700', bgCard: 'bg-white border-emerald-200', name: 'text-emerald-950' };
           if (status.includes('代表')) return { topBar: 'bg-blue-500', text: 'text-blue-600', bg: 'bg-blue-50 text-blue-700', bgCard: 'bg-white border-blue-200', name: 'text-blue-950' };
           
-          // 未登錄/考試中/臨時帳號 - 保持灰色系
           return { topBar: 'bg-gray-300', text: 'text-gray-400', bg: 'bg-gray-200/50 text-gray-600', bgCard: 'bg-gray-50 border-gray-200', name: 'text-gray-500' };
         };
         return { getColor };
@@ -644,7 +671,11 @@
         const searchQuery = ref('');
 
         const doLogin = async () => {
-          if (!loginForm.empId || !loginForm.password) { loginError.value = '請輸入帳號與密碼'; return; }
+          if (!loginForm.empId || !loginForm.password) { 
+             loginError.value = '請輸入帳號與密碼'; 
+             showToast('請輸入帳號與密碼', 'error');
+             return; 
+          }
           isLoading.value = true; loginError.value = '';
           try {
             const userData = await secureFetch('login', {}, false);
@@ -663,7 +694,10 @@
                showToast('登入成功', 'success');
             }, 1800);
             
-          } catch (e) { loginError.value = e.message; }
+          } catch (e) { 
+             loginError.value = e.message; 
+             showToast(e.message || '登入失敗，請檢查帳號密碼', 'error');
+          }
           isLoading.value = false;
         };
 
@@ -818,15 +852,19 @@
 
         const isActivityModalOpen = ref(false);
         const selectedTime = ref('');
-        const formData = reactive({ id: null, clientName: '', type: '約訪', notes: '', activity_date: '' });
+        // 🌟 新增 duration 屬性，預設為 1 小時
+        const formData = reactive({ id: null, clientName: '', type: '約訪', notes: '', activity_date: '', duration: 1 });
         
         const getActivity = (time) => currentDayActivities.value.find(a => a.start_time === time);
 
         const openActivityModal = (time) => {
           if(viewingEmpId.value === 'ALL') return; 
           selectedTime.value = time; const existing = getActivity(time);
-          if (existing) { formData.id = existing.id; formData.clientName = existing.client_name; formData.type = existing.activity_type; formData.notes = existing.notes; formData.activity_date = existing.activity_date; } 
-          else { formData.id = null; formData.clientName = ''; formData.type = '約訪'; formData.notes = ''; formData.activity_date = currentDate.value;}
+          if (existing) { 
+             formData.id = existing.id; formData.clientName = existing.client_name; formData.type = existing.activity_type; formData.notes = existing.notes; formData.activity_date = existing.activity_date; formData.duration = 1;
+          } else { 
+             formData.id = null; formData.clientName = ''; formData.type = '約訪'; formData.notes = ''; formData.activity_date = currentDate.value; formData.duration = 1;
+          }
           isActivityModalOpen.value = true;
         };
 
@@ -842,6 +880,7 @@
             formData.type = act.activity_type;
             formData.notes = act.notes;
             formData.activity_date = act.activity_date;
+            formData.duration = 1;
             isActivityModalOpen.value = true;
             searchQuery.value = ''; 
         };
@@ -853,20 +892,48 @@
           if (formData.type === '增員活動') rScore = 1; if (formData.type === '增員約訪') rScore = 2; if (formData.type === '增員面談') rScore = 4; 
           if (formData.type === '其他') { sScore = 0; rScore = 0; }
 
-          const payload = { emp_id: viewingEmpId.value, activity_date: formData.activity_date || currentDate.value, start_time: selectedTime.value, activity_type: formData.type, client_name: formData.clientName, notes: formData.notes, sales_score: sScore, recruit_score: rScore };
-          if (formData.id) payload.id = formData.id;
-          
+          // 🌟 計算多時段填充邏輯
+          const startHour = parseInt(selectedTime.value.split(':')[0]);
+          const duration = parseInt(formData.duration || 1);
+          const maxHour = Math.min(startHour + duration - 1, 23); // 最多只到 23:00
+
           try {
-             await secureFetch('save_activity', { activityPayload: payload });
+             // 迴圈寫入所選的時數
+             for (let h = startHour; h <= maxHour; h++) {
+                const timeStr = `${h.toString().padStart(2, '0')}:00`;
+                let currentId = null;
+                
+                if (h === startHour && formData.id) {
+                    currentId = formData.id;
+                } else {
+                    const existingAct = currentDayActivities.value.find(a => a.start_time === timeStr);
+                    if (existingAct) currentId = existingAct.id;
+                }
+
+                const payload = { 
+                   emp_id: viewingEmpId.value, 
+                   activity_date: formData.activity_date || currentDate.value, 
+                   start_time: timeStr, 
+                   activity_type: formData.type, 
+                   client_name: formData.clientName, 
+                   notes: formData.notes, 
+                   sales_score: sScore, 
+                   recruit_score: rScore 
+                };
+                if (currentId) payload.id = currentId;
+                
+                await secureFetch('save_activity', { activityPayload: payload }, true);
+             }
+             
              await loadActivitiesData(false);
              isActivityModalOpen.value = false;
-             showToast('行程已儲存', 'success');
+             showToast('✅ 行程已儲存', 'success');
           } catch(e) { showToast('儲存失敗', 'error'); }
         };
         
         const deleteActivity = async () => { 
            if(formData.id) { 
-              try { await secureFetch('delete_activity', { id: formData.id }); await loadActivitiesData(false); showToast('已刪除', 'success'); } catch(e) {}
+              try { await secureFetch('delete_activity', { id: formData.id }); await loadActivitiesData(false); showToast('✅ 已刪除', 'success'); } catch(e) {}
            } 
            isActivityModalOpen.value = false; 
         };
