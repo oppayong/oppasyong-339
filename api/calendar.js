@@ -23,11 +23,17 @@ export default async function handler(req, res) {
     // 如果資料庫已經刪除到沒資料了，回傳一個空的行事曆結構，手機就會把行程清空
     let icsString = `BEGIN:VCALENDAR\r\nVERSION:2.0\r\nPRODID:-//RongAn//339WarRoom//TW\r\nCALSCALE:GREGORIAN\r\nMETHOD:PUBLISH\r\nX-WR-CALNAME:南山339戰情室\r\nX-WR-TIMEZONE:Asia/Taipei\r\n`;
 
-    if (activities && activities.length > 0) {
-      activities.forEach((act) => {
+    // 🌟 核心防呆升級：把 LINE 自動生成的「增員追蹤」與「準增員名單」過濾掉，不讓它們塞爆 iPhone！
+    const validActivities = activities ? activities.filter(act => 
+      act.activity_type !== '增員追蹤' && act.activity_type !== '準增員名單'
+    ) : [];
+
+    if (validActivities.length > 0) {
+      validActivities.forEach((act) => {
         const datePart = act.activity_date.replace(/-/g, ''); 
         const startStr = act.start_time.replace(':', '') + '00'; 
-        let hour = parseInt(act.start_time.split(':')[0]) + 1; 
+        let hour = parseInt(act.start_time.split(':')[0]) + 1;
+        if (hour > 23) hour = 23; // 防止跨日錯誤
         const endStr = `${hour.toString().padStart(2, '0')}0000`;
         
         let eventPrefix = '';
