@@ -1,4 +1,5 @@
 import { createClient } from '@supabase/supabase-js';
+import { createHmac, timingSafeEqual } from 'crypto';
 
 export default async function handler(req, res) {
   // 🔥 核心修正：強制要求所有訂閱設備（iPhone/Mac）不准快取，確保每次抓取都是最新狀態
@@ -7,7 +8,14 @@ export default async function handler(req, res) {
   res.setHeader('Expires', '0');
 
   const empId = req.query.key;
-  if (!empId) return res.status(401).send('請在網址後方加上 ?key=您的員編');
+  const token = req.query.token;
+  const secret = process.env.SUPABASE_KEY;
+  if (typeof empId !== 'string' || typeof token !== 'string') return res.status(401).send('訂閱網址無效，請重新登入系統取得個人訂閱網址');
+  if (!secret) return res.status(500).send('Server configuration error');
+  const expectedToken = createHmac('sha256', secret).update(empId).digest('hex');
+  const supplied = Buffer.from(token);
+  const expected = Buffer.from(expectedToken);
+  if (supplied.length !== expected.length || !timingSafeEqual(supplied, expected)) return res.status(401).send('訂閱憑證無效，請重新登入系統取得個人訂閱網址');
 
   const SUPABASE_URL = process.env.SUPABASE_URL;
   const SUPABASE_KEY = process.env.SUPABASE_KEY;
