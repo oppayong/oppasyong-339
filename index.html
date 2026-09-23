@@ -465,6 +465,7 @@
            const mapped = allCustomersData.value.filter(c => c.next_contact_date && c.next_contact_date < todayStr);
            return mapped.sort((a,b) => new Date(a.next_contact_date) - new Date(b.next_contact_date));
         });
+        const displayedContacts = computed(() => contactFilter.value === 'overdue' ? overdueContacts.value : todayContacts.value);
         const isScheduleContactOpen = ref(false);
         const scheduleContactForm = reactive({ customerId: '', customerName: '', nextDate: '' });
         const openScheduleContact = (customer) => {
