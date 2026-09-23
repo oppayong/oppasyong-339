@@ -99,7 +99,7 @@
               <div class="absolute left-0 top-0 bottom-0 w-1.5" :class="getTypeColor(act.activity_type)"></div>
               <div class="flex justify-between items-start mb-2 pl-2"><div><span class="text-sm font-black text-gray-900">{{ act.client_name }}</span><span class="inline-block ml-2 text-[10px] font-bold text-gray-500">{{ act.activity_type }}</span></div><span class="text-[10px] font-bold text-gray-400">{{ act.activity_date }}</span></div>
               <p v-if="act.notes" class="text-xs text-gray-500 mt-1 line-clamp-2 leading-relaxed pl-2">{{ act.notes }}</p>
-              <div class="mt-3 flex justify-between items-center border-t border-gray-50 pt-2.5"><button @click.stop="openCustomerProfile(act.client_name)" class="text-[10px] font-black text-yellow-600 bg-yellow-50 px-2 py-1 rounded-lg">📋 360 互動履歷</button><span v-if="viewingEmpId === 'ALL'" class="text-[10px] text-gray-400 font-bold">👤 {{ getProspectOwnerName(act.emp_id) }}</span></div>
+              <div class="mt-3 flex justify-between items-center border-t border-gray-50 pt-2.5"><button @click.stop="openCustomerProfile(act.client_name, act.customer_id)" class="text-[10px] font-black text-yellow-600 bg-yellow-50 px-2 py-1 rounded-lg">📋 360 互動履歷</button><span v-if="viewingEmpId === 'ALL'" class="text-[10px] text-gray-400 font-bold">👤 {{ getProspectOwnerName(act.emp_id) }}</span></div>
            </div>
         </div>
 
@@ -131,7 +131,7 @@
               <div v-for="time in timeSlots" :key="time" @click="openActivityModal(time)" class="flex bg-white rounded-2xl shadow-[0_4px_20px_-5px_rgba(212,175,55,0.15)] btn-press cursor-pointer overflow-hidden group premium-gold-border">
                 <div class="w-24 flex items-center justify-center py-5 bg-gray-50/80 border-r border-gray-100 relative z-10"><span class="text-[13px] font-black text-gray-800">{{ time }}</span></div>
                 <div class="flex-1 p-4 flex flex-col justify-center min-h-[5.5rem] relative z-10">
-                  <template v-if="getActivity(time)"><div class="absolute left-0 top-0 bottom-0 w-1.5" :class="getTypeColor(getActivity(time).activity_type)"></div><div class="pl-2.5"><p class="text-[15px] font-black text-gray-900 break-words mb-0.5">{{ getActivity(time).client_name }}</p><div class="flex gap-2 items-center"><span class="text-[10px] font-bold text-gray-500">{{ getActivity(time).activity_type }}</span><button @click.stop="openCustomerProfile(getActivity(time).client_name)" class="text-[9px] font-black text-yellow-600 z-20 relative">看履歷 ➜</button></div><p v-if="getActivity(time).notes" class="text-[11px] text-gray-500 mt-1.5 break-words line-clamp-2 leading-relaxed font-medium">{{ getActivity(time).notes }}</p></div></template>
+                  <template v-if="getActivity(time)"><div class="absolute left-0 top-0 bottom-0 w-1.5" :class="getTypeColor(getActivity(time).activity_type)"></div><div class="pl-2.5"><p class="text-[15px] font-black text-gray-900 break-words mb-0.5">{{ getActivity(time).client_name }}</p><div class="flex gap-2 items-center"><span class="text-[10px] font-bold text-gray-500">{{ getActivity(time).activity_type }}</span><button @click.stop="openCustomerProfile(getActivity(time).client_name, getActivity(time).customer_id)" class="text-[9px] font-black text-yellow-600 z-20 relative">看履歷 ➜</button></div><p v-if="getActivity(time).notes" class="text-[11px] text-gray-500 mt-1.5 break-words line-clamp-2 leading-relaxed font-medium">{{ getActivity(time).notes }}</p></div></template>
                   <template v-else><div class="pl-2.5"><span class="text-[11px] text-gray-300 font-bold tracking-widest uppercase">+ 新增行程</span></div></template>
                 </div>
               </div>
@@ -148,7 +148,7 @@
          </div>
          
          <div class="space-y-3">
-            <div v-for="c in filteredCustomers" :key="c.id" @click="openCustomerProfile(c.name)" class="glass-card p-4 rounded-2xl btn-press cursor-pointer relative overflow-hidden border-l-4" :class="c.level==='A級客戶'?'border-yellow-500':(c.level==='B級客戶'?'border-blue-400':'border-gray-300')">
+            <div v-for="c in filteredCustomers" :key="c.id" @click="openCustomerProfile(c.name, c.id)" class="glass-card p-4 rounded-2xl btn-press cursor-pointer relative overflow-hidden border-l-4" :class="c.level==='A級客戶'?'border-yellow-500':(c.level==='B級客戶'?'border-blue-400':'border-gray-300')">
                <div class="flex justify-between items-start mb-2">
                   <div class="flex items-center gap-2"><span class="text-[15px] font-black text-gray-900">{{ c.name }}</span><span class="text-[9px] bg-gray-100 text-gray-500 px-2 py-0.5 rounded-md font-bold">{{ c.level }}</span></div>
                   <span class="text-[10px] text-yellow-700 bg-yellow-50 px-2 py-0.5 rounded font-black">{{ c.status }}</span>
@@ -165,7 +165,7 @@
       <div v-show="currentTab === 'contacts'" class="px-5 pb-24 max-w-md mx-auto">
          <div class="mb-6">
             <h1 class="text-2xl font-black text-gray-900 tracking-tight">今日定聯</h1>
-            <p class="text-[10px] font-bold text-gray-400 mt-1 uppercase tracking-widest">客戶關係追蹤引擎</p>
+            <p class="text-[10px] font-bold text-gray-400 mt-1 uppercase tracking-widest">客戶關係追蹤引擎</p><button @click="openAddCustomerModal(null, true)" class="shrink-0 bg-gray-900 text-yellow-500 px-3.5 py-2.5 rounded-xl shadow-md text-[10px] font-black tracking-widest btn-press">＋ 新增並定聯</button>
          </div>
          <div class="flex gap-2 mb-4 overflow-x-auto pb-2">
             <button @click="contactFilter = 'today'" class="px-4 py-2 rounded-full text-[11px] font-black tracking-widest whitespace-nowrap btn-press shadow-sm" :class="contactFilter === 'today' ? 'bg-gray-900 text-white' : 'bg-white text-gray-500 border border-gray-200'">今日需聯絡 ({{ todayContacts.length }})</button>
@@ -179,7 +179,7 @@
                   <span class="text-[10px] font-bold" :class="contactFilter === 'overdue' ? 'text-red-500' : 'text-blue-500'">排定: {{ c.next_contact_date }}</span>
                </div>
                <div class="pl-2 flex gap-2 mt-3">
-                  <button @click="openCustomerProfile(c.name)" class="flex-1 bg-gray-50 text-gray-600 text-[10px] font-black py-2 rounded-xl btn-press border border-gray-100">看履歷</button>
+                  <button @click="openCustomerProfile(c.name, c.id)" class="flex-1 bg-gray-50 text-gray-600 text-[10px] font-black py-2 rounded-xl btn-press border border-gray-100">看履歷</button>
                   <button @click="openContactModal(c)" class="flex-1 bg-gray-900 text-yellow-500 text-[10px] font-black py-2 rounded-xl shadow-md btn-press">📞 完成定聯</button>
                </div>
             </div>
@@ -213,10 +213,10 @@
     <div v-if="isActivityModalOpen" class="fixed inset-0 z-[60] flex items-end justify-center"><div class="absolute inset-0 bg-gray-900/40 backdrop-blur-sm" @click="isActivityModalOpen = false"></div><div class="relative w-full max-w-md bg-white rounded-t-[2rem] shadow-2xl animate-slide-up flex flex-col max-h-[90vh]"><div class="shrink-0 p-6 pb-4 flex justify-between items-center border-b border-gray-50"><div><h2 class="text-xl font-black text-gray-900 mb-1">記錄活動</h2><p class="text-[11px] font-bold text-gray-400 tracking-widest">{{ formData.activity_date || formattedDate }} | {{ selectedTime }}</p></div><button @click="isActivityModalOpen = false" class="p-2 bg-gray-50 text-gray-400 rounded-full btn-press"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12"></path></svg></button></div><div class="overflow-y-auto p-6 space-y-5"><div class="flex gap-3"><div class="flex-1"><label class="block text-[10px] font-bold text-gray-400 mb-2 uppercase tracking-widest">對象姓名 (將自動建檔 CRM)</label><input v-model.trim="formData.clientName" type="text" placeholder="輸入客戶..." class="w-full bg-gray-50 border border-gray-100 rounded-xl px-4 py-3.5 text-sm font-bold focus:outline-none focus:border-gray-300 transition-colors"></div><div class="w-24"><label class="block text-[10px] font-bold text-gray-400 mb-2 uppercase tracking-widest">佔用時數</label><select v-model="formData.duration" class="w-full bg-gray-50 border border-gray-100 rounded-xl px-3 py-3.5 text-sm font-bold focus:outline-none focus:border-gray-300 transition-colors appearance-none text-center"><option value="1">1 小時</option><option value="2">2 小時</option><option value="3">3 小時</option><option value="4">4 小時</option></select></div></div><div><label class="block text-[10px] font-bold text-gray-400 mb-2 uppercase tracking-widest">活動類型 (自動雲端計分)</label><div class="flex flex-wrap gap-2"><button v-for="type in activityTypes" :key="type" @click="formData.type = type" class="px-3.5 py-2 rounded-xl text-[11px] font-black tracking-wider transition-all border btn-press" :class="formData.type === type ? 'bg-gray-900 text-yellow-500 border-gray-900 shadow-md' : 'bg-white border-gray-200 text-gray-500 hover:border-gray-300'">{{ type }}</button></div></div><div><label class="block text-[10px] font-bold text-gray-400 mb-2 uppercase tracking-widest">備註事項</label><textarea v-model.trim="formData.notes" rows="2" class="w-full bg-gray-50 border border-gray-100 rounded-xl px-4 py-3.5 text-sm focus:outline-none focus:border-gray-300 transition-colors"></textarea></div></div><div class="shrink-0 p-6 pt-2 bg-white rounded-b-[2rem] flex gap-3"><button v-if="formData.id" @click="deleteActivity" :disabled="isProcessing" class="bg-gray-50 text-red-500 font-bold px-5 rounded-xl text-xs disabled:opacity-50 btn-press">刪除</button><button @click="saveActivity" :disabled="isProcessing" class="flex-1 bg-gray-900 text-white font-black tracking-widest py-4 rounded-xl shadow-lg disabled:opacity-50 btn-press">{{ isProcessing ? '儲存中...' : '確認儲存' }}</button></div></div></div>
 
     <!-- ================= 紀錄定聯 Modal ================= -->
-    <div v-if="isContactModalOpen" class="fixed inset-0 z-[160] flex items-end justify-center"><div class="absolute inset-0 bg-gray-900/40 backdrop-blur-sm" @click="isContactModalOpen = false"></div><div class="relative w-full max-w-md bg-white rounded-t-[2rem] shadow-2xl animate-slide-up flex flex-col max-h-[90vh]"><div class="shrink-0 p-6 pb-4 flex justify-between items-center border-b border-gray-50"><div><h2 class="text-xl font-black text-gray-900 mb-1">完成定聯</h2><p class="text-[11px] font-bold text-gray-400 tracking-widest">{{ contactForm.name }}</p></div><button @click="isContactModalOpen = false" class="p-2 bg-gray-50 text-gray-400 rounded-full btn-press"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12"></path></svg></button></div><div class="overflow-y-auto p-6 space-y-5"><div><label class="block text-[10px] font-bold text-gray-400 mb-2 uppercase tracking-widest">聯絡方式</label><select v-model="contactForm.type" class="w-full bg-gray-50 border border-gray-100 rounded-xl px-3 py-3.5 text-sm font-bold"><option>電話</option><option>LINE</option><option>見面</option><option>其他</option></select></div><div><label class="block text-[10px] font-bold text-gray-400 mb-2 uppercase tracking-widest">互動結果</label><select v-model="contactForm.result" class="w-full bg-gray-50 border border-gray-100 rounded-xl px-3 py-3.5 text-sm font-bold"><option>順利/有回應</option><option>未接/未讀</option><option>忙碌/稍後回覆</option><option>約定面談</option></select></div><div><label class="block text-[10px] font-bold text-gray-400 mb-2 uppercase tracking-widest">下次定聯日期</label><input type="date" v-model="contactForm.next_date" class="w-full bg-gray-50 border border-gray-100 rounded-xl px-3 py-3.5 text-sm font-bold"></div><div><label class="block text-[10px] font-bold text-gray-400 mb-2 uppercase tracking-widest">備註細節</label><textarea v-model.trim="contactForm.note" rows="2" class="w-full bg-gray-50 border border-gray-100 rounded-xl px-4 py-3.5 text-sm"></textarea></div></div><div class="shrink-0 p-6 pt-2 bg-white rounded-b-[2rem] flex gap-3"><button @click="saveContact" :disabled="isProcessing" class="flex-1 bg-gray-900 text-yellow-500 font-black tracking-widest py-4 rounded-xl shadow-lg disabled:opacity-50 btn-press">{{ isProcessing ? '儲存中...' : '儲存紀錄' }}</button></div></div></div>
+    <div v-if="isContactModalOpen" class="fixed inset-0 z-[160] flex items-end justify-center"><div class="absolute inset-0 bg-gray-900/40 backdrop-blur-sm" @click="isContactModalOpen = false"></div><div class="relative w-full max-w-md bg-white rounded-t-[2rem] shadow-2xl animate-slide-up flex flex-col max-h-[90vh]"><div class="shrink-0 p-6 pb-4 flex justify-between items-center border-b border-gray-50"><div><h2 class="text-xl font-black text-gray-900 mb-1">完成定聯</h2><p class="text-[11px] font-bold text-gray-400 tracking-widest">{{ contactForm.name }}</p></div><button @click="isContactModalOpen = false" class="p-2 bg-gray-50 text-gray-400 rounded-full btn-press"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12"></path></svg></button></div><div class="overflow-y-auto p-6 space-y-5"><div><label class="block text-[10px] font-bold text-gray-400 mb-2 uppercase tracking-widest">手機號碼（可直接更新）</label><input v-model.trim="contactForm.phone" type="tel" inputmode="tel" autocomplete="tel" placeholder="輸入手機號碼" class="w-full bg-gray-50 border border-gray-100 rounded-xl px-4 py-3.5 text-sm font-bold"></div><div><label class="block text-[10px] font-bold text-gray-400 mb-2 uppercase tracking-widest">聯絡方式</label><select v-model="contactForm.type" class="w-full bg-gray-50 border border-gray-100 rounded-xl px-3 py-3.5 text-sm font-bold"><option>電話</option><option>LINE</option><option>見面</option><option>其他</option></select></div><div><label class="block text-[10px] font-bold text-gray-400 mb-2 uppercase tracking-widest">互動結果</label><select v-model="contactForm.result" class="w-full bg-gray-50 border border-gray-100 rounded-xl px-3 py-3.5 text-sm font-bold"><option>順利/有回應</option><option>未接/未讀</option><option>忙碌/稍後回覆</option><option>約定面談</option></select></div><div><label class="block text-[10px] font-bold text-gray-400 mb-2 uppercase tracking-widest">下次定聯日期</label><input type="date" v-model="contactForm.next_date" class="w-full bg-gray-50 border border-gray-100 rounded-xl px-3 py-3.5 text-sm font-bold"></div><div><label class="block text-[10px] font-bold text-gray-400 mb-2 uppercase tracking-widest">備註細節</label><textarea v-model.trim="contactForm.note" rows="2" class="w-full bg-gray-50 border border-gray-100 rounded-xl px-4 py-3.5 text-sm"></textarea></div></div><div class="shrink-0 p-6 pt-2 bg-white rounded-b-[2rem] flex gap-3"><button @click="saveContact" :disabled="isProcessing" class="flex-1 bg-gray-900 text-yellow-500 font-black tracking-widest py-4 rounded-xl shadow-lg disabled:opacity-50 btn-press">{{ isProcessing ? '儲存中...' : '儲存紀錄' }}</button></div></div></div>
 
     <!-- ================= 新增客戶 Modal ================= -->
-    <div v-if="isAddCustomerModalOpen" class="fixed inset-0 z-[160] flex items-end justify-center"><div class="absolute inset-0 bg-gray-900/40 backdrop-blur-sm" @click="isAddCustomerModalOpen = false"></div><div class="relative w-full max-w-md bg-white rounded-t-[2rem] shadow-2xl animate-slide-up flex flex-col max-h-[90vh]"><div class="shrink-0 p-6 pb-4 flex justify-between items-center border-b border-gray-50"><div><h2 class="text-xl font-black text-gray-900 mb-1">建立新客戶</h2><p class="text-[11px] font-bold text-gray-400 tracking-widest">CRM 主檔</p></div><button @click="isAddCustomerModalOpen = false" class="p-2 bg-gray-50 text-gray-400 rounded-full btn-press"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12"></path></svg></button></div><div class="overflow-y-auto p-6 space-y-4"><div><label class="block text-[10px] font-bold text-gray-400 mb-2 uppercase tracking-widest">姓名*</label><input v-model.trim="customerForm.name" type="text" class="w-full bg-gray-50 border border-gray-100 rounded-xl px-4 py-3.5 text-sm font-bold"></div><div><label class="block text-[10px] font-bold text-gray-400 mb-2 uppercase tracking-widest">手機號碼</label><input v-model.trim="customerForm.phone" type="text" class="w-full bg-gray-50 border border-gray-100 rounded-xl px-4 py-3.5 text-sm font-bold"></div><div class="grid grid-cols-2 gap-3"><div><label class="block text-[10px] font-bold text-gray-400 mb-2 uppercase tracking-widest">客戶等級</label><select v-model="customerForm.level" class="w-full bg-gray-50 border border-gray-100 rounded-xl px-3 py-3 text-sm font-bold"><option>A級客戶</option><option>B級客戶</option><option>C級客戶</option></select></div><div><label class="block text-[10px] font-bold text-gray-400 mb-2 uppercase tracking-widest">狀態</label><select v-model="customerForm.status" class="w-full bg-gray-50 border border-gray-100 rounded-xl px-3 py-3 text-sm font-bold"><option>潛在客戶</option><option>促成中準件</option><option>已成交保戶</option></select></div></div></div><div class="shrink-0 p-6 pt-2 bg-white rounded-b-[2rem] flex gap-3"><button @click="saveNewCustomer" :disabled="isProcessing" class="flex-1 bg-gray-900 text-yellow-500 font-black tracking-widest py-4 rounded-xl shadow-lg disabled:opacity-50 btn-press">{{ isProcessing ? '儲存中...' : '確認建立' }}</button></div></div></div>
+    <div v-if="isAddCustomerModalOpen" class="fixed inset-0 z-[160] flex items-end justify-center"><div class="absolute inset-0 bg-gray-900/40 backdrop-blur-sm" @click="isAddCustomerModalOpen = false"></div><div class="relative w-full max-w-md bg-white rounded-t-[2rem] shadow-2xl animate-slide-up flex flex-col max-h-[90vh]"><div class="shrink-0 p-6 pb-4 flex justify-between items-center border-b border-gray-50"><div><h2 class="text-xl font-black text-gray-900 mb-1">{{ customerForm.id ? '編輯客戶資料' : '建立新客戶' }}</h2><p class="text-[11px] font-bold text-gray-400 tracking-widest">CRM 主檔</p></div><button @click="isAddCustomerModalOpen = false" class="p-2 bg-gray-50 text-gray-400 rounded-full btn-press"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12"></path></svg></button></div><div class="overflow-y-auto p-6 space-y-4"><div><label class="block text-[10px] font-bold text-gray-400 mb-2 uppercase tracking-widest">姓名*</label><input v-model.trim="customerForm.name" type="text" :disabled="!!customerForm.id" class="w-full bg-gray-50 border border-gray-100 rounded-xl px-4 py-3.5 text-sm font-bold disabled:text-gray-400"></div><div><label class="block text-[10px] font-bold text-gray-400 mb-2 uppercase tracking-widest">手機號碼</label><input v-model.trim="customerForm.phone" type="text" class="w-full bg-gray-50 border border-gray-100 rounded-xl px-4 py-3.5 text-sm font-bold"></div><div v-if="currentUser.role === 'admin' && !customerForm.id"><label class="block text-[10px] font-bold text-gray-400 mb-2 uppercase tracking-widest">名單負責人</label><select v-model="customerForm.ownerEmpId" class="w-full bg-gray-50 border border-gray-100 rounded-xl px-3 py-3 text-sm font-bold"><option v-for="user in teamMembers" :key="user.emp_id" :value="user.emp_id">{{ user.name }}（{{ user.emp_id }}）</option></select></div><div class="grid grid-cols-2 gap-3"><div><label class="block text-[10px] font-bold text-gray-400 mb-2 uppercase tracking-widest">客戶等級</label><select v-model="customerForm.level" class="w-full bg-gray-50 border border-gray-100 rounded-xl px-3 py-3 text-sm font-bold"><option>A級客戶</option><option>B級客戶</option><option>C級客戶</option></select></div><div><label class="block text-[10px] font-bold text-gray-400 mb-2 uppercase tracking-widest">狀態</label><select v-model="customerForm.status" class="w-full bg-gray-50 border border-gray-100 rounded-xl px-3 py-3 text-sm font-bold"><option>潛在客戶</option><option>促成中準件</option><option>已成交保戶</option></select></div></div></div><div class="shrink-0 p-6 pt-2 bg-white rounded-b-[2rem] flex gap-3"><button @click="saveNewCustomer" :disabled="isProcessing" class="flex-1 bg-gray-900 text-yellow-500 font-black tracking-widest py-4 rounded-xl shadow-lg disabled:opacity-50 btn-press">{{ isProcessing ? '儲存中...' : (customerForm.id ? '儲存修改' : '確認建立') }}</button></div></div></div>
 
     <!-- ================= 📋 🌟 6.2 旗艦客戶 360 互動履歷 Modal ================= -->
     <div v-if="isCustomerProfileOpen" class="fixed inset-0 z-[150] flex items-end justify-center">
@@ -240,7 +240,7 @@
           </div>
           <!-- 快捷操作 -->
           <div class="flex gap-2 mt-4">
-             <button @click="openContactModalFromProfile" class="flex-1 bg-gray-900 text-yellow-500 text-[11px] font-black py-2.5 rounded-xl shadow-md btn-press">📞 紀錄定聯</button>
+             <button @click="editCustomerFromProfile" class="flex-1 bg-gray-50 text-gray-700 text-[11px] font-black py-2.5 rounded-xl border border-gray-100 btn-press">✏️ 編輯資料</button><button @click="openContactModalFromProfile" class="flex-1 bg-gray-900 text-yellow-500 text-[11px] font-black py-2.5 rounded-xl shadow-md btn-press">📞 紀錄定聯</button>
           </div>
         </div>
 
@@ -272,7 +272,7 @@
     <div v-if="isAccountManagerOpen" class="fixed inset-0 z-[60] flex items-end justify-center"><div class="absolute inset-0 bg-gray-900/40 backdrop-blur-sm" @click="isAccountManagerOpen = false"></div><div class="relative w-full max-w-lg bg-[#fafafa] rounded-t-[2rem] shadow-2xl animate-slide-up flex flex-col max-h-[90vh]"><div class="shrink-0 p-6 pb-4 flex justify-between items-center border-b border-gray-100 bg-white rounded-t-[2rem]"><div><h2 class="text-xl font-black text-gray-900 mb-1">帳號大廳</h2></div><button @click="isAccountManagerOpen = false" class="p-2 bg-gray-50 text-gray-400 rounded-full btn-press"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12"></path></svg></button></div><div class="overflow-y-auto flex-1 p-5 space-y-5"><div class="glass-card p-5 rounded-2xl"><div class="grid grid-cols-2 gap-3 mb-3"><input v-model.trim="newUserForm.empId" type="text" placeholder="登入員編" class="bg-gray-50 border border-gray-100 rounded-xl px-3 py-3 text-sm focus:outline-none focus:border-gray-300 font-bold"><input v-model.trim="newUserForm.name" type="text" placeholder="真實姓名" class="bg-gray-50 border border-gray-100 rounded-xl px-3 py-3 text-sm focus:outline-none focus:border-gray-300 font-bold"></div><input v-model.trim="newUserForm.password" type="text" placeholder="預設密碼" class="w-full bg-gray-50 border border-gray-100 rounded-xl px-3 py-3 text-sm mb-3 focus:outline-none focus:border-gray-300 font-bold"><button @click="createUserAccountPro" :disabled="isProcessing" class="w-full bg-gray-200 text-gray-800 font-black tracking-widest py-3.5 rounded-xl text-[11px] btn-press disabled:opacity-50 mt-1">確認建立</button></div><div v-for="user in teamMembers" :key="user.emp_id" class="glass-card p-5 rounded-2xl"><div class="flex justify-between items-start mb-3"><div><p class="text-[15px] font-black text-gray-900">{{ user.name }}</p><p class="text-xs text-gray-400 font-bold mt-0.5">{{ user.emp_id }}</p></div></div><div v-if="user.role !== 'admin'" class="flex gap-2 border-t border-gray-50 pt-3 mt-1"><button @click="toggleUserLock(user)" class="flex-1 py-2 rounded-xl text-[10px] font-black btn-press">{{ user.is_active?'停權':'解除停權' }}</button><button @click="resetUserPassword(user)" class="flex-1 bg-white border border-gray-200 text-gray-600 rounded-xl text-[10px] font-black btn-press shadow-sm">重設密碼</button><button @click="deleteUserAccount(user)" class="flex-1 bg-red-50 text-red-500 rounded-xl text-[10px] font-black btn-press">刪除</button></div></div></div></div></div>
     <div v-if="isProspectsModalOpen" class="fixed inset-0 z-[80] flex items-end justify-center"><div class="absolute inset-0 bg-gray-900/40 backdrop-blur-sm" @click="isProspectsModalOpen = false"></div><div class="relative w-full max-w-md bg-[#fafafa] rounded-t-[2rem] shadow-2xl animate-slide-up flex flex-col max-h-[90vh]"><div class="shrink-0 p-6 pb-5 flex flex-col border-b border-gray-100 bg-white rounded-t-[2rem]"><div class="flex justify-between items-center mb-4"><h2 class="text-xl font-black text-gray-900 mb-1">準增員資料庫</h2><button @click="isProspectsModalOpen = false" class="p-2 bg-gray-50 text-gray-400 rounded-full btn-press"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12"></path></svg></button></div><div v-if="currentUser.role === 'admin'"><select v-model="prospectViewEmpId" @change="fetchProspects" class="w-full bg-gray-50 border border-gray-200 text-gray-800 rounded-xl px-4 py-3 text-sm font-bold outline-none cursor-pointer shadow-sm"><option value="ALL">🌍 檢視全組名單</option><option v-for="user in teamMembers" :key="user.emp_id" :value="user.emp_id">{{ user.name }} 的私密清單</option></select></div></div><div class="overflow-y-auto flex-1 p-5 space-y-4"><div v-if="prospectViewEmpId !== 'ALL'" class="glass-card p-5 rounded-2xl"><div class="grid grid-cols-2 gap-3 mb-3"><input v-model.trim="prospectForm.name" type="text" placeholder="姓名" class="bg-gray-50 border border-gray-100 rounded-xl px-3 py-2.5 text-sm font-bold focus:border-gray-300 outline-none"><select v-model="prospectForm.status" class="bg-gray-50 border border-gray-100 rounded-xl px-3 py-2.5 text-sm font-bold focus:border-gray-300 outline-none"><option v-for="s in prospectStatuses" :key="s" :value="s">{{ s }}</option></select></div><textarea v-model.trim="prospectForm.notes" rows="2" placeholder="追蹤進度..." class="w-full bg-gray-50 border border-gray-100 rounded-xl px-3 py-2.5 text-sm mb-3 focus:border-gray-300 outline-none"></textarea><div class="flex gap-2"><button @click="saveProspect" class="flex-1 bg-gray-900 text-white font-black tracking-widest py-2.5 rounded-xl text-xs btn-press">確認儲存</button></div></div><div class="space-y-3 mt-4"><div v-for="p in currentProspects" :key="p.id" class="glass-card p-4 rounded-2xl"><div class="flex justify-between items-start mb-2.5"><span class="text-[15px] font-black text-gray-900">{{ p.client_name }}</span><span class="text-[10px] bg-gray-900 text-yellow-500 px-2.5 py-1 rounded-lg font-black tracking-widest">{{ parseProspectNotes(p.notes).status }}</span></div><p class="text-[13px] text-gray-500 mb-3 whitespace-pre-line leading-relaxed">{{ parseProspectNotes(p.notes).notes }}</p><div v-if="prospectViewEmpId !== 'ALL'" class="flex gap-2 border-t border-gray-50 pt-3"><button @click="editProspect(p)" class="flex-1 text-[10px] font-black text-gray-600 bg-gray-50 py-2 rounded-xl btn-press">編輯</button><button @click="deleteProspect(p.id)" class="flex-1 text-[10px] font-black text-red-500 bg-red-50 py-2 rounded-xl btn-press">刪除</button></div></div></div></div></div></div>
     <div v-if="isStatsModalOpen" class="fixed inset-0 z-50 flex items-center justify-center p-5"><div class="absolute inset-0 bg-gray-900/40 backdrop-blur-sm" @click="isStatsModalOpen = false"></div><div class="relative w-full max-w-sm glass-card rounded-[2rem] p-8 shadow-2xl animate-fade-in"><button @click="isStatsModalOpen = false" class="absolute top-6 right-6 text-gray-400 hover:text-gray-900 btn-press"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12"></path></svg></button><h2 class="text-2xl font-black text-gray-900 mb-1">{{ getViewingName() }}</h2><p class="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-6">AI 戰力分析</p><div class="mb-4 p-6 bg-gray-900 rounded-3xl relative overflow-hidden"><div class="absolute top-[-30%] right-[-20%] w-32 h-32 bg-yellow-500/20 rounded-full blur-2xl"></div><p class="text-[11px] font-bold text-gray-400 mb-3 tracking-widest uppercase relative z-10">{{ formattedDate }} 當日戰力</p><div class="flex justify-between items-end relative z-10"><div><span class="text-[10px] text-gray-500 mr-2 font-bold">銷售</span><span class="text-4xl font-black text-white">{{ dailySales }}</span></div><div><span class="text-[10px] text-gray-500 mr-2 font-bold">增員</span><span class="text-4xl font-black text-yellow-500">{{ dailyRecruit }}</span></div></div></div><div class="grid grid-cols-2 gap-4 mb-5"><div class="p-5 bg-gray-50 rounded-2xl border border-gray-100"><p class="text-[10px] text-gray-400 font-black tracking-widest mb-2 uppercase">本週累積</p><div class="flex justify-between items-end mb-1"><span class="text-[11px] font-bold text-gray-500">銷售</span><span class="text-xl font-black text-gray-900">{{ weeklyStats.sales }}</span></div><div class="flex justify-between items-end"><span class="text-[11px] font-bold text-gray-500">增員</span><span class="text-xl font-black text-yellow-600">{{ weeklyStats.recruit }}</span></div></div><div class="p-5 bg-gray-50 rounded-2xl border border-gray-100"><p class="text-[10px] text-gray-400 font-black tracking-widest mb-2 uppercase">本月累積</p><div class="flex justify-between items-end mb-1"><span class="text-[11px] font-bold text-gray-500">銷售</span><span class="text-xl font-black text-gray-900">{{ monthlyStats.sales }}</span></div><div class="flex justify-between items-end"><span class="text-[11px] font-bold text-gray-500">增員</span><span class="text-xl font-black text-yellow-600">{{ monthlyStats.recruit }}</span></div></div></div></div></div>
-    <div v-if="isSettingsModalOpen" class="fixed inset-0 z-[80] flex items-center justify-center p-5"><div class="absolute inset-0 bg-gray-900/40 backdrop-blur-sm" @click="isSettingsModalOpen = false"></div><div class="relative w-full max-w-sm bg-white rounded-[2rem] p-8 shadow-2xl text-center animate-fade-in"><h2 class="text-xl font-black text-gray-900 mb-2">修改密碼</h2><input v-model.trim="newPassword" type="password" placeholder="請輸入新密碼" class="w-full bg-gray-50 border border-gray-100 rounded-xl px-4 py-3.5 text-sm font-bold my-5 focus:border-gray-300 focus:outline-none text-center tracking-widest"><div class="flex gap-3"><button @click="isSettingsModalOpen=false" class="flex-1 bg-gray-100 text-gray-500 font-black tracking-widest py-3.5 rounded-xl btn-press text-xs">取消</button><button @click="changeMyPassword" :disabled="isProcessing" class="flex-1 bg-gray-900 text-white font-black tracking-widest py-3.5 rounded-xl btn-press disabled:opacity-50 text-xs shadow-lg">確認修改</button></div></div></div>
+    <div v-if="isSettingsModalOpen" class="fixed inset-0 z-[80] flex items-center justify-center p-5"><div class="absolute inset-0 bg-gray-900/40 backdrop-blur-sm" @click="isSettingsModalOpen = false"></div><div class="relative w-full max-w-sm bg-white rounded-[2rem] p-8 shadow-2xl text-center animate-fade-in"><h2 class="text-xl font-black text-gray-900 mb-2">修改密碼</h2><div class="my-4 rounded-2xl border border-gray-100 bg-gray-50 p-4 text-left"><p class="text-[10px] font-black tracking-widest text-gray-500 mb-2">個人行事曆同步</p><button @click="copyCalendarSubscriptionUrl" class="w-full bg-white border border-gray-200 text-gray-700 font-black tracking-widest py-3 rounded-xl btn-press text-[11px]">複製 iPhone 訂閱網址</button></div><input v-model.trim="newPassword" type="password" placeholder="請輸入新密碼" class="w-full bg-gray-50 border border-gray-100 rounded-xl px-4 py-3.5 text-sm font-bold my-5 focus:border-gray-300 focus:outline-none text-center tracking-widest"><div class="flex gap-3"><button @click="isSettingsModalOpen=false" class="flex-1 bg-gray-100 text-gray-500 font-black tracking-widest py-3.5 rounded-xl btn-press text-xs">取消</button><button @click="changeMyPassword" :disabled="isProcessing" class="flex-1 bg-gray-900 text-white font-black tracking-widest py-3.5 rounded-xl btn-press disabled:opacity-50 text-xs shadow-lg">確認修改</button></div></div></div>
     
   </div> 
 
@@ -346,6 +346,19 @@
             return result;
           } finally {
             if (showSpinner) activeRequests.value--;
+          }
+        };
+
+        const calendarSubscriptionUrl = computed(() => currentUser.value?.calendar_token
+          ? `${window.location.origin}/api/calendar?key=${encodeURIComponent(currentUser.value.emp_id)}&token=${currentUser.value.calendar_token}`
+          : '');
+        const copyCalendarSubscriptionUrl = async () => {
+          if (!calendarSubscriptionUrl.value) return showToast('請重新登入後取得訂閱網址', 'error');
+          try {
+            await navigator.clipboard.writeText(calendarSubscriptionUrl.value);
+            showToast('✅ 已複製個人行事曆訂閱網址', 'success');
+          } catch (e) {
+            window.prompt('複製個人行事曆訂閱網址', calendarSubscriptionUrl.value);
           }
         };
 
@@ -443,60 +456,86 @@
         });
         const displayedContacts = computed(() => contactFilter.value === 'today' ? todayContacts.value : overdueContacts.value);
 
-        // 🌟 新增客戶 Modal
+        // 🌟 新增、編輯客戶與定聯
         const isAddCustomerModalOpen = ref(false);
-        const customerForm = reactive({ name: '', phone: '', level: 'C級客戶', status: '潛在客戶' });
-        const openAddCustomerModal = () => {
-            customerForm.name = ''; customerForm.phone = ''; customerForm.level = 'C級客戶'; customerForm.status = '潛在客戶';
+        const customerForm = reactive({ id: null, name: '', phone: '', level: 'C級客戶', status: '潛在客戶', ownerEmpId: '' });
+        const addCustomerThenContact = ref(false);
+        const openAddCustomerModal = (customer = null, thenContact = false) => {
+            customerForm.id = customer?.id || null;
+            customerForm.name = customer?.name || '';
+            customerForm.phone = customer?.phone || '';
+            customerForm.level = customer?.level || 'C級客戶';
+            customerForm.status = customer?.status || '潛在客戶';
+            customerForm.ownerEmpId = customer?.emp_id || (viewingEmpId.value !== 'ALL' ? viewingEmpId.value : currentUser.value.emp_id);
+            addCustomerThenContact.value = thenContact;
             isAddCustomerModalOpen.value = true;
         };
+        const editCustomerFromProfile = () => {
+            const customer = allCustomersData.value.find(c => profileData.customerId ? c.id === profileData.customerId : c.name === profileData.name);
+            if (!customer) return showToast('找不到客戶主檔', 'error');
+            isCustomerProfileOpen.value = false;
+            openAddCustomerModal(customer);
+        };
         const saveNewCustomer = async () => {
-            if(!customerForm.name) return showToast('請填寫姓名', 'error');
+            if (!customerForm.name) return showToast('請填寫姓名', 'error');
+            const isNewCustomer = !customerForm.id;
             try {
-                await secureFetch('save_customer', { customerData: customerForm });
+                const savedCustomer = await secureFetch('save_customer', {
+                    customerData: { id: customerForm.id, name: customerForm.name, phone: customerForm.phone, level: customerForm.level, status: customerForm.status },
+                    ownerEmpId: customerForm.ownerEmpId
+                });
                 await loadCrmData(false);
                 isAddCustomerModalOpen.value = false;
-                showToast('✅ 客戶建立成功');
-            } catch(e) { showToast('建立失敗', 'error'); }
+                showToast(isNewCustomer ? '✅ 客戶建立成功' : '✅ 客戶資料已更新', 'success');
+                if (isNewCustomer && addCustomerThenContact.value) {
+                    addCustomerThenContact.value = false;
+                    openContactModal(savedCustomer);
+                }
+            } catch (e) { showToast(e.message || '儲存失敗', 'error'); }
         };
 
-        // 🌟 定聯 Modal
         const isContactModalOpen = ref(false);
-        const contactForm = reactive({ customer_id: '', name: '', type: '電話', result: '順利/有回應', note: '', next_date: '' });
+        const contactForm = reactive({ customer_id: '', name: '', phone: '', type: '電話', result: '順利/有回應', note: '', next_date: '' });
         const openContactModal = (customer) => {
-            contactForm.customer_id = customer.id; contactForm.name = customer.name; 
+            contactForm.customer_id = customer.id;
+            contactForm.name = customer.name;
+            contactForm.phone = customer.phone || '';
             contactForm.type = '電話'; contactForm.result = '順利/有回應'; contactForm.note = '';
-            // 預設下一次是 30 天後
             const d = new Date(todayStr); d.setDate(d.getDate() + 30);
             contactForm.next_date = d.toISOString().split('T')[0];
             isContactModalOpen.value = true;
         };
         const openContactModalFromProfile = () => {
-            const cust = allCustomersData.value.find(c => c.name === profileData.name);
-            if(cust) { isCustomerProfileOpen.value = false; openContactModal(cust); }
+            const cust = allCustomersData.value.find(c => profileData.customerId ? c.id === profileData.customerId : c.name === profileData.name);
+            if (cust) { isCustomerProfileOpen.value = false; openContactModal(cust); }
         };
         const saveContact = async () => {
-            if(!contactForm.customer_id) return;
+            if (!contactForm.customer_id) return;
             try {
                 const payload = { customer_id: contactForm.customer_id, contact_date: todayStr, contact_type: contactForm.type, result: contactForm.result, note: contactForm.note, next_contact_date: contactForm.next_date };
-                await secureFetch('save_contact', { contactData: payload });
+                await secureFetch('save_contact', { contactData: payload, customerData: { phone: contactForm.phone } });
                 await loadCrmData(false);
                 isContactModalOpen.value = false;
-                showToast('✅ 定聯紀錄儲存成功');
-            } catch(e) { showToast('儲存失敗', 'error'); }
+                showToast('✅ 定聯紀錄與客戶資料已同步', 'success');
+            } catch (e) { showToast(e.message || '儲存失敗', 'error'); }
         };
 
         // 🌟 360 度履歷整合 (合併活動與定聯)
         const isCustomerProfileOpen = ref(false);
-        const profileData = reactive({ name: '', phone: '', history: [] });
+        const profileData = reactive({ name: '', phone: '', history: [], customerId: null, empId: null });
         let chartInstance = null;
 
-        const openCustomerProfile = (name) => {
+        const openCustomerProfile = (name, customerId = null) => {
            profileData.name = name;
-           const cust = allCustomersData.value.find(c => c.name === name);
+           const cust = allCustomersData.value.find(c => customerId ? c.id === customerId : c.name === name);
+           profileData.customerId = cust?.id || null;
+           profileData.empId = cust?.emp_id || null;
            profileData.phone = cust ? cust.phone : '';
 
-           const acts = allActivitiesData.value.filter(a => a.client_name === name).map(a => ({
+           const acts = allActivitiesData.value.filter(a => cust
+             ? (a.customer_id === cust.id || (!a.customer_id && a.emp_id === cust.emp_id && a.client_name === name))
+             : a.client_name === name
+           ).map(a => ({
                id: 'act_'+a.id, date: a.activity_date, type: a.activity_type, notes: a.notes, source: 'activity'
            }));
            const conts = cust ? allContactsData.value.filter(c => c.customer_id === cust.id).map(c => ({
@@ -522,7 +561,7 @@
         };
 
         const getCustomerMainStatus = () => {
-           const cust = allCustomersData.value.find(c => c.name === profileData.name);
+           const cust = allCustomersData.value.find(c => profileData.customerId ? c.id === profileData.customerId : c.name === profileData.name);
            if (cust && cust.status) return cust.status;
            return '潛在客戶';
         };
@@ -581,7 +620,7 @@
                 else { const existingAct = currentDayActivities.value.find(a => a.start_time === timeStr); if (existingAct) currentId = existingAct.id; }
                 const payload = { emp_id: viewingEmpId.value, activity_date: formData.activity_date || currentDate.value, start_time: timeStr, activity_type: formData.type, client_name: formData.clientName, notes: formData.notes, sales_score: sScore, recruit_score: rScore };
                 if (currentId) payload.id = currentId;
-                await secureFetch('save_activity', { activityPayload: payload }, true);
+                await secureFetch('save_activity', { activityPayload: payload, viewingEmpId: viewingEmpId.value }, true);
              }
              await loadAllData(false);
              isActivityModalOpen.value = false;
@@ -619,7 +658,7 @@
         const parseProspectNotes = (notesStr) => { try { return JSON.parse(notesStr); } catch(e) { return { status: '初步接觸', notes: notesStr || '' }; } };
         const fetchProspects = async () => { isLoadingProspects.value = true; try { const data = await secureFetch('load_activities', { viewingEmpId: prospectViewEmpId.value }); targetProspects.value = (data || []).filter(a => a.activity_type === '準增員名單'); } catch(e) {} isLoadingProspects.value = false; };
         const openProspectsModal = async (empId, name) => { if(empId !== 'ALL' && !empId) return showToast('此夥伴尚未綁定帳號', 'error'); isMemberModalOpen.value = false; prospectViewEmpId.value = empId; prospectViewName.value = name; isProspectsModalOpen.value = true; prospectForm.id = null; prospectForm.name = ''; prospectForm.notes = ''; prospectForm.status = '初步接觸'; await fetchProspects(); };
-        const saveProspect = async () => { if(!prospectForm.name) return showToast('請輸入姓名', 'error'); const payload = { emp_id: prospectViewEmpId.value === 'ALL' ? currentUser.value.emp_id : prospectViewEmpId.value, activity_date: new Date().toISOString().split('T')[0], start_time: '00:00', activity_type: '準增員名單', client_name: prospectForm.name, notes: JSON.stringify({ status: prospectForm.status, notes: prospectForm.notes }), sales_score: 0, recruit_score: 0 }; if (prospectForm.id) payload.id = prospectForm.id; try { await secureFetch('save_activity', { activityPayload: payload }); showToast('名單已更新', 'success'); prospectForm.id = null; prospectForm.name = ''; prospectForm.notes = ''; prospectForm.status = '初步接觸'; await fetchProspects(); } catch(e) { showToast('儲存失敗', 'error'); } };
+        const saveProspect = async () => { if(!prospectForm.name) return showToast('請輸入姓名', 'error'); const payload = { emp_id: prospectViewEmpId.value === 'ALL' ? currentUser.value.emp_id : prospectViewEmpId.value, activity_date: new Date().toISOString().split('T')[0], start_time: '00:00', activity_type: '準增員名單', client_name: prospectForm.name, notes: JSON.stringify({ status: prospectForm.status, notes: prospectForm.notes }), sales_score: 0, recruit_score: 0 }; if (prospectForm.id) payload.id = prospectForm.id; try { await secureFetch('save_activity', { activityPayload: payload, viewingEmpId: prospectViewEmpId.value }); showToast('名單已更新', 'success'); prospectForm.id = null; prospectForm.name = ''; prospectForm.notes = ''; prospectForm.status = '初步接觸'; await fetchProspects(); } catch(e) { showToast('儲存失敗', 'error'); } };
         const editProspect = (p) => { const parsed = parseProspectNotes(p.notes); prospectForm.id = p.id; prospectForm.name = p.client_name; prospectForm.status = parsed.status; prospectForm.notes = parsed.notes; };
         const deleteProspect = async (id) => { if(confirm('確定刪除此名單？')) { try { await secureFetch('delete_activity', { id }); showToast('已刪除', 'success'); await fetchProspects(); } catch(e) {} } };
 
@@ -659,7 +698,7 @@
         };
         return { 
           isProcessing, toast, isWelcomeScreen, welcomeUser, currentUser, viewingEmpId, teamMembers, loginForm, loginError, isLoading, doLogin, getViewingName, getUserStatus, loadActivitiesData, loadAllData, refreshAllData,
-          isSettingsModalOpen, newPassword, changeMyPassword,
+          isSettingsModalOpen, newPassword, changeMyPassword, calendarSubscriptionUrl, copyCalendarSubscriptionUrl,
           isAccountManagerOpen, isSingleAccountManageOpen, managingUser, openSingleUserManage, toggleUserLock, resetUserPassword, deleteUserAccount,
           isAddUserModalOpen, newUserForm, openBindUserModal, createUserAccountPro, bindExistingEmpId, bindExistingAccountToNode,
           allNodes, unboundNodes, unboundUsers, groupViewMode, searchQuery, searchResults,
@@ -668,7 +707,7 @@
           isActivityModalOpen, selectedTime, activityTypes, formData, openActivityModal, openActivityModalForEdit, saveActivity, deleteActivity,
           orgTree, orgZoom, zoomInOrg, zoomOutOrg, memberStatuses, isMemberModalOpen, memberForm, openMemberModal, openAddSubordinateModal, saveMember, deleteMember, exportOrgChart,
           isProspectsModalOpen, prospectViewName, prospectForm, prospectStatuses, currentProspects, isLoadingProspects, openProspectsModal, saveProspect, deleteProspect, editProspect, parseProspectNotes, getProspectOwnerName,
-          isCustomerProfileOpen, profileData, openCustomerProfile, getCustomerMainStatus,
+          isCustomerProfileOpen, profileData, openCustomerProfile, editCustomerFromProfile, getCustomerMainStatus,
           // CRM 專用
           filteredCustomers, todayContacts, overdueContacts, displayedContacts, contactFilter,
           isAddCustomerModalOpen, customerForm, openAddCustomerModal, saveNewCustomer,
