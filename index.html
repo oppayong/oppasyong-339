@@ -85,7 +85,7 @@
         </div>
         <div class="relative">
           <div class="absolute inset-y-0 left-1 pl-4 flex items-center pointer-events-none"><svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg></div>
-          <input v-model.trim="searchQuery" type="text" placeholder="全域搜尋客戶姓名、備註..." class="w-full pl-11 pr-10 py-3.5 bg-white border border-gray-200 rounded-2xl shadow-sm focus:outline-none focus:ring-2 focus:ring-gray-900/10 text-sm font-bold transition-all">
+          <input v-model.trim="searchQuery" type="text" :placeholder="currentTab === 'crm' ? '搜尋客戶姓名、手機、等級或狀態...' : (currentTab === 'contacts' ? '搜尋既有客戶、手機或狀態...' : '搜尋行程對象、備註或類型...')" class="w-full pl-11 pr-10 py-3.5 bg-white border border-gray-200 rounded-2xl shadow-sm focus:outline-none focus:ring-2 focus:ring-gray-900/10 text-sm font-bold transition-all">
           <button v-if="searchQuery" @click="searchQuery = ''" class="absolute inset-y-0 right-1 pr-4 flex items-center text-gray-400 hover:text-gray-900 btn-press"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12"></path></svg></button>
         </div>
       </div>
@@ -167,11 +167,20 @@
             <h1 class="text-2xl font-black text-gray-900 tracking-tight">今日定聯</h1>
             <p class="text-[10px] font-bold text-gray-400 mt-1 uppercase tracking-widest">客戶關係追蹤引擎</p><button @click="openAddCustomerModal(null, true)" class="shrink-0 bg-gray-900 text-yellow-500 px-3.5 py-2.5 rounded-xl shadow-md text-[10px] font-black tracking-widest btn-press">＋ 新增並定聯</button>
          </div>
-         <div class="flex gap-2 mb-4 overflow-x-auto pb-2">
+                   <div v-if="searchQuery" class="animate-fade-in space-y-3 mb-4">
+             <p class="text-[11px] font-bold text-gray-400 px-2 tracking-widest uppercase">🔍 客戶搜尋結果</p>
+             <div v-for="customer in contactSearchResults" :key="customer.id" class="glass-card p-4 rounded-2xl border border-gray-100">
+               <div class="flex justify-between items-start gap-3"><div><p class="text-sm font-black text-gray-900">{{ customer.name }}</p><p class="text-[10px] text-gray-500 mt-1">📱 {{ customer.phone || '尚未留手機' }}</p></div><span class="text-[9px] font-bold text-yellow-700 bg-yellow-50 px-2 py-1 rounded">{{ customer.status || '客戶' }}</span></div>
+               <p class="text-[10px] text-gray-400 mt-2">下次定聯：{{ customer.next_contact_date || '尚未安排' }}</p>
+               <div class="flex gap-2 mt-3"><button @click="openScheduleContact(customer)" class="flex-1 bg-gray-50 text-gray-700 text-[10px] font-black py-2.5 rounded-xl border border-gray-100 btn-press">📅 預計定聯</button><button @click="openContactModal(customer)" class="flex-1 bg-gray-900 text-yellow-500 text-[10px] font-black py-2.5 rounded-xl btn-press">✅ 已定聯</button></div>
+             </div>
+             <div v-if="contactSearchResults.length === 0" class="text-center py-10 bg-white rounded-2xl border border-gray-200 border-dashed"><p class="text-gray-400 text-xs font-bold">找不到符合的客戶</p><button @click="openAddCustomerModal(null, true)" class="mt-3 text-[11px] font-black text-yellow-700">＋ 建立這位客戶並開始定聯</button></div>
+          </div>
+<div v-if="!searchQuery" class="flex gap-2 mb-4 overflow-x-auto pb-2">
             <button @click="contactFilter = 'today'" class="px-4 py-2 rounded-full text-[11px] font-black tracking-widest whitespace-nowrap btn-press shadow-sm" :class="contactFilter === 'today' ? 'bg-gray-900 text-white' : 'bg-white text-gray-500 border border-gray-200'">今日需聯絡 ({{ todayContacts.length }})</button>
             <button @click="contactFilter = 'overdue'" class="px-4 py-2 rounded-full text-[11px] font-black tracking-widest whitespace-nowrap btn-press shadow-sm" :class="contactFilter === 'overdue' ? 'bg-red-50 text-red-500 border border-red-100' : 'bg-white text-gray-500 border border-gray-200'">逾期未聯絡 ({{ overdueContacts.length }})</button>
          </div>
-         <div class="space-y-3">
+         <div v-if="!searchQuery" class="space-y-3">
             <div v-for="c in displayedContacts" :key="c.id" class="glass-card p-4 rounded-2xl relative overflow-hidden">
                <div class="absolute left-0 top-0 bottom-0 w-1.5" :class="contactFilter === 'overdue' ? 'bg-red-500' : 'bg-blue-500'"></div>
                <div class="flex justify-between items-center pl-2 mb-2">
@@ -214,6 +223,8 @@
 
     <!-- ================= 紀錄定聯 Modal ================= -->
     <div v-if="isContactModalOpen" class="fixed inset-0 z-[160] flex items-end justify-center"><div class="absolute inset-0 bg-gray-900/40 backdrop-blur-sm" @click="isContactModalOpen = false"></div><div class="relative w-full max-w-md bg-white rounded-t-[2rem] shadow-2xl animate-slide-up flex flex-col max-h-[90vh]"><div class="shrink-0 p-6 pb-4 flex justify-between items-center border-b border-gray-50"><div><h2 class="text-xl font-black text-gray-900 mb-1">完成定聯</h2><p class="text-[11px] font-bold text-gray-400 tracking-widest">{{ contactForm.name }}</p></div><button @click="isContactModalOpen = false" class="p-2 bg-gray-50 text-gray-400 rounded-full btn-press"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12"></path></svg></button></div><div class="overflow-y-auto p-6 space-y-5"><div><label class="block text-[10px] font-bold text-gray-400 mb-2 uppercase tracking-widest">手機號碼（可直接更新）</label><input v-model.trim="contactForm.phone" type="tel" inputmode="tel" autocomplete="tel" placeholder="輸入手機號碼" class="w-full bg-gray-50 border border-gray-100 rounded-xl px-4 py-3.5 text-sm font-bold"></div><div><label class="block text-[10px] font-bold text-gray-400 mb-2 uppercase tracking-widest">聯絡方式</label><select v-model="contactForm.type" class="w-full bg-gray-50 border border-gray-100 rounded-xl px-3 py-3.5 text-sm font-bold"><option>電話</option><option>LINE</option><option>見面</option><option>其他</option></select></div><div><label class="block text-[10px] font-bold text-gray-400 mb-2 uppercase tracking-widest">互動結果</label><select v-model="contactForm.result" class="w-full bg-gray-50 border border-gray-100 rounded-xl px-3 py-3.5 text-sm font-bold"><option>順利/有回應</option><option>未接/未讀</option><option>忙碌/稍後回覆</option><option>約定面談</option></select></div><div><label class="block text-[10px] font-bold text-gray-400 mb-2 uppercase tracking-widest">下次定聯日期</label><input type="date" v-model="contactForm.next_date" class="w-full bg-gray-50 border border-gray-100 rounded-xl px-3 py-3.5 text-sm font-bold"></div><div><label class="block text-[10px] font-bold text-gray-400 mb-2 uppercase tracking-widest">備註細節</label><textarea v-model.trim="contactForm.note" rows="2" class="w-full bg-gray-50 border border-gray-100 rounded-xl px-4 py-3.5 text-sm"></textarea></div></div><div class="shrink-0 p-6 pt-2 bg-white rounded-b-[2rem] flex gap-3"><button @click="saveContact" :disabled="isProcessing" class="flex-1 bg-gray-900 text-yellow-500 font-black tracking-widest py-4 rounded-xl shadow-lg disabled:opacity-50 btn-press">{{ isProcessing ? '儲存中...' : '儲存紀錄' }}</button></div></div></div>
+
+    <div v-if="isScheduleContactOpen" class="fixed inset-0 z-[165] flex items-end justify-center"><div class="absolute inset-0 bg-gray-900/40 backdrop-blur-sm" @click="isScheduleContactOpen = false"></div><div class="relative w-full max-w-md bg-white rounded-t-[2rem] shadow-2xl animate-slide-up"><div class="p-6 border-b border-gray-50"><h2 class="text-xl font-black text-gray-900">安排預計定聯</h2><p class="text-[11px] font-bold text-gray-400 mt-1">{{ scheduleContactForm.customerName }}｜日期將同步至 CRM</p></div><div class="p-6"><label class="block text-[10px] font-bold text-gray-400 mb-2 uppercase tracking-widest">預計聯絡日期</label><input type="date" v-model="scheduleContactForm.nextDate" class="w-full bg-gray-50 border border-gray-100 rounded-xl px-4 py-3.5 text-sm font-bold"></div><div class="p-6 pt-0 flex gap-3"><button @click="isScheduleContactOpen = false" class="flex-1 bg-gray-100 text-gray-600 font-black py-3.5 rounded-xl">取消</button><button @click="saveScheduledContact" :disabled="isProcessing" class="flex-1 bg-gray-900 text-yellow-500 font-black py-3.5 rounded-xl disabled:opacity-50">{{ isProcessing ? '儲存中...' : '確認安排' }}</button></div></div></div>
 
     <!-- ================= 新增客戶 Modal ================= -->
     <div v-if="isAddCustomerModalOpen" class="fixed inset-0 z-[160] flex items-end justify-center"><div class="absolute inset-0 bg-gray-900/40 backdrop-blur-sm" @click="isAddCustomerModalOpen = false"></div><div class="relative w-full max-w-md bg-white rounded-t-[2rem] shadow-2xl animate-slide-up flex flex-col max-h-[90vh]"><div class="shrink-0 p-6 pb-4 flex justify-between items-center border-b border-gray-50"><div><h2 class="text-xl font-black text-gray-900 mb-1">{{ customerForm.id ? '編輯客戶資料' : '建立新客戶' }}</h2><p class="text-[11px] font-bold text-gray-400 tracking-widest">CRM 主檔</p></div><button @click="isAddCustomerModalOpen = false" class="p-2 bg-gray-50 text-gray-400 rounded-full btn-press"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12"></path></svg></button></div><div class="overflow-y-auto p-6 space-y-4"><div><label class="block text-[10px] font-bold text-gray-400 mb-2 uppercase tracking-widest">姓名*</label><input v-model.trim="customerForm.name" type="text" :disabled="!!customerForm.id" class="w-full bg-gray-50 border border-gray-100 rounded-xl px-4 py-3.5 text-sm font-bold disabled:text-gray-400"></div><div><label class="block text-[10px] font-bold text-gray-400 mb-2 uppercase tracking-widest">手機號碼</label><input v-model.trim="customerForm.phone" type="text" class="w-full bg-gray-50 border border-gray-100 rounded-xl px-4 py-3.5 text-sm font-bold"></div><div v-if="currentUser.role === 'admin' && !customerForm.id"><label class="block text-[10px] font-bold text-gray-400 mb-2 uppercase tracking-widest">名單負責人</label><select v-model="customerForm.ownerEmpId" class="w-full bg-gray-50 border border-gray-100 rounded-xl px-3 py-3 text-sm font-bold"><option v-for="user in teamMembers" :key="user.emp_id" :value="user.emp_id">{{ user.name }}（{{ user.emp_id }}）</option></select></div><div class="grid grid-cols-2 gap-3"><div><label class="block text-[10px] font-bold text-gray-400 mb-2 uppercase tracking-widest">客戶等級</label><select v-model="customerForm.level" class="w-full bg-gray-50 border border-gray-100 rounded-xl px-3 py-3 text-sm font-bold"><option>A級客戶</option><option>B級客戶</option><option>C級客戶</option></select></div><div><label class="block text-[10px] font-bold text-gray-400 mb-2 uppercase tracking-widest">狀態</label><select v-model="customerForm.status" class="w-full bg-gray-50 border border-gray-100 rounded-xl px-3 py-3 text-sm font-bold"><option>潛在客戶</option><option>促成中準件</option><option>已成交保戶</option></select></div></div></div><div class="shrink-0 p-6 pt-2 bg-white rounded-b-[2rem] flex gap-3"><button @click="saveNewCustomer" :disabled="isProcessing" class="flex-1 bg-gray-900 text-yellow-500 font-black tracking-widest py-4 rounded-xl shadow-lg disabled:opacity-50 btn-press">{{ isProcessing ? '儲存中...' : (customerForm.id ? '儲存修改' : '確認建立') }}</button></div></div></div>
@@ -434,14 +445,14 @@
         };
 
         // 🌟 CRM 資料計算
-        const filteredCustomers = computed(() => {
-           let list = allCustomersData.value;
-           if (searchQuery.value) {
-               const q = searchQuery.value.toLowerCase();
-               list = list.filter(c => c.name.toLowerCase().includes(q) || (c.phone && c.phone.includes(q)));
-           }
-           return list;
-        });
+        const matchesCustomerQuery = (customer, query) => {
+           const q = query.trim().toLowerCase();
+           if (!q) return true;
+           return [customer.name, customer.phone, customer.level, customer.status, customer.source]
+             .filter(value => value !== null && value !== undefined)
+             .some(value => String(value).toLowerCase().includes(q));
+        };
+        const filteredCustomers = computed(() => allCustomersData.value.filter(c => matchesCustomerQuery(c, searchQuery.value)));
 
         const todayStr = new Date(new Date().getTime() + (8 * 60 * 60 * 1000)).toISOString().split('T')[0];
         const contactFilter = ref('today');
@@ -454,7 +465,24 @@
            const mapped = allCustomersData.value.filter(c => c.next_contact_date && c.next_contact_date < todayStr);
            return mapped.sort((a,b) => new Date(a.next_contact_date) - new Date(b.next_contact_date));
         });
-        const displayedContacts = computed(() => contactFilter.value === 'today' ? todayContacts.value : overdueContacts.value);
+        const isScheduleContactOpen = ref(false);
+        const scheduleContactForm = reactive({ customerId: '', customerName: '', nextDate: '' });
+        const openScheduleContact = (customer) => {
+            scheduleContactForm.customerId = customer.id;
+            scheduleContactForm.customerName = customer.name;
+            scheduleContactForm.nextDate = customer.next_contact_date || todayStr;
+            isScheduleContactOpen.value = true;
+        };
+        const saveScheduledContact = async () => {
+            if (!scheduleContactForm.customerId || !scheduleContactForm.nextDate) return showToast('請選擇預計定聯日期', 'error');
+            try {
+                await secureFetch('save_customer', { customerData: { id: scheduleContactForm.customerId, next_contact_date: scheduleContactForm.nextDate } });
+                await loadCrmData(false);
+                isScheduleContactOpen.value = false;
+                showToast('✅ 已建立預計定聯，並同步至 CRM', 'success');
+            } catch (e) { showToast(e.message || '建立失敗', 'error'); }
+        };
+        const contactSearchResults = computed(() => allCustomersData.value.filter(customer => matchesCustomerQuery(customer, searchQuery.value)).sort((a, b) => String(a.name || '').localeCompare(String(b.name || ''), 'zh-Hant')));
 
         // 🌟 新增、編輯客戶與定聯
         const isAddCustomerModalOpen = ref(false);
@@ -480,10 +508,9 @@
             if (!customerForm.name) return showToast('請填寫姓名', 'error');
             const isNewCustomer = !customerForm.id;
             try {
-                const savedCustomer = await secureFetch('save_customer', {
-                    customerData: { id: customerForm.id, name: customerForm.name, phone: customerForm.phone, level: customerForm.level, status: customerForm.status },
-                    ownerEmpId: customerForm.ownerEmpId
-                });
+                const customerData = { name: customerForm.name, phone: customerForm.phone, level: customerForm.level, status: customerForm.status };
+                if (customerForm.id) customerData.id = customerForm.id;
+                const savedCustomer = await secureFetch('save_customer', { customerData, ownerEmpId: customerForm.ownerEmpId });
                 await loadCrmData(false);
                 isAddCustomerModalOpen.value = false;
                 showToast(isNewCustomer ? '✅ 客戶建立成功' : '✅ 客戶資料已更新', 'success');
@@ -711,7 +738,8 @@
           // CRM 專用
           filteredCustomers, todayContacts, overdueContacts, displayedContacts, contactFilter,
           isAddCustomerModalOpen, customerForm, openAddCustomerModal, saveNewCustomer,
-          isContactModalOpen, contactForm, openContactModal, openContactModalFromProfile, saveContact
+          isContactModalOpen, contactForm, openContactModal, openContactModalFromProfile, saveContact,
+          contactSearchResults, isScheduleContactOpen, scheduleContactForm, openScheduleContact, saveScheduledContact
         };
       }
     });
