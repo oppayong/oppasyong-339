@@ -1,4 +1,5 @@
 import { createClient } from '@supabase/supabase-js';
+import { createHmac } from 'crypto';
 
 export default async function handler(req, res) {
   res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
@@ -34,7 +35,7 @@ export default async function handler(req, res) {
 
   try {
     switch (action) {
-      case 'login': return res.status(200).json(user);
+      case 'login': return res.status(200).json({ ...user, calendar_token: createHmac('sha256', SUPABASE_KEY).update(String(user.emp_id)).digest('hex') });
       case 'get_team':
         if (!isSuperAdmin) return res.status(403).json({ error: '無權限' });
         const { data: team } = await supabase.from('team_users').select('emp_id, name, is_active, role');
@@ -57,23 +58,48 @@ export default async function handler(req, res) {
         const [cRes, lRes] = await Promise.all([cQuery, logQuery]);
         return res.status(200).json({ customers: cRes.data || [], contacts: lRes.data || [] });
 
-      case 'save_customer':
-        const custPayload = { ...payload.customerData, emp_id: targetEmpId };
-        const { data: savedCust, error: cErr } = await supabase.from('team_customers').upsert(custPayload).select().single();
+      case 'save_customer': {
+        const customerData = payload.customerData || {};
+        let existingCustomer = null;
+        if (customerData.id) {
+          const { data, error } = await supabase.from('team_customers').select('id, emp_id').eq('id', customerData.id).maybeSingle();
+          if (error) throw new Error(error.message);
+          existingCustomer = data;
+          if (existingCustomer && !isSuperAdmin && existingCustomer.emp_id !== user.emp_id) return res.status(403).json({ error: '無權限修改其他業務員的客戶' });
+        }
+        let ownerEmpId = existingCustomer ? existingCustomer.emp_id : targetEmpId;
+        if (!existingCustomer && isSuperAdmin && payload.ownerEmpId && payload.ownerEmpId !== 'ALL') {
+          ownerEmpId = payload.ownerEmpId;
+          const { data: owner, error } = await supabase.from('team_users').select('emp_id').eq('emp_id', ownerEmpId).maybeSingle();
+          if (error) throw new Error(error.message);
+          if (!owner) return res.status(400).json({ error: '名單負責人不存在' });
+        }
+        const { data: savedCust, error: cErr } = await supabase.from('team_customers').upsert({ ...customerData, emp_id: ownerEmpId }).select().single();
         if (cErr) throw new Error(cErr.message);
         return res.status(200).json(savedCust);
+      }
 
-      case 'save_contact':
-        const contactPayload = { ...payload.contactData, emp_id: targetEmpId };
-        await supabase.from('team_contacts').upsert(contactPayload);
-        // 定聯完成後，自動更新客戶主檔的最後聯絡日與下次聯絡日
-        if (contactPayload.customer_id) {
-            await supabase.from('team_customers').update({
-                last_contact_date: contactPayload.contact_date,
-                next_contact_date: contactPayload.next_contact_date || null
-            }).eq('id', contactPayload.customer_id).eq('emp_id', targetEmpId);
+      case 'save_contact': {
+        const contactData = payload.contactData || {};
+        if (!contactData.customer_id) return res.status(400).json({ error: '缺少客戶資料' });
+        const { data: customer, error: customerErr } = await supabase.from('team_customers').select('id, emp_id').eq('id', contactData.customer_id).maybeSingle();
+        if (customerErr) throw new Error(customerErr.message);
+        if (!customer) return res.status(404).json({ error: '找不到客戶' });
+        if (!isSuperAdmin && customer.emp_id !== user.emp_id) return res.status(403).json({ error: '無權限存取其他業務員的客戶' });
+        const contactPayload = { ...contactData, emp_id: customer.emp_id };
+        if (contactPayload.id) {
+          const { data: existingContact, error } = await supabase.from('team_contacts').select('id, emp_id').eq('id', contactPayload.id).maybeSingle();
+          if (error) throw new Error(error.message);
+          if (existingContact && existingContact.emp_id !== user.emp_id && !isSuperAdmin) return res.status(403).json({ error: '無權限修改其他業務員的定聯紀錄' });
         }
+        const customerUpdates = { last_contact_date: contactPayload.contact_date, next_contact_date: contactPayload.next_contact_date || null };
+        if (payload.customerData && Object.prototype.hasOwnProperty.call(payload.customerData, 'phone')) customerUpdates.phone = String(payload.customerData.phone || '').trim();
+        const { error: updateErr } = await supabase.from('team_customers').update(customerUpdates).eq('id', customer.id).eq('emp_id', customer.emp_id);
+        if (updateErr) throw new Error(updateErr.message);
+        const { error: contactErr } = await supabase.from('team_contacts').upsert(contactPayload);
+        if (contactErr) throw new Error(contactErr.message);
         return res.status(200).json({ ok: true });
+      }
 
       // ================= 6.1 既有 API (無損相容) =================
       case 'load_activities':
@@ -95,7 +121,16 @@ export default async function handler(req, res) {
         return res.status(200).json({ ok: true });
 
       case 'save_activity':
-        payload.activityPayload.emp_id = targetEmpId;
+        const activity = payload.activityPayload;
+        if (!activity) return res.status(400).json({ error: '缺少行程資料' });
+        let existingActivity = null;
+        if (activity.id) {
+          const { data, error } = await supabase.from('team_activities').select('id, emp_id').eq('id', activity.id).maybeSingle();
+          if (error) throw new Error(error.message);
+          existingActivity = data;
+          if (existingActivity && !isSuperAdmin && existingActivity.emp_id !== user.emp_id) return res.status(403).json({ error: '無權限修改其他業務員的行程' });
+        }
+        activity.emp_id = existingActivity ? existingActivity.emp_id : targetEmpId;
         
         // 🌟 CRM 雙向連動引擎：自動建檔與綁定
         if (payload.activityPayload.client_name && payload.activityPayload.activity_type !== '準增員名單') {
@@ -119,7 +154,7 @@ export default async function handler(req, res) {
                 // 更新客戶最後互動日
                 await supabase.from('team_customers').update({ 
                     last_contact_date: payload.activityPayload.activity_date 
-                }).eq('id', custId);
+                }).eq('id', custId).eq('emp_id', activity.emp_id);
             }
         }
         
@@ -146,6 +181,7 @@ export default async function handler(req, res) {
         if (!isSuperAdmin) return res.status(403).json({ error: '無權限' });
         await supabase.from('team_activities').delete().eq('emp_id', payload.empId);
         await supabase.from('team_customers').delete().eq('emp_id', payload.empId);
+        await supabase.from('team_contacts').delete().eq('emp_id', payload.empId);
         await supabase.from('team_users').delete().eq('emp_id', payload.empId);
         return res.status(200).json({ ok: true });
 
