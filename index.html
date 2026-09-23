@@ -420,6 +420,17 @@
           } catch(e) {}
         };
 
+        const saveOrgTree = async () => {
+           const vaultData = { orgTree: orgTree.value };
+           const encryptedStr = CryptoJS.AES.encrypt(JSON.stringify(vaultData), '123456').toString();
+           await secureFetch('save_org', { notes: encryptedStr });
+        };
+
+        const getFlatNodes = (node, arr = []) => { arr.push(node); if (node.children) { node.children.forEach(c => getFlatNodes(c, arr)); } return arr; };
+        const allNodes = computed(() => getFlatNodes(orgTree.value));
+        const unboundNodes = computed(() => allNodes.value.filter(n => !n.emp_id));
+        const unboundUsers = computed(() => teamMembers.value.filter(u => u.role !== 'admin' && !allNodes.value.some(n => n.emp_id === u.emp_id)));
+
         // 🌟 CRM 資料計算
         const filteredCustomers = computed(() => {
            let list = allCustomersData.value;
@@ -521,9 +532,13 @@
            });
         };
 
+        // 🌟 修復 64 頁的語法錯誤
         const getCustomerMainStatus = () => {
-           const cust = allCustomersData.value.find(c => c.name === profileData.name);
-           if (cust && cust.status) return cust.status;
+           if(profileData.history.length === 0) return '無資料';
+           const types = profileData.history.map(h => h.type);
+           if (types.includes('簽約')) return '已成交保戶';
+           if (types.includes('談建議書')) return '促成中準件';
+           if (types.includes('增員面談')) return '準增員對象';
            return '潛在客戶';
         };
 
@@ -590,16 +605,9 @@
         };
         const deleteActivity = async () => { if(formData.id) { try { await secureFetch('delete_activity', { id: formData.id }); await loadActivitiesData(false); showToast('✅ 已刪除', 'success'); } catch(e) {} } isActivityModalOpen.value = false; };
 
-        // 戰績與其他輔助函數 (維持不變)
         const getViewingName = () => { if (viewingEmpId.value === 'ALL') return '全組'; if (currentUser.value?.role !== 'admin') return currentUser.value?.name; const target = teamMembers.value.find(m => m.emp_id === viewingEmpId.value); return target ? target.name : ''; };
         const getUserStatus = (empId) => { const u = teamMembers.value.find(m => m.emp_id === empId); return u ? u.is_active : false; };
         const getProspectOwnerName = (empId) => { const u = teamMembers.value.find(m => m.emp_id === empId); return u ? u.name : '未知'; };
-
-        const saveOrgTree = async () => { const vaultData = { orgTree: orgTree.value }; const encryptedStr = CryptoJS.AES.encrypt(JSON.stringify(vaultData), '123456').toString(); await secureFetch('save_org', { notes: encryptedStr }); };
-        const getFlatNodes = (node, arr = []) => { arr.push(node); if (node.children) { node.children.forEach(c => getFlatNodes(c, arr)); } return arr; };
-        const allNodes = computed(() => getFlatNodes(orgTree.value));
-        const unboundNodes = computed(() => allNodes.value.filter(n => !n.emp_id));
-        const unboundUsers = computed(() => teamMembers.value.filter(u => u.role !== 'admin' && !allNodes.value.some(n => n.emp_id === u.emp_id)));
 
         const isStatsModalOpen = ref(false); 
         const dailySales = computed(() => currentDayActivities.value.reduce((sum, act) => sum + act.sales_score, 0));
@@ -613,7 +621,6 @@
         const memberStatsList = computed(() => { if(viewingEmpId.value !== 'ALL') return []; const map = {}; teamMembers.value.forEach(m => map[m.emp_id] = { emp_id: m.emp_id, name: m.name, sales: 0, recruit: 0, total: 0 }); filteredGroupActivities.value.forEach(act => { if(map[act.emp_id]) { map[act.emp_id].sales += act.sales_score; map[act.emp_id].recruit += act.recruit_score; map[act.emp_id].total += (act.sales_score + act.recruit_score); } }); return Object.values(map).sort((a,b) => b.total - a.total); });
         const groupAiSuggestion = computed(() => { if(viewingEmpId.value !== 'ALL') return ''; const list = memberStatsList.value; const zeros = list.filter(u => u.total === 0 && u.emp_id !== currentUser.value.emp_id).map(u => u.name); const period = groupViewMode.value === 'day' ? '今日' : '本月'; let msg = `${period}全組總推銷動能為 ${allGroupStats.value.sales} 分，增員動能 ${allGroupStats.value.recruit} 分。\n\n`; if(list.length > 0 && list[0].total > 0) msg += `🔥 ${period} MVP：${list[0].name}\n`; if(zeros.length > 0) msg += `🚨 注意：${zeros.join('、')} 尚無產出，建議關心。`; else msg += `✨ 恭喜！全組皆有活動產出！`; return msg; });
 
-        // 準增員 Modal (略，保持不變)
         const isProspectsModalOpen = ref(false); const prospectViewEmpId = ref(''); const prospectViewName = ref(''); const prospectForm = reactive({ id: null, name: '', status: '初步接觸', notes: '' }); const prospectStatuses = ['名單收集', '初步接觸', '待考試', '開班', '臨時帳號申請中', '準備登錄']; const targetProspects = ref([]); const isLoadingProspects = ref(false);
         const currentProspects = computed(() => targetProspects.value);
         const parseProspectNotes = (notesStr) => { try { return JSON.parse(notesStr); } catch(e) { return { status: '初步接觸', notes: notesStr || '' }; } };
@@ -623,7 +630,6 @@
         const editProspect = (p) => { const parsed = parseProspectNotes(p.notes); prospectForm.id = p.id; prospectForm.name = p.client_name; prospectForm.status = parsed.status; prospectForm.notes = parsed.notes; };
         const deleteProspect = async (id) => { if(confirm('確定刪除此名單？')) { try { await secureFetch('delete_activity', { id }); showToast('已刪除', 'success'); await fetchProspects(); } catch(e) {} } };
 
-        // 組織圖/帳號管理 Modal (略，保持不變)
         const zoomInOrg = () => { orgZoom.value = Math.min(1.5, orgZoom.value + 0.1); }; const zoomOutOrg = () => { orgZoom.value = Math.max(0.4, orgZoom.value - 0.1); }; const memberStatuses = ['臨時帳號申請中', '準備公會考試', '等待登錄中', '業務代表', '業務主任', '業務襄理', '區經理']; const isMemberModalOpen = ref(false); const memberForm = reactive({ mode: 'add', nodeId: null, targetNode: null, name: '', status: '準備公會考試', notes: '', empId: '' }); const bindExistingEmpId = ref('');
         const checkIsDescendant = (parentNode, targetId) => { if (parentNode.id === targetId) return true; if (parentNode.children) { for (let child of parentNode.children) { if (checkIsDescendant(child, targetId)) return true; } } return false; }; const hasEditPermission = (targetNode) => { if (currentUser.value.role === 'admin') return true; const myNode = allNodes.value.find(n => n.name === currentUser.value.name); if (!myNode) return false; return checkIsDescendant(myNode, targetNode.id); };
         const openMemberModal = (node) => { if (currentUser.value.role !== 'admin' && node.name === currentUser.value.name) { openProspectsModal(currentUser.value.emp_id, currentUser.value.name); return; } if (!hasEditPermission(node)) return showToast('權限不足', 'error'); memberForm.mode = 'edit'; memberForm.nodeId = node.id; memberForm.targetNode = node; memberForm.name = node.name; memberForm.status = node.status; memberForm.notes = node.notes || ''; memberForm.empId = node.emp_id || ''; bindExistingEmpId.value = ''; isMemberModalOpen.value = true; }; const openAddSubordinateModal = (parentNode) => { if (!hasEditPermission(parentNode)) return showToast('權限不足', 'error'); memberForm.mode = 'add'; memberForm.targetNode = parentNode; memberForm.name = ''; memberForm.status = '準備公會考試'; memberForm.notes = ''; memberForm.empId = ''; isMemberModalOpen.value = true; };
@@ -655,7 +661,6 @@
           orgTree, orgZoom, zoomInOrg, zoomOutOrg, memberStatuses, isMemberModalOpen, memberForm, openMemberModal, openAddSubordinateModal, saveMember, deleteMember, exportOrgChart,
           isProspectsModalOpen, prospectViewName, prospectForm, prospectStatuses, currentProspects, isLoadingProspects, openProspectsModal, saveProspect, deleteProspect, editProspect, parseProspectNotes, getProspectOwnerName,
           isCustomerProfileOpen, profileData, openCustomerProfile, getCustomerMainStatus,
-          // CRM 專用
           filteredCustomers, todayContacts, overdueContacts, displayedContacts, contactFilter,
           isAddCustomerModalOpen, customerForm, openAddCustomerModal, saveNewCustomer,
           isContactModalOpen, contactForm, openContactModal, openContactModalFromProfile, saveContact
