@@ -60,12 +60,14 @@ export default async function handler(req, res) {
 
       case 'save_customer': {
         const customerData = payload.customerData || {};
+        if (!customerData.id) delete customerData.id;
         let existingCustomer = null;
         if (customerData.id) {
           const { data, error } = await supabase.from('team_customers').select('id, emp_id').eq('id', customerData.id).maybeSingle();
           if (error) throw new Error(error.message);
           existingCustomer = data;
-          if (existingCustomer && !isSuperAdmin && existingCustomer.emp_id !== user.emp_id) return res.status(403).json({ error: '無權限修改其他業務員的客戶' });
+          if (!existingCustomer) return res.status(404).json({ error: '找不到客戶資料' });
+          if (!isSuperAdmin && existingCustomer.emp_id !== user.emp_id) return res.status(403).json({ error: '無權限修改其他業務員的客戶' });
         }
         let ownerEmpId = existingCustomer ? existingCustomer.emp_id : targetEmpId;
         if (!existingCustomer && isSuperAdmin && payload.ownerEmpId && payload.ownerEmpId !== 'ALL') {
